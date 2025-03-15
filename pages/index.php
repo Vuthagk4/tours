@@ -1,3 +1,7 @@
+<?php
+include '../includes/config.php';
+include '../includes/header.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -15,43 +19,6 @@
      <link href="https://fonts.googleapis.com/css2?family=Freehand&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   </head>
   <body>
-    <div class="watcher-scroll"></div>
-    <!-- start class bar bar header -->
-    <div class="bar-header">
-        <div class="bar-head">
-            <div class="right-bottom">
-                <a href=""><i class="fa-solid fa-house"></i></a>
-                <span><a href="login.html" style="text-decoration: none;">Admin Login</a></span>
-            </div>
-                <div class="left-bottom">
-                <p>Tooll Number:123-456789</p>
-                <a href=""><li>Sign Up</li></a>
-                <p>/</p>
-                <a href=""><li>Sign In</li></a>
-                </div>
-        </div>
-    </div>
-    <!-- end  class bar bar header -->
-    <!-- start class nav-bar -->
-    <div class="bar">
-        <img src="images/R.png" alt="">
-        <h1><span style="color: #49B11E;">Tour </span><span style="color: #ff7f50;">And </span>Travel Management</h1>
-    </div>
-<!-- end  class nav-bar -->
-<!-- start class Menu -->
- <div class="nav-bar">
-    <div class="sub-nav">
-        <ul>
-            <li><a href="">Home</a></li>
-            <li><a href="">About</a></li>
-            <li><a href="">Tour Package</a></li>
-            <li><a href="">Privacy Policy</a></li>
-            <li><a href="">Team of Use</a></li>
-            <li><a href="">Contact Us</a></li>
-            <li><a href="">Enquiry</a></li>
-        </ul>
-    </div>
- </div>
   <!-- end  class Menu -->
     <main>
         <!-- section -> start class hero -->
