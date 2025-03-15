@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($role === 'admin') {
             header("Location: admin_dashboard.php");
         } else {
-            header("Location: customer_dashboard.php");
+            header("Location: index.php");
         }
     } else {
         echo "<script>alert('Invalid email or password.');</script>";
@@ -36,3 +36,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $conn->close();
 }
 ?>
+
+<form action="login.php" method="POST">
+    <input type="email" name="email" placeholder="Email" required><br>
+    <input type="password" name="password" placeholder="Password" required><br>
+    <button type="submit">Login</button>
+</form>
