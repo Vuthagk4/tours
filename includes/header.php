@@ -28,9 +28,9 @@ include 'config.php';
             </div>
                 <div class="left-bottom">
                 <p>Tooll Number:123-456789</p>
-                <a href=""><li>Sign Up</li></a>
+                <a href="register.php"><li>Sign Up</li></a>
                 <p>/</p>
-                <a href=""><li>Sign In</li></a>
+                <a href="login.php"><li>Sign In</li></a>
                 </div>
         </div>
     </div>
@@ -45,12 +45,12 @@ include 'config.php';
  <div class="nav-bar">
     <div class="sub-nav">
         <ul>
-            <li><a href="">Home</a></li>
-            <li><a href="">About</a></li>
-            <li><a href="">Tour Package</a></li>
+            <li><a href="index.php">Home</a></li>
+            <li><a href="about.php">About</a></li>
+            <li><a href="packages.php">Tour Package</a></li>
             <li><a href="">Privacy Policy</a></li>
             <li><a href="">Team of Use</a></li>
-            <li><a href="">Contact Us</a></li>
+            <li><a href="contact.php">Contact Us</a></li>
             <li><a href="">Enquiry</a></li>
         </ul>
     </div>
