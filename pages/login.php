@@ -1,39 +1,30 @@
 <?php
 session_start();
 include '../includes/config.php';
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+  $email = $_POST['email'];
+  $password = $_POST['password'];
 
-    // Retrieve user details
-    $stmt = $conn->prepare("SELECT user_id, name, password, role FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $stmt->store_result();
-    $stmt->bind_result($user_id, $name, $hashed_password, $role);
-    $stmt->fetch();
+  $stmt = $conn->prepare("SELECT user_id, name, email, password FROM users WHERE email = ?");
+  $stmt->bind_param("s", $email);
+  $stmt->execute();
+  $stmt->store_result();
 
-    if ($stmt->num_rows > 0 && password_verify($password, $hashed_password)) {
-        // Store session variables
-        $_SESSION['user_id'] = $user_id;
-        $_SESSION['name'] = $name;
-        $_SESSION['role'] = $role;
+  if ($stmt->num_rows > 0) {
+      $stmt->bind_result($id, $name, $db_email, $db_password);
+      $stmt->fetch();
 
-        echo "<script>alert('Login successful!');</script>";
-
-        // Redirect based on role
-        if ($role === 'admin') {
-            header("Location: admin_dashboard.php");
-        } else {
-            header("Location: index.php");
-        }
-    } else {
-        echo "<script>alert('Invalid email or password.');</script>";
-    }
-
-    $stmt->close();
-    $conn->close();
+      if (password_verify($password, $db_password)) {  // Ensure password is hashed in DB
+          $_SESSION['admin_name'] = $name;
+          $_SESSION['admin_id'] = $id;
+          header("Location: index.php");
+          exit();
+      } else {
+          echo "<script>alert('Invalid credentials!');</script>";
+      }
+  } else {
+      echo "<script>alert('No user found with this email!');</script>";
+  }
 }
 ?>
 <script>
@@ -76,7 +67,7 @@ body::before {
   position: absolute;
   width: 100%;
   height: 100%;
-  background: url("../assets/images/log.jpg"), #000;
+  background: url("../assets/images/4k.jpg"), #000;
   background-position: center;
   background-size: cover;
   z-index: -1;

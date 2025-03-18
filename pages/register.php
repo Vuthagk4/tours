@@ -56,7 +56,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: url("../assets/images/4k.jpg"), #000;
+            background-size:cover;
+
         }
         .register-container {
             background: #fff;

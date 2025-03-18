@@ -24,21 +24,41 @@ include 'config.php';
         <div class="bar-head">
             <div class="right-bottom">
                 <a href=""><i class="fa-solid fa-house"></i></a>
-                <span><a href="login.html" style="text-decoration: none;">Admin Login</a></span>
+                <span><a href="#" style="text-decoration: none;"></a></span>
             </div>
                 <div class="left-bottom">
-                <p>Tooll Number:123-456789</p>
-                <a href="register.php"><li>Sign Up</li></a>
+                <!-- <p> Number:123-456789</p> -->
+                <a href="register.php"><li>Reigister</li></a>
                 <p>/</p>
-                <a href="login.php"><li>Sign In</li></a>
+                <a href="login.php"><li>Login</li></a>
                 </div>
         </div>
     </div>
     <!-- end  class bar bar header -->
     <!-- start class nav-bar -->
-    <div class="bar">
-        <img src="images/R.png" alt="">
-        <h1><span style="color: #49B11E;">Tour </span><span style="color: #ff7f50;">And </span>Travel Management</h1>
+    <div class="bar" style="display: flex;justify-content:space-between;align-items:center;font-size:xx-large;">
+        <ul>
+            <li>
+                <h1><span style="color: #49B11E;">Tour</span><span style="color: #ff7f50;">& </span>Travel Management</h1>
+            </li>
+        </ul>
+        <ul>
+            <li>
+                
+                <?php 
+                        if (isset($_SESSION['admin_name'])) {
+                            echo "<span>Admin/" . htmlspecialchars($_SESSION['admin_name']) . "</span>";
+                            echo '
+                            <form action="logout.php" method="POST" style="display:inline;">
+                                <button type="submit" style="padding:7px; background-color:red;color:white;border:none;" >Logout</button>
+                            </form>';
+                        } else {
+                            echo '<a href="login.php">Login</a>';
+                        }
+
+                ?>
+            </li>
+        </ul>
     </div>
 <!-- end  class nav-bar -->
 <!-- start class Menu -->
@@ -48,8 +68,8 @@ include 'config.php';
             <li><a href="index.php">Home</a></li>
             <li><a href="about.php">About</a></li>
             <li><a href="packages.php">Tour Package</a></li>
-            <li><a href="">Privacy Policy</a></li>
-            <li><a href="">Team of Use</a></li>
+            <li><a href="">Booking</a></li>
+            <li><a href="">Term of Use</a></li>
             <li><a href="contact.php">Contact Us</a></li>
             <li><a href="">Enquiry</a></li>
         </ul>

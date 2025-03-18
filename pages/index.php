@@ -24,7 +24,7 @@ include '../includes/header.php';
         <!-- section -> start class hero -->
       <section class="hero">
         <div class="hero-image">
-          <img src="../assets/images/homepage.jpg" alt="Hero image" />
+          <img style="object-fit: cover;" src="../assets/images/4k.jpg" alt="Hero image" />
         </div>
         <div class="hero-content">
           <h1>Welcome to Our Travel Website</h1>
