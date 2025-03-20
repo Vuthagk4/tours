@@ -1,32 +1,44 @@
 <?php
 session_start();
 include '../includes/config.php';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  $email = $_POST['email'];
-  $password = $_POST['password'];
+    $email = $_POST['email'];
+    $password = $_POST['password'];
 
-  $stmt = $conn->prepare("SELECT user_id, name, email, password FROM users WHERE email = ?");
-  $stmt->bind_param("s", $email);
-  $stmt->execute();
-  $stmt->store_result();
+    $stmt = $conn->prepare("SELECT user_id, name, password, role FROM users WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-  if ($stmt->num_rows > 0) {
-      $stmt->bind_result($id, $name, $db_email, $db_password);
-      $stmt->fetch();
+    if ($result->num_rows == 1) {
+        $row = $result->fetch_assoc();
+        
+        if (password_verify($password, $row['password'])) {
+            $_SESSION['user_id'] = $row['user_id'];
+            $_SESSION['name'] = $row['name'];
+            $_SESSION['role'] = $row['role'];
 
-      if (password_verify($password, $db_password)) {  // Ensure password is hashed in DB
-          $_SESSION['admin_name'] = $name;
-          $_SESSION['admin_id'] = $id;
-          header("Location: index.php");
-          exit();
-      } else {
-          echo "<script>alert('Invalid credentials!');</script>";
-      }
-  } else {
-      echo "<script>alert('No user found with this email!');</script>";
-  }
+            if ($row['role'] === 'admin') {
+                echo "<script>alert('Admin Login Successful!'); window.location.href='../admin/dashboard.php';</script>";
+            } else {
+                echo "<script>alert('Customer Login Successful!'); window.location.href='index.php';</script>";
+            }
+            exit();
+        } else {
+            echo "<script>alert('Invalid Password!'); window.location.href='login.php';</script>";
+        }
+    } else {
+        echo "<script>alert('Invalid Password!'); window.location.href='login.php';</script>";
+    }
+
+    $stmt->close();
+    $conn->close();
 }
 ?>
+
+
+
 <script>
 function togglePassword() {
     var passwordField = document.getElementById("password");
@@ -43,7 +55,6 @@ function togglePassword() {
 }
 </script>
 <style>
-    /* @import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@200;300;400;500;600;700&display=swap"); */
 
 * {
   margin: 0;

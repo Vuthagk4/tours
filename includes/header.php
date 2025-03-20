@@ -1,5 +1,5 @@
 <?php
-session_start(); // Start session to check login status
+session_start(); 
 include 'config.php';
 ?>
 <!DOCTYPE html>
@@ -45,18 +45,19 @@ include 'config.php';
         <ul>
             <li>
                 
-                <?php 
-                        if (isset($_SESSION['admin_name'])) {
-                            echo "<span>Admin/" . htmlspecialchars($_SESSION['admin_name']) . "</span>";
-                            echo '
-                            <form action="logout.php" method="POST" style="display:inline;">
-                                <button type="submit" style="padding:7px; background-color:red;color:white;border:none;" >Logout</button>
-                            </form>';
-                        } else {
-                            echo '<a href="login.php">Login</a>';
-                        }
+            <?php 
 
-                ?>
+            if (isset($_SESSION['user_id']) && isset($_SESSION['role'])) {
+                echo "<span>" . htmlspecialchars($_SESSION['name']) . " (" . $_SESSION['role'] . ")</span>";
+                echo '
+                <form action="../pages/logout.php" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-danger">Logout</button>
+                </form>';
+            } else {
+                echo '<a href="login.php">Login</a>';
+            }
+            ?>
+
             </li>
         </ul>
     </div>

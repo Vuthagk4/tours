@@ -1,41 +1,41 @@
 <?php
-include '../includes/config.php'; // Include your database connection file
+include '../includes/config.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = trim($_POST['name']);
-    $email = trim($_POST['email']);
-    $password = trim($_POST['password']);
-    $role = 'customer';
+    $name = trim($_POST["name"]);
+    $email = trim($_POST["email"]);
+    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $role = 'customer'; // Default role
 
-    if (!empty($name) && !empty($email) && !empty($password)) {
-        // Check if the email already exists
-        $check_email = $conn->prepare("SELECT email FROM users WHERE email = ?");
-        $check_email->bind_param("s", $email);
-        $check_email->execute();
-        $check_email->store_result();
+    // **Check if Email Already Exists**
+    $stmt = $conn->prepare("SELECT email FROM users WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $stmt->store_result();
 
-        if ($check_email->num_rows > 0) {
-            echo "<script>alert('Email already exists!');</script>";
-        } else {
-            // Hash password before storing
-            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $conn->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
-            $stmt->bind_param("ssss", $name, $email, $hashedPassword, $role);
-
-            if ($stmt->execute()) {
-                echo "<script>alert('Registration successful!'); window.location='login.php';</script>";
-            } else {
-                echo "<script>alert('Error registering user.');</script>";
-            }
-            $stmt->close();
-        }
-        $check_email->close();
-    } else {
-        echo "<script>alert('All fields are required!');</script>";
+    if ($stmt->num_rows > 0) {
+        echo "<script>alert('Email already registered!'); window.location.href='register.php';</script>";
+        exit();
     }
-    $conn->close();
+    $stmt->close();
+
+    // **Insert New User**
+    $stmt = $conn->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("ssss", $name, $email, $password, $role);
+
+    if ($stmt->execute()) {
+        echo "<script>alert('Registration successful!'); window.location.href='login.php';</script>";
+        exit();
+    } else {
+        echo "<script>alert('Error during registration!'); window.location.href='register.php';</script>";
+        exit();
+    }
+
+    $stmt->close();
 }
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
