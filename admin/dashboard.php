@@ -1,7 +1,7 @@
 <?php
 
 include '../includes/config.php';
-include '../includes/header.php';
+include '../includes/admin_header.php';
 // session_start();
 // Check if the admin is logged in
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -18,7 +18,7 @@ if (isset($_GET['delete'])) {
     $stmt = $conn->prepare("DELETE FROM tours WHERE tour_id = ?");
     $stmt->bind_param("i", $tour_id);
     if ($stmt->execute()) {
-        echo "<script>alert('Tour deleted successfully!'); window.location.href='admin_tours.php';</script>";
+        echo "<script>alert('Tour deleted successfully!'); window.location.href='dashboard.php';</script>";
     }
 }
 
@@ -49,18 +49,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt = $conn->prepare("INSERT INTO tours (destination_id, title, description, price, duration, image) VALUES (?, ?, ?, ?, ?, ?)");
             $stmt->bind_param("issdss", $destination_id, $title, $description, $price, $duration, $new_image_name);
             if ($stmt->execute()) {
-                echo "<script>alert('Tour added successfully!'); window.location.href='admin_tours.php';</script>";
+                echo "<script>alert('Tour added successfully!'); window.location.href='dashboard.php';</script>";
             }
         } else {
             echo "<script>alert('Image upload failed!');</script>";
         }
     }
 }
-
 // Fetch all tours Join Table
 $tours = $conn->query("SELECT tours.*, destinations.name AS destination FROM tours 
                         JOIN destinations ON tours.destination_id = destinations.destination_id");
-
 ?>
 
 <!DOCTYPE html>
@@ -72,11 +70,62 @@ $tours = $conn->query("SELECT tours.*, destinations.name AS destination FROM tou
     <link rel="stylesheet" href="../assets/style.css"> 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    position: relative;
+    font-family: 'Work Sans', sans-serif;
+ 
+}
+
+.dashboard {
+    position: relative;
+    /* background-color: red; */
+    min-height: 100vh; /* Ensures full height */
+    padding: 20px;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    background: #2C3E50;
+    color: white;
+    position: fixed;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    padding-top: 20px;
+}
+
+/* Table inside the dashboard */
+.table {
+    width: calc(100% - 250px); /* Corrected Syntax */
+    margin-left: 250px; /* Push it to the right of the sidebar */
+    padding: 20px;
+    background: white;
+    position: relative; /* Prevent overlapping */
+}
+
+@media screen and (max-width: 768px) {
+    .sidebar {
+        width: 60px;
+    }
+
+    .table {
+        width: calc(100% - 60px);
+        margin-left: 60px;
+    }
+}
+
+</style>
 <body>
 
 <ul style="position: relative;" class=" d-flex justify-content-around align-items-center p-3">
     <button style="position:absolute; right:2rem;top:6px" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTourModal">
-        Add Tour
+        + Add Tour
     </button>
 </ul>
 

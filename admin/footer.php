@@ -1,5 +1,5 @@
 <footer style="
-    background: #1A82Ab;
+     background:rgba(11, 74, 101, 0.89);
     color: white;
     padding: 15px 0;
     text-align: center;

@@ -1,5 +1,5 @@
 <?php
-include '../includes/header.php';
+include '../includes/admin_header.php';
 include '../includes/config.php'; // Database connection file
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -59,20 +59,7 @@ input[type="text"], textarea, input[type="file"] {
     border-radius: 5px;
     font-size: 14px;
 }
-.btn {
-    width: 100%;
-    padding: 10px;
-    /* background: #007bff; */
-    color: white;
-    font-size: 16px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 15px;
-}
-.btn:hover {
-    background: #0056b3;
-}
+
 input:focus, textarea:focus {
     border-color: #007bff;
     outline: none;
@@ -97,3 +84,6 @@ input:focus, textarea:focus {
 
     <button type="submit" class="btn">Add Destination</button>
 </form>
+<?php
+include '../admin/footer.php';
+?>
