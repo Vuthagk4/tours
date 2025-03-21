@@ -3,7 +3,7 @@ include '../includes/config.php';
 include '../includes/header.php';
 
 // Fetch all tours with their destinations
-$tours = $conn->query("SELECT tours.*, destinations.name AS destination FROM tours 
+$tours = $conn->query("SELECT tours.*, destinations.name AS destination, destinations.location FROM tours 
                         JOIN destinations ON tours.destination_id = destinations.destination_id");
 
 ?>
@@ -28,13 +28,29 @@ $tours = $conn->query("SELECT tours.*, destinations.name AS destination FROM tou
                 <div class="card">
                     <img src="../uploads/<?= $tour['image']; ?>" class="card-img-top" alt="Tour Image">
                     <div class="card-body">
-                        <h5 class="card-title"><?= htmlspecialchars($tour['title']); ?></h5>
-                        <p class="card-text"><strong>Destination:</strong> <?= htmlspecialchars($tour['destination']); ?></p>
-                        <p class="card-text"><?= nl2br(htmlspecialchars($tour['description'])); ?></p>
-                        <p class="card-text"><strong>Duration:</strong> <?= htmlspecialchars($tour['duration']); ?></p>
-                        <p class="card-text"><strong>Price:</strong> $<?= number_format($tour['price'], 2); ?></p>
-                        <a href="tour_details.php?id=<?= $tour['tour_id']; ?>" class="btn btn-primary">Booking Now</a>
-                    </div>
+    <h5 class="card-title"><?= htmlspecialchars($tour['title']); ?></h5>
+    <p class="card-text"><strong>Destination:</strong> <?= htmlspecialchars($tour['destination']); ?></p>
+
+    <?php 
+    // Extract latitude and longitude
+    $coords = explode(',', $tour['location']);
+    if (count($coords) == 2) {
+        $lat = trim($coords[0]);
+        $lng = trim($coords[1]);
+        $mapLink = "https://www.google.com/maps?q={$lat},{$lng}";
+    } else {
+        $mapLink = "javascript:void(0);"; // Fallback if location is invalid
+    }
+?>
+        <p class="card-text"><strong>Location:</strong> 
+            <a href="<?= $mapLink; ?>" target="_blank">View on Map</a>
+        </p>
+        <p class="card-text"><?= nl2br(htmlspecialchars($tour['description'])); ?></p>
+        <p class="card-text"><strong>Duration:</strong> <?= htmlspecialchars($tour['duration']); ?></p>
+        <p class="card-text"><strong>Price:</strong> $<?= number_format($tour['price'], 2); ?></p>
+        <a href="tour_details.php?id=<?= $tour['tour_id']; ?>" class="btn btn-primary">Booking Now</a>
+</div>
+
                 </div>
             </div>
         <?php endwhile; ?>

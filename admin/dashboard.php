@@ -90,7 +90,7 @@ body {
 .sidebar {
     width: 250px;
     height: 100vh;
-    background: #2C3E50;
+    background:rgb(34, 49, 64);
     color: white;
     position: fixed;
     left: 0;
