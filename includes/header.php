@@ -76,5 +76,5 @@ include 'config.php';
         </ul>
     </div>
  </div>
-</body>
+</body> 
 </html>
