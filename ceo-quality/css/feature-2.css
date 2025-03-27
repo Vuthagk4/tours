@@ -422,6 +422,7 @@ h2 {
     width: 1225px;
     height: 400px;
     margin-top: 40px;
+    line-height: 1.3;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
 }
@@ -462,7 +463,7 @@ h2 {
     color: white;
     padding: 20px;
     text-align: center;
-    margin-top: 20px;
+    margin-top: 80px;
     transition: opacity 0.5s ease-in-out;
     font-family: "Work Sans", sans-serif;
 }

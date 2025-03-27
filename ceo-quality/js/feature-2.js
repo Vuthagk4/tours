@@ -1,7 +1,7 @@
-// slider 1
+// slider 2
 let currentIndex = 0;
 const slidesToShow = 3;
-const totalSlides = 9;
+const totalSlides = 11;
 const slider = document.getElementById('slider');
 
 function moveSlide(direction) {
