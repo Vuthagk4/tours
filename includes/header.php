@@ -71,7 +71,7 @@ include 'config.php';
             <li><a href="packages.php">Tour Package</a></li>
             <li><a href="">Booking</a></li>
             <li><a href="">Term of Use</a></li>
-            <li><a href="contact.php">Contact Us Us</a></li>
+            <li><a href="contact.php">Contact Us</a></li>
             <li><a href="">Enquiry</a></li>
         </ul>
     </div>
