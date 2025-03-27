@@ -22,8 +22,7 @@ include 'config.php';
         .sidebar {
             width: 250px;
             height: 100vh;
-            background:rgb(11, 74, 101);
-            /* background: #1A82Ab; */
+            background:rgb(34, 49, 64);
             color: white;
             position: fixed;
             left: 0;
@@ -34,15 +33,9 @@ include 'config.php';
             padding-top: 20px;
             transition: all 0.3s ease;
             z-index: 99999999999;
+            box-shadow: rgba(0, 0, 0, 0.15) 0px 5px 15px 0px;
         }
-
-        .sidebar h1 {
-            font-size: 22px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .sidebar ul {
+         .sidebar ul {
             margin-top: 3rem;
             list-style: none;
             padding: 0 ;
@@ -83,28 +76,30 @@ include 'config.php';
             border-radius: 5px;
             transition: 0.3s;
         }
-
-        /* Push content when sidebar opens */
         .main-content {
             margin-left: 250px;
             padding: 20px;
             height: 110px;
             transition: 0.3s;
-            background:rgba(11, 74, 101, 0.89);
             display: flex;
-            position: sticky;
+            position: sticky; /* Fix it on top */
             top: 0;
+            width: calc(100% - 250px);
             z-index: 999;
             align-items: center;
+            background: rgba(255, 255, 255, 0.8); /* Slight transparency */
+            color: black;
+            box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+            backdrop-filter: blur(100px); /* Optional blur effect */
+}
 
-        }
         .main-content > form{
             position: absolute;
             right: 10px;
             display: flex;
         }
         .admin-name{
-            color: white;
+            color: black;
             padding: 12px;
             font-size: 18px;
         }
@@ -143,10 +138,10 @@ include 'config.php';
      <img class="img" src="../assets/images/logo.jpg" alt="">
      <div class="hr"></div>
     <ul>
-        <li><a href="dashboard.php"><i class="fa fa-home"></i> <span>Dashboard</span></a></li>
+        <li><a href="index.php"><i class="fa fa-home"></i> <span>Dashboard</span></a></li>
         <li><a href="../admin/add_destination.php"><i class="fa fa-map"></i> <span>Add Destination</span></a></li>
-        <li><a href="../admin/dashboard.php"><i class="fa fa-plane"></i> <span>Add Tour</span></a></li>
-        <li><a href="#"><i class="fa fa-book"></i> <span>View Booking</span></a></li>
+        <li><a href="../admin/addTour.php"><i class="fa fa-plane"></i> <span>Add Tour</span></a></li>
+        <li><a href="../admin/manage_bookings.php"><i class="fa fa-book"></i> <span>View Booking</span></a></li>
         <li><a href="#"><i class="fa fa-credit-card"></i> <span>Check Payment</span></a></li>
     </ul>
 

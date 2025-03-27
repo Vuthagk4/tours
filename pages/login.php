@@ -20,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['role'] = $row['role'];
 
             if ($row['role'] === 'admin') {
-                echo "<script>alert('Admin Login Successful!'); window.location.href='../admin/dashboard.php';</script>";
+                echo "<script>alert('Admin Login Successful!'); window.location.href='../admin/index.php';</script>";
             } else {
                 echo "<script>alert('Customer Login Successful!'); window.location.href='index.php';</script>";
             }

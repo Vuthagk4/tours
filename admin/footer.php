@@ -1,5 +1,5 @@
 <footer style="
-     background:rgba(11, 74, 101, 0.89);
+
     color: white;
     padding: 15px 0;
     text-align: center;
@@ -7,6 +7,10 @@
     bottom: 0;
     width: 100%;
     z-index: 1000;
+    background:none;
+    color: black;
+    box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+    backdrop-filter: blur(100px); /* Optional blur effect */
 ">
     <div style="
         max-width: 1200px;
@@ -19,7 +23,7 @@
         
         <!-- Copyright -->
         <div>
-            <p>&copy; <?php echo date("Y"); ?> Travel Tour Admin. All Rights Reserved.</p>
+            <p>&copy; <?php echo date("Y/M/D"); ?> Tour&Travel.com is part of Booking Tour services.</p>
         </div>
 
     </div>
