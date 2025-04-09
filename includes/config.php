@@ -3,7 +3,7 @@ $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "tour_travel";
-$port = 3308;  // Specify the port number
+$port = 3307;  // Specify the port number
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname, $port);

@@ -150,14 +150,15 @@ include 'config.php';
 <div class="main-content">
       <!-- User Session -->
         <?php 
-    if (isset($_SESSION['user_id']) && isset($_SESSION['role'])) {
-        echo '
-        <form action="../pages/logout.php" method="POST">
-            <span class="admin-name">' . htmlspecialchars($_SESSION['name']) . ' (' . htmlspecialchars($_SESSION['role']) . ')</span><br><br>
-            <button type="submit" class="btn btn-danger">Logout <i class="fa-solid fa-arrow-up-right-from-square"></i></button>
-        </form>';
-    } else {
-        echo '<a href="login.php" style="color: white;">Login</a>';
+if (isset($_SESSION['admin_id']) && isset($_SESSION['role'])) {
+    echo '
+    <form action="admin_logout.php" method="POST">
+        <span class="admin-name">' . htmlspecialchars($_SESSION['name']) . ' (' . htmlspecialchars($_SESSION['role']) . ')</span><br><br>
+        <button type="submit" class="btn btn-danger">Logout <i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+    </form>';
+}
+ else {
+        echo '<a href="admin_login.php" style="color: white;">Login</a>';
     }
 
         ?>
