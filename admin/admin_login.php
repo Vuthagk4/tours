@@ -19,8 +19,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->fetch();
 
     if (password_verify($password, $hashed_password)) {
+      session_regenerate_id(); // for security
       $_SESSION["admin_id"] = $admin_id;
       $_SESSION["admin_name"] = $name;
+
       $loginSuccess = true;
       $adminName = $name;
     } else {
@@ -33,7 +35,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $stmt->close();
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -42,6 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <title>Admin Login</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
   <style>
     body {
       background: #f3f4f6;
@@ -152,14 +154,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       }
     }
   </script>
-</body>
-<?php if ($loginSuccess): ?>
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    swal("Login Successful!", "Welcome back, <?= $adminName ?>!", "success")
-    .then(() => window.location.href = "index.php");
-  });
-</script>
-<?php endif; ?>
 
+  <?php if ($loginSuccess): ?>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      swal("Login Successful!", "Welcome back, <?= $adminName ?>!", "success")
+      .then(() => window.location.href = "index.php");
+    });
+  </script>
+  <?php endif; ?>
+</body>
 </html>

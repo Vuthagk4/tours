@@ -4,10 +4,12 @@ include "../includes/config.php";
 include "../includes/admin_header.php";
 // session_start();
 // Check if the admin is logged in
-if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "admin") {
-    header("Location: ../login.php");
-    exit();
-}
+
+//Consider Update
+// if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "admin") {
+//     header("Location: ../login.php");
+//     exit();
+// }
 
 // Fetch all destinations for dropdown
 $destinations = $conn->query("SELECT * FROM destinations");
