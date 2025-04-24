@@ -25,7 +25,7 @@ if (isset($_GET["delete"])) {
 }
 
 // Handle Tour Addition
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["update_tour"])) {
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["add_tour"])) {
     $tour_id = intval($_POST["tour_id"]);
     $destination_id = intval($_POST["destination_id"]);
     $title = htmlspecialchars(trim($_POST["title"]));
@@ -194,9 +194,7 @@ body {
 
 
 
-                <a href="?delete=<?= $tour[
-                    "tour_id"
-                ] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
+        <a href="?delete=<?= $tour["tour_id"] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
             </td>
         </tr>
         <?php endwhile; ?>
@@ -253,6 +251,8 @@ body {
                     </div>
 
                     <button type="submit" class="btn btn-success w-100">Save Tour</button>
+                    <!-- <button type="submit" name="add_tour" class="btn btn-success w-100">Save Tour</button> -->
+
                 </form>
             </div>
         </div>
