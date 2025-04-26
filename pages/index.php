@@ -20,57 +20,124 @@ $tours = $conn->query("SELECT tours.*, destinations.name AS destination, destina
             height: 150vh;
             }
             .tour-card {
-            max-width: 300px;
-            max-height: 650px;
-            border-radius: 12px;
+                    display: flex;
+                    background: #f7f9fc;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                    margin: 20px auto;
+                    max-width: 900px;
+            }
+
+            /* container grid: fixed 3 cols, locked to image height */
+            .tour-card {
+            display: grid;
+            grid-template-columns: 370px 1fr 200px;
+            background: #f7f9fc;
+            border-radius: 8px;
             overflow: hidden;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            background-color: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            align-items: stretch;      /* make all three cols same height */
+            min-height: 200px;         /* tie total card height to image height */
             }
 
-            .tour-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-            }
-
-            .image-container {
-            height: 200px;
-            height: 400px; /* or auto if you want it to grow with content */
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #f8f9fa;
-            }
-
-            .image-container img {
+            /* 1) Image */
+            .tour-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            object-position: center;
+            display: block;
+            }
+      
+
+            /* 2) Info */
+            .tour-info {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            }
+            .tour-info .title {
+            margin: 0 0 8px;
+            color: #0071c2;
+            }
+            .tour-info .meta {
+            margin: 4px 0;
+            font-size: 14px;
+            color: #555;
+            }
+            .tour-info .description {
+            margin: 12px 0;
+            font-size: 14px;
+            line-height: 1.4;
+            /* truncate to 3 lines */
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            }
+            .tour-info .see-more {
+            font-size: 14px;
+            color: #0071c2;
+            text-decoration: underline;
+            cursor: pointer;
+            margin-top: auto;  /* push “Show more” to bottom of info section */
             }
 
-            .card-body {
-            padding: 1rem;
-            flex-grow: 1;
+            /* 3) Booking */
+            .tour-book {
+            padding: 20px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            border-left: 1px solid #e0e0e0;
             }
 
-            .card-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+            .tour-book .price-label {
+            font-size: 12px;
+            color: #555;
+            margin: 0;
+            }
+            .tour-book .price-amount {
+            font-size: 20px;
+            color: green;
+            font-weight: bold;
+            margin: 4px 0 12px;
             }
 
-            .card-text {
-            font-size: 0.95rem;
-            margin-bottom: 0.4rem;
+            .tour-book label {
+            font-size: 14px;
+            color: #333;
+            display: block;
+            margin-bottom: 8px;
             }
+            .tour-book input {
+            width: 100%;
+            margin-top: 4px;
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            }
+
+            .tour-book .total-price {
+            font-size: 14px;
+            font-weight: bold;
+            margin: 12px 0;
+            }
+
+            .btn-book {
+            display: block;
+            text-align: center;
+            padding: 10px 0;
+            background: #0071c2;
+            color: #fff;
+            border-radius: 4px;
+            text-decoration: none;
+            }
+            .btn-book:hover {
+            background: #005999;
+            }
+
+
 
             .description {
             color: #555;
@@ -99,131 +166,178 @@ $tours = $conn->query("SELECT tours.*, destinations.name AS destination, destina
 
 <div class="container mt-5">
     <h2 class="text-center mb-4">Available Tours</h2>
-    
     <div class="row">
     <?php while ($tour = $tours->fetch_assoc()): ?>
-        <div class="col-lg-3 col-md-4 mb-4">
-            <div class="card tour-card shadow-sm">
-                <div class="image-container">
-                <img src="../uploads/<?= $tour["image"] ?>" class="card-img-top" alt="Tour Image">
-                </div>
-            <div class="card-body">
-                <h5 class="card-title"><?= htmlspecialchars($tour["title"]) ?></h5>
-                <p class="card-text"><strong>Destination:</strong> <?= htmlspecialchars($tour["destination"]) ?></p>
-
-            <?php
-            $coords = explode(",", $tour["location"]);
-            if (count($coords) == 2) {
-            $lat = trim($coords[0]);
-            $lng = trim($coords[1]);
-            $mapLink = "https://www.google.com/maps?q={$lat},{$lng}";
-            } else {
-            $mapLink = "javascript:void(0);";
-            }
-            ?>
-            <p class="card-text"><strong>Location:</strong> <a href="<?= $mapLink ?>" target="_blank">View on Map</a></p>
-
-            <p class="card-text description" data-fulltext="<?= htmlspecialchars($tour['description']) ?>" 
-            data-shorttext="<?= substr(htmlspecialchars($tour['description']), 0, 20) ?>">
-            <?= substr(htmlspecialchars($tour['description']), 0, 20) . '...' ?>
-            </p>
-            <span class="see-more">See More</span>
-            <!-- Dynamic Price  -->
-                <?php
-                $defaultDuration = (int)$tour["duration"];
-                $defaultPrice = (float)$tour["price"];
-                ?>
-
-                <div class="mb-2">
-                    <label class="form-label"><strong>Duration (days):</strong></label>
-                    <input type="number" class="form-control duration-input" min="1"
-                        value="<?= $defaultDuration ?>" data-default-price="<?= $defaultPrice ?>">
-                </div>
-
-                <div class="mb-2">
-                    <label class="form-label"><strong>People:</strong></label>
-                    <input type="number" class="form-control people-input" min="1" value="1">
-                </div>
-
-                <p class="card-text mb-2">
-                    <strong>Total Price:</strong> 
-                    $<span class="dynamic-price"><?= number_format($defaultPrice * $defaultDuration, 2) ?></span>
-                </p>
-
-                <a href="tour_details.php?id=<?= $tour["tour_id"] ?>" 
-                onclick="return customizeBooking(this)" 
-                class="btn btn-primary w-100">Book Now</a>
-   <!-- End of Dynamic Booking -->
-
-
-
-            </div>
-            </div>
+    <div class="col-12 mb-4">
+      <div class="tour-card">
+        <!-- 1) IMAGE COLUMN -->
+        <div class="tour-image">
+          <img src="../uploads/<?= htmlspecialchars($tour['image']) ?>"
+               alt="<?= htmlspecialchars($tour['title']) ?>">
         </div>
 
-    <?php endwhile; ?>
+        <!-- 2) INFO COLUMN -->
+        <div class="tour-info" style="position: relative;">
+          <h5 class="title"><?= htmlspecialchars($tour['title']) ?></h5>
+          <p class="meta"><strong>Destination:</strong> <?= htmlspecialchars($tour['destination']) ?></p>
+
+          <!-- Location Map Link -->
+          <?php
+            $coords = explode(",", $tour["location"]);
+            if (count($coords) == 2) {
+              $lat = trim($coords[0]);
+              $lng = trim($coords[1]);
+              $mapLink = "https://www.google.com/maps?q={$lat},{$lng}";
+            } else {
+              $mapLink = "javascript:void(0);";
+            }
+          ?>
+          <p class="meta">
+            <strong>Location:</strong>
+            <a href="<?= $mapLink ?>" target="_blank">View on Map</a>
+          </p>
+
+          <!-- Description -->
+          <?php
+            $fullDesc  = htmlspecialchars($tour['description']);
+            $shortDesc = substr($fullDesc, 0, 100);
+          ?>
+          <p class="description"
+             data-fulltext="<?= $fullDesc ?>"
+             data-shorttext="<?= $shortDesc ?>">
+            <?= $shortDesc ?>…
+          </p>
+          <a href="javascript:void(0)" class="see-more">Show More</a>
+
+          <!-- Total People Booked -->
+          <div style="position: absolute; right:10px; top:0;">
+            <?php
+            $tour_id = $tour["tour_id"];
+            $stmt = $conn->prepare("SELECT SUM(people) AS total_people FROM bookings WHERE tour_id = ?");
+            $stmt->bind_param("i", $tour_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($row = $result->fetch_assoc()) {
+                echo intval($row['total_people']);
+            } else {
+                echo "0";
+            }
+            $totalPeople = $row['total_people'] ?? 0; 
+            $starColor = ($totalPeople >= 100) ? 'gold' : 'black';
+            $stmt->close();
+            ?>
+            <i style="color: <?php echo $starColor; ?>;" class="fa-solid fa-star"></i>
+
+            people booked
+          </div>
+        </div>
+
+        <!-- 3) BOOKING COLUMN -->
+        <div class="tour-book">
+          <?php
+            $defaultDuration = (int)$tour["duration"];
+            $defaultPrice    = (float)$tour["price"];
+          ?>
+          <p class="price-label">Price from</p>
+          <p class="price-amount">$<?= number_format($defaultPrice, 2) ?></p>
+          <label>
+            Duration:
+            <input type="number"
+                   class="duration-input"
+                   min="1"
+                   value="<?= $defaultDuration ?>"
+                   data-default-price="<?= $defaultPrice ?>">
+          </label>
+          <label>
+            People:
+            <input type="number" class="people-input" min="1" value="1">
+          </label>
+          <p class="total-price">
+            Total: $<span class="dynamic-price">
+              <?= number_format($defaultPrice * $defaultDuration, 2) ?>
+            </span>
+          </p>
+          <a href="tour_details.php?id=<?= $tour["tour_id"] ?>"
+             onclick="return customizeBooking(this)"
+             class="btn btn-primary btn-book">
+            Book Now
+          </a>
+        </div>
+      </div>
+    </div>
+<?php endwhile; ?>
 </div>
+
+</div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- Start Of Des dynamic -->
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        document.querySelectorAll(".see-more").forEach(btn => {
-            btn.addEventListener("click", () => {
-                const desc = btn.previousElementSibling;
-                const fullText = desc.dataset.fulltext;
-                const shortText = desc.dataset.shorttext;
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".see-more").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const desc     = btn.previousElementSibling;
+      const fullText = desc.dataset.fulltext;
+      const shortText= desc.dataset.shorttext;
 
-                if (desc.textContent.trim().endsWith("...")) {
-                    desc.textContent = fullText;
-                    btn.textContent = "See Less";
-                } else {
-                    desc.textContent = shortText + "...";
-                    btn.textContent = "See More";
-                }
-            });
-        });
+      if (desc.textContent.trim().endsWith("…")) {
+        desc.textContent = fullText;
+        btn.textContent  = "Show Less";
+      } else {
+        desc.textContent = shortText + "…";
+        btn.textContent  = "Show More";
+      }
     });
+  });
+});
 </script>
+
 <!-- End Of Des dynamic -->
 
 <!-- Dynamic Price -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll(".card-body").forEach(card => {
-        const durationInput = card.querySelector(".duration-input");
-        const peopleInput = card.querySelector(".people-input");
-        const priceSpan = card.querySelector(".dynamic-price");
+  document.querySelectorAll(".tour-card").forEach(card => {
+    const durationInput = card.querySelector(".duration-input");
+    const peopleInput   = card.querySelector(".people-input");
+    const priceSpan     = card.querySelector(".dynamic-price");
 
-        const updatePrice = () => {
-            const defaultPrice = parseFloat(durationInput.dataset.defaultPrice);
-            const duration = parseInt(durationInput.value) || 1;
-            const people = parseInt(peopleInput.value) || 1;
-            const total = defaultPrice * duration * people;
-            priceSpan.textContent = total.toFixed(2);
-        };
+    function updatePrice() {
+      const defaultPrice = parseFloat(durationInput.dataset.defaultPrice) || 0;
+      const days         = parseInt(durationInput.value, 10) || 1;
+      const people       = parseInt(peopleInput.value,   10) || 1;
+      priceSpan.textContent = (defaultPrice * days * people).toFixed(2);
+    }
 
-        durationInput.addEventListener("input", updatePrice);
-        peopleInput.addEventListener("input", updatePrice);
-    });
+    // initialize
+    updatePrice();
+
+    durationInput.addEventListener("input", updatePrice);
+    peopleInput.addEventListener("input", updatePrice);
+  });
 });
 
 function customizeBooking(link) {
-    const card = link.closest(".card-body");
-    const duration = card.querySelector(".duration-input").value;
-    const people = card.querySelector(".people-input").value;
-    const defaultPrice = parseFloat(card.querySelector(".duration-input").dataset.defaultPrice);
-    const totalPrice = (duration * defaultPrice * people).toFixed(2);
+  const card          = link.closest(".tour-card");
+  const durationInput = card.querySelector(".duration-input");
+  const peopleInput   = card.querySelector(".people-input");
 
-    const url = new URL(link.href);
-    url.searchParams.set("duration", duration);
-    url.searchParams.set("people", people);
-    url.searchParams.set("price", totalPrice);
+  const defaultPrice = parseFloat(durationInput.dataset.defaultPrice) || 0;
+  const days         = parseInt(durationInput.value, 10) || 1;
+  const people       = parseInt(peopleInput.value,   10) || 1;
+  const total        = (defaultPrice * days * people).toFixed(2);
 
-    window.location.href = url.toString();
-    return false;
+  const url = new URL(link.href, window.location.origin);
+  url.searchParams.set("duration", days);
+  url.searchParams.set("people",   people);
+  url.searchParams.set("price",    total);
+
+  window.location.href = url;
+  return false;
 }
 </script>
 
