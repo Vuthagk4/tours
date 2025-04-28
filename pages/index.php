@@ -253,6 +253,13 @@ $tours = $conn->query("SELECT tours.*, destinations.name AS destination, destina
             People:
             <input type="number" class="people-input" min="1" value="1">
           </label>
+          <!-- calendar booking -->
+
+          <label for="calendar">Date:</label> 
+          <input type="text" id="calendar" name="booking_date" class="booking_date" placeholder="yyyy-mm-dd">
+
+
+            <!--  -->
           <p class="total-price">
             Total: $<span class="dynamic-price">
               <?= number_format($defaultPrice * $defaultDuration, 2) ?>
@@ -321,25 +328,57 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+// Fixing customizeBooking
 function customizeBooking(link) {
-  const card          = link.closest(".tour-card");
+  const card = link.closest(".tour-card");
   const durationInput = card.querySelector(".duration-input");
-  const peopleInput   = card.querySelector(".people-input");
+  const peopleInput = card.querySelector(".people-input");
+  const dateInput = card.querySelector(".booking_date");
 
-  const defaultPrice = parseFloat(durationInput.dataset.defaultPrice) || 0;
-  const days         = parseInt(durationInput.value, 10) || 1;
-  const people       = parseInt(peopleInput.value,   10) || 1;
-  const total        = (defaultPrice * days * people).toFixed(2);
+  const duration = parseInt(durationInput.value) || 1;
+  const people = parseInt(peopleInput.value) || 1;
+  const bookingDate = dateInput.value || '';
 
-  const url = new URL(link.href, window.location.origin);
-  url.searchParams.set("duration", days);
-  url.searchParams.set("people",   people);
-  url.searchParams.set("price",    total);
+  if (bookingDate.trim() === '') {
+    alert('Please select a booking date.');
+    return false; // prevent navigation
+  }
 
-  window.location.href = url;
-  return false;
+  const url = new URL(link.href);
+  url.searchParams.set('duration', duration);
+  url.searchParams.set('people', people);
+  url.searchParams.set('booking_date', bookingDate);
+
+  window.location.href = url.toString();
+  return false; // prevent default <a> behavior
 }
 </script>
+
+<script>
+document.getElementById("calendar").addEventListener("change", function() {
+  let inputDate = this.value.trim();
+  
+  let formattedDate = "";
+
+  if (/^\d{2}-\d{2}-\d{4}$/.test(inputDate)) {
+    // d-m-y
+    let [day, month, year] = inputDate.split("-");
+    formattedDate = `${year}-${month}-${day}`; // to standard yyyy-mm-dd
+  } else if (/^\d{4}-\d{2}-\d{2}$/.test(inputDate)) {
+    // y-m-d
+    let [year, month, day] = inputDate.split("-");
+    formattedDate = `${year}-${month}-${day}`;
+  } else {
+    alert("Please enter date in dd-mm-yyyy or yyyy-mm-dd format!");
+    this.value = "";
+    return;
+  }
+
+  console.log(formattedDate); // Now always in yyyy-mm-dd
+});
+
+</script>
+
 
 <!-- End Of Dynamic Price -->
 
