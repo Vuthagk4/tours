@@ -17,7 +17,7 @@ if (isset($_POST['action']) && isset($_POST['booking_id'])) {
 
     // Update the booking status in the database
     $stmt = $conn->prepare("UPDATE bookings SET status = ? WHERE booking_id = ?");
-    $stmt->bind_param('si', $status, $booking_id);
+    $stmt->bind_param('si', $status, $booking_id); 
     $stmt->execute();
     $stmt->close();
 }

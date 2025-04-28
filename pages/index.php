@@ -5,8 +5,28 @@ include "../includes/header.php";
 // Fetch all tours with their destinations
 $tours = $conn->query("SELECT tours.*, destinations.name AS destination, destinations.location FROM tours 
                         JOIN destinations ON tours.destination_id = destinations.destination_id");
-?>
 
+
+
+// Check if a search term is provided via GET
+$searchTerm = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+// Fetch tours based on search term or display all if no search
+if (!empty($searchTerm)) {
+    $searchTerm = '%' . $searchTerm . '%';
+    $stmt = $conn->prepare("SELECT tours.*, destinations.name AS destination, destinations.location 
+                            FROM tours 
+                            JOIN destinations ON tours.destination_id = destinations.destination_id 
+                            WHERE tours.title LIKE ? OR destinations.name LIKE ?");
+    $stmt->bind_param("ss", $searchTerm, $searchTerm);
+    $stmt->execute();
+    $tours = $stmt->get_result();
+} else {
+    $tours = $conn->query("SELECT tours.*, destinations.name AS destination, destinations.location 
+                           FROM tours 
+                           JOIN destinations ON tours.destination_id = destinations.destination_id");
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -166,41 +186,67 @@ $tours = $conn->query("SELECT tours.*, destinations.name AS destination, destina
 
 <div class="container mt-5">
     <h2 class="text-center mb-4">Available Tours</h2>
+    <!-- Add Sorting Dropdown -->
+     <div class="d-flex">
+     Order By Popular :
+    <select id="sortSelect" onchange="sortCards()" class="form-select mb-4" style="max-width:200px;">
+      <option value="default">Default</option>
+      <option value="popular">Filter by Popular</option>
+    </select>
+     </div>
+
+    <form method="get" action="" class="mb-4">
+        <div class="input-group">
+            <input style="max-width:300px;" type="text" name="search" class="form-control" placeholder="Search by title or destination" 
+                   value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+        <?php if (!empty($searchTerm)): ?>
+            <a href="?" class="btn btn-link mt-2">Clear Search</a>
+        <?php endif; ?>
+    </form>
+
+
     <div class="row">
-    <?php while ($tour = $tours->fetch_assoc()): ?>
-    <div class="col-12 mb-4">
+    <?php
+    $index = 0; // Initialize index to track original order
+    while ($tour = $tours->fetch_assoc()): ?>
+    <!-- Add data-original-index to track original order -->
+    <div class="col-12 mb-4" data-original-index="<?= $index ?>">
       <div class="tour-card">
         <!-- 1) IMAGE COLUMN -->
         <div class="tour-image">
-          <img src="../uploads/<?= htmlspecialchars($tour['image']) ?>"
-               alt="<?= htmlspecialchars($tour['title']) ?>">
+          <img src="../uploads/<?= htmlspecialchars($tour["image"]) ?>"
+               alt="<?= htmlspecialchars($tour["title"]) ?>">
         </div>
 
         <!-- 2) INFO COLUMN -->
         <div class="tour-info" style="position: relative;">
-          <h5 class="title"><?= htmlspecialchars($tour['title']) ?></h5>
-          <p class="meta"><strong>Destination:</strong> <?= htmlspecialchars($tour['destination']) ?></p>
+          <h5 class="title"><?= htmlspecialchars($tour["title"]) ?></h5>
+          <p class="meta"><strong>Destination:</strong> <?= htmlspecialchars(
+              $tour["destination"]
+          ) ?></p>
 
-          <!-- Location Map Link -->
+          <!-- Location Map Link (unchanged) -->
           <?php
-            $coords = explode(",", $tour["location"]);
-            if (count($coords) == 2) {
+          $coords = explode(",", $tour["location"]);
+          if (count($coords) == 2) {
               $lat = trim($coords[0]);
               $lng = trim($coords[1]);
               $mapLink = "https://www.google.com/maps?q={$lat},{$lng}";
-            } else {
+          } else {
               $mapLink = "javascript:void(0);";
-            }
+          }
           ?>
           <p class="meta">
             <strong>Location:</strong>
             <a href="<?= $mapLink ?>" target="_blank">View on Map</a>
           </p>
 
-          <!-- Description -->
+          <!-- Description (unchanged) -->
           <?php
-            $fullDesc  = htmlspecialchars($tour['description']);
-            $shortDesc = substr($fullDesc, 0, 100);
+          $fullDesc = htmlspecialchars($tour["description"]);
+          $shortDesc = substr($fullDesc, 0, 100);
           ?>
           <p class="description"
              data-fulltext="<?= $fullDesc ?>"
@@ -209,35 +255,40 @@ $tours = $conn->query("SELECT tours.*, destinations.name AS destination, destina
           </p>
           <a href="javascript:void(0)" class="see-more">Show More</a>
 
-          <!-- Total People Booked -->
+          <!-- Total People Booked with span for sorting -->
           <div style="position: absolute; right:10px; top:0;">
             <?php
             $tour_id = $tour["tour_id"];
-            $stmt = $conn->prepare("SELECT SUM(people) AS total_people FROM bookings WHERE tour_id = ?");
+            $stmt = $conn->prepare(
+                "SELECT SUM(people) AS total_people FROM bookings WHERE tour_id = ?"
+            );
             $stmt->bind_param("i", $tour_id);
             $stmt->execute();
             $result = $stmt->get_result();
-
+            $totalPeople = 0;
             if ($row = $result->fetch_assoc()) {
-                echo intval($row['total_people']);
-            } else {
-                echo "0";
+                $totalPeople = intval($row["total_people"]);
             }
-            $totalPeople = $row['total_people'] ?? 0; 
-            $starColor = ($totalPeople >= 100) ? 'gold' : 'black';
             $stmt->close();
+            $starColor = $totalPeople >= 100 ? "gold" : "black";
             ?>
-            <i style="color: <?php echo $starColor; ?>;" class="fa-solid fa-star"></i>
-
+            <!-- Wrap the number in a span with class booked-count -->
+          <?php
+                    $stars = min(floor($totalPeople / 100), 5);
+            ?>
+            <span class="booked-count"><?= $totalPeople ?></span>
+            <?php for ($i = 0; $i < $stars; $i++): ?>
+                <i style="color: <?= $starColor ?>;" class="fa-solid fa-star"></i>
+            <?php endfor; ?>
             people booked
           </div>
         </div>
 
-        <!-- 3) BOOKING COLUMN -->
+        <!-- 3) BOOKING COLUMN (unchanged) -->
         <div class="tour-book">
           <?php
-            $defaultDuration = (int)$tour["duration"];
-            $defaultPrice    = (float)$tour["price"];
+          $defaultDuration = (int) $tour["duration"];
+          $defaultPrice = (float) $tour["price"];
           ?>
           <p class="price-label">Price from</p>
           <p class="price-amount">$<?= number_format($defaultPrice, 2) ?></p>
@@ -253,13 +304,8 @@ $tours = $conn->query("SELECT tours.*, destinations.name AS destination, destina
             People:
             <input type="number" class="people-input" min="1" value="1">
           </label>
-          <!-- calendar booking -->
-
           <label for="calendar">Date:</label> 
           <input type="text" id="calendar" name="booking_date" class="booking_date" placeholder="yyyy-mm-dd">
-
-
-            <!--  -->
           <p class="total-price">
             Total: $<span class="dynamic-price">
               <?= number_format($defaultPrice * $defaultDuration, 2) ?>
@@ -273,9 +319,9 @@ $tours = $conn->query("SELECT tours.*, destinations.name AS destination, destina
         </div>
       </div>
     </div>
-<?php endwhile; ?>
-</div>
-
+    <?php $index++;endwhile; // Increment index for the next tour card
+    ?>
+    </div>
 </div>
 
 </div>
@@ -374,14 +420,40 @@ document.getElementById("calendar").addEventListener("change", function() {
     return;
   }
 
-  console.log(formattedDate); // Now always in yyyy-mm-dd
+  console.log(formattedDate);
 });
 
 </script>
 
 
 <!-- End Of Dynamic Price -->
+<script>
+function sortCards() {
+  const container = document.querySelector(".row"); // The div that holds all tour cards
+  const cards = Array.from(container.querySelectorAll(".col-12")); // All tour cards
+  const sortOption = document.getElementById("sortSelect").value;
 
+  if (sortOption === "popular") {
+    // Sort by popularity (highest number of people booked first)
+    cards.sort((a, b) => {
+      const aBooked = parseInt(a.querySelector(".booked-count").textContent) || 0;
+      const bBooked = parseInt(b.querySelector(".booked-count").textContent) || 0;
+      return bBooked - aBooked; // Descending order
+    });
+  } else if (sortOption === "default") {
+    // Sort by original order
+    cards.sort((a, b) => {
+      const aIndex = parseInt(a.dataset.originalIndex);
+      const bIndex = parseInt(b.dataset.originalIndex);
+      return aIndex - bIndex; // Ascending order
+    });
+  }
+
+  // Re-append cards in the sorted order
+  container.innerHTML = "";
+  cards.forEach(card => container.appendChild(card));
+}
+</script>
 </body>
 </html>
 <?php include "../admin/footer.php";
