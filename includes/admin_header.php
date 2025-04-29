@@ -128,6 +128,39 @@ include 'config.php';
             object-fit: cover;
             border-radius: 50%;
         }
+        /* Admin nameIsshow */
+        .admin-info {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: absolute;
+    right: 20px;
+    top: 35px;
+    background: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    color: black;
+    font-weight: 500;
+}
+
+.admin-info form {
+    margin: 0;
+}
+
+.admin-info button {
+    background-color: #dc3545; 
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.admin-info button:hover {
+    background-color: #c82333;
+}
+
     </style>
 </head>
 <body>
@@ -150,14 +183,25 @@ include 'config.php';
 <div class="main-content">
       <!-- User Session -->
         <?php 
-    if (isset($_SESSION['user_id']) && isset($_SESSION['role'])) {
+if (isset($_SESSION['admin_id'])) {
+    $adminId = $_SESSION['admin_id'];
+    $query = mysqli_query($conn, "SELECT * FROM admins WHERE admin_id = $adminId");
+    $admin = mysqli_fetch_assoc($query);
+
+
+
+    if ($admin) {
         echo '
-        <form action="../pages/logout.php" method="POST">
-            <span class="admin-name">' . htmlspecialchars($_SESSION['name']) . ' (' . htmlspecialchars($_SESSION['role']) . ')</span><br><br>
-            <button type="submit" class="btn btn-danger">Logout <i class="fa-solid fa-arrow-up-right-from-square"></i></button>
-        </form>';
-    } else {
-        echo '<a href="login.php" style="color: white;">Login</a>';
+        <div class="admin-info d-flex">
+            <span>' . htmlspecialchars($admin['name']) .'</span>
+            <form action="admin_logout.php" method="POST">
+                <button type="submit" class="btn btn-danger">Logout <i class="fa-solid fa-right-from-bracket"></i></button>
+            </form>
+        </div>';
+    }
+}
+ else {
+        echo '<a href="admin_login.php" style="color: white;">Login</a>';
     }
 
         ?>

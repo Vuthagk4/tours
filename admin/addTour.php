@@ -4,10 +4,12 @@ include "../includes/config.php";
 include "../includes/admin_header.php";
 // session_start();
 // Check if the admin is logged in
-if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "admin") {
-    header("Location: ../login.php");
-    exit();
-}
+
+//Consider Update
+// if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "admin") {
+//     header("Location: ../login.php");
+//     exit();
+// }
 
 // Fetch all destinations for dropdown
 $destinations = $conn->query("SELECT * FROM destinations");
@@ -18,7 +20,43 @@ if (isset($_GET["delete"])) {
     $stmt = $conn->prepare("DELETE FROM tours WHERE tour_id = ?");
     $stmt->bind_param("i", $tour_id);
     if ($stmt->execute()) {
-        echo "<script>alert('Tour deleted successfully!'); window.location.href='dashboard.php';</script>";
+        echo "<script>alert('Tour deleted successfully!'); window.location.href='addTour.php';</script>";
+    }
+}
+// Handle Tour Insertion
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["add_tour"])) {
+    $destination_id = intval($_POST["destination_id"]);
+    $title = htmlspecialchars(trim($_POST["title"]));
+    $description = htmlspecialchars(trim($_POST["description"]));
+    $price = floatval($_POST["price"]);
+    $duration = htmlspecialchars(trim($_POST["duration"]));
+
+    // Handle image upload
+    if (!empty($_FILES["image"]["name"])) {
+        $image = $_FILES["image"]["name"];
+        $image_tmp = $_FILES["image"]["tmp_name"];
+        $image_ext = strtolower(pathinfo($image, PATHINFO_EXTENSION));
+        $allowed_extensions = ["jpg", "jpeg", "png", "gif"];
+
+        if (!in_array($image_ext, $allowed_extensions)) {
+            echo "<script>alert('Invalid file type! Only JPG, JPEG, PNG, and GIF are allowed.');</script>";
+        } else {
+            $new_image_name = uniqid("tour_", true) . "." . $image_ext;
+            $upload_path = "../uploads/" . $new_image_name;
+            move_uploaded_file($image_tmp, $upload_path);
+
+            // Insert into database
+            $stmt = $conn->prepare("INSERT INTO tours (destination_id, title, description, price, duration, image) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("issdss", $destination_id, $title, $description, $price, $duration, $new_image_name);
+
+            if ($stmt->execute()) {
+                echo "<script>alert('Tour added successfully!'); window.location.href='addTour.php';</script>";
+            } else {
+                echo "<script>alert('Error adding tour!');</script>";
+            }
+        }
+    } else {
+        echo "<script>alert('Please upload an image.');</script>";
     }
 }
 
@@ -111,7 +149,7 @@ body {
 .dashboard {
     position: relative;
     /* background-color: red; */
-    min-height: 100vh; /* Ensures full height */
+    min-height: 100vh; 
     /* padding: 20px; */
 }
 
@@ -182,19 +220,14 @@ body {
             <td><img src="../uploads/<?= $tour["image"] ?>" width="50"></td>
             <td>
             <a href="#" class="btn btn-success btn-sm edit-btn" 
-    data-id="<?= $tour["tour_id"] ?>" 
-    data-title="<?= $tour["title"] ?>" 
-    data-description="<?= $tour["description"] ?>"
-    data-price="<?= $tour["price"] ?>"
-    data-duration="<?= $tour["duration"] ?>"
-    data-image="<?= $tour["image"] ?>"
-    data-bs-toggle="modal" data-bs-target="#editModal">Edit</a>
-
-
-
-                <a href="?delete=<?= $tour[
-                    "tour_id"
-                ] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
+                data-id="<?= $tour["tour_id"] ?>" 
+                data-title="<?= $tour["title"] ?>" 
+                data-description="<?= $tour["description"] ?>"
+                data-price="<?= $tour["price"] ?>"
+                data-duration="<?= $tour["duration"] ?>"
+                data-image="<?= $tour["image"] ?>"
+                data-bs-toggle="modal" data-bs-target="#editModal">Edit</a>
+            <a href="?delete=<?= $tour["tour_id"] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
             </td>
         </tr>
         <?php endwhile; ?>
@@ -247,10 +280,12 @@ body {
 
                     <div class="mb-3">
                         <label for="tourImage" class="form-label">Image</label>
-                        <input type="file" class="form-control" id="tourImage" name="image" accept="image/*" required>
+                        <input type="file" class="form-control" id="tourImage" name="image"  accept="image/*" required>
                     </div>
 
-                    <button type="submit" class="btn btn-success w-100">Save Tour</button>
+                    <button type="submit" class="btn btn-success w-100" name="add_tour">Save Tour</button>
+                    <!-- <button type="submit" name="add_tour" class="btn btn-success w-100">Save Tour</button> -->
+
                 </form>
             </div>
         </div>
@@ -258,7 +293,6 @@ body {
 </div>
 
 <!-- Update Tour -->
- <!-- Edit Tour Modal -->
 <!-- Edit Tour Modal -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">

@@ -1,49 +1,57 @@
+
 <?php
-session_start();
 include "../includes/config.php";
 
-$loginSuccess = false;
-$adminName = "";
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  $name = trim($_POST["name"]);
   $email = trim($_POST["email"]);
-  $password = $_POST["password"];
+  $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
-  $stmt = $conn->prepare("SELECT admin_id, name, password FROM admins WHERE email = ?");
+
+  // **Check if Email Already Exists**
+  $stmt = $conn->prepare("SELECT email FROM admins WHERE email = ?");
   $stmt->bind_param("s", $email);
   $stmt->execute();
   $stmt->store_result();
 
   if ($stmt->num_rows > 0) {
-    $stmt->bind_result($admin_id, $name, $hashed_password);
-    $stmt->fetch();
+      echo "<script>alert('Email already registered!'); window.location.href='register.php';</script>";
+      exit();
+  }
+  $stmt->close();
 
-    if (password_verify($password, $hashed_password)) {
-      session_regenerate_id(); // for security
-      $_SESSION["admin_id"] = $admin_id;
-      $_SESSION["admin_name"] = $name;
+  // **Insert New User**
+  $created_at = date("Y-m-d H:i:s");
+  $stmt = $conn->prepare("INSERT INTO admins (name, email, password, created_at) VALUES (?, ?, ?, ?)");
+  $stmt->bind_param("ssss", $name, $email, $password, $created_at);
+  
 
-      $loginSuccess = true;
-      $adminName = $name;
-    } else {
-      echo "<script>setTimeout(() => swal('Error', 'Invalid password!', 'error'), 100);</script>";
-    }
+  if ($stmt->execute()) {
+      echo "<script>alert('Registration successful!'); window.location.href='admin_login.php';</script>";
+      exit();
   } else {
-    echo "<script>setTimeout(() => swal('Error', 'No admin found with that email!', 'error'), 100);</script>";
+      echo "<script>alert('Error during registration!'); window.location.href='admin_register.php';</script>";
+      exit();
   }
 
   $stmt->close();
 }
+
+
+
+
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Login</title>
+  <title>Admin Registration</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js" integrity="sha512-AA1Bzp5Q0K1KanKKmvN/4d3IRKVlv9PYgwFPvm32nPO6QS8yH1HO7LbgB1pgiOxPtfeg5zEn2ba64MUcqJx6CA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <style>
     body {
       background: #f3f4f6;
@@ -54,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       font-family: 'Segoe UI', sans-serif;
     }
 
-    .login-container {
+    .register-container {
       background: #fff;
       border-radius: 16px;
       padding: 40px 30px;
@@ -64,7 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       text-align: center;
     }
 
-    .login-container h2 {
+    .register-container h2 {
       font-size: 24px;
       font-weight: 600;
       margin-bottom: 6px;
@@ -102,7 +110,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       color: #aaa;
     }
 
-    .btn-login {
+    .btn-register {
       width: 100%;
       padding: 12px;
       border: none;
@@ -115,17 +123,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       transition: background 0.3s;
     }
 
-    .btn-login:hover {
+    .btn-register:hover {
       background: linear-gradient(to right, #6a48c7, #8a4cec);
     }
   </style>
 </head>
 <body>
-  <div class="login-container">
-    <h2>Admin Login</h2>
-    <p>Welcome back! Please login.</p>
+  <div class="register-container">
+    <h2>Admin Registration</h2>
+    <p>Create your admin account</p>
 
-    <form action="admin_login.php" method="POST">
+    <form action="admin_register.php" method="POST">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" name="name" placeholder="Enter your name" required />
+      </div>
+
       <div class="form-group">
         <label>Email address</label>
         <input type="email" name="email" placeholder="Enter your email" required />
@@ -137,7 +150,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <i class="fa-solid fa-eye toggle-password" onclick="togglePassword()"></i>
       </div>
 
-      <button class="btn-login" type="submit">Login</button>
+      <button class="btn-register" type="submit">Register</button>
     </form>
   </div>
 
@@ -154,14 +167,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       }
     }
   </script>
-
-  <?php if ($loginSuccess): ?>
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      swal("Login Successful!", "Welcome back, <?= $adminName ?>!", "success")
-      .then(() => window.location.href = "index.php");
-    });
-  </script>
-  <?php endif; ?>
 </body>
 </html>
+
+<?php if (isset($swal)) echo $swal; ?>

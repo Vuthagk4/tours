@@ -25,7 +25,7 @@ $result = $conn->query($query);
 </head>
 <body>
 
-<div class="container mt-5">
+<div class="container mt-5 w-75" style="position:absolute; right:0px">
     <h2 class="text-center mb-4">Booking Dashboard</h2>
 
     <!-- Search and Filter -->
