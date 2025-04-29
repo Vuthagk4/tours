@@ -56,10 +56,10 @@
         <li><a href="../html/index1.html" class="active">Home</a></li>
         <li id="about"><a href="../html/about.html" target="_blank">About</a></li>
         <li id="tp"><a href="../html/tour-pack.html" target="_blank">Tour Package</a></li>
-        <li id="pp"><a href="">Privacy Policy</a></li>
-        <li id="tou"><a href="">Team of Use</a></li>
-        <li id="cu"><a href="">Contact Us</a></li>
-        <li id="en"><a href="">Enquiry</a></li>
+        <li id="pp"><a href="../html/privacy-policy.html" target="_blank">Privacy Policy</a></li>
+        <!-- <li id="tou"><a href="">Team of Use</a></li> -->
+        <li id="cu"><a href="../html/contact.html" target="_blank">Contact Us</a></li>
+        <li id="en"><a href="../html/enquiry.html" target="_blank">Enquiry</a></li>
       </ul>
     </div>
   </div>
@@ -115,6 +115,7 @@
     <!-- end  class book now -->
     <!-- start class packages list -->
     <h2>Package List</h2>
+    <!-- list1 -->
     <div class="packages">
       <div class="package-box-img">
         <img src="../images/bali.webp" alt="">
@@ -126,13 +127,14 @@
         <p><span style="color: rgb(98, 95, 95); font-weight: bolder;">Features </span>Free Pickup and drop facility.
           Wi-fi, Free Profesional Guide</p>
       </div>
+      <div class="ok">
       <div class="price">
         <p>USD 5000</p>
       </div>
-      <div class="detail">
-        <a href="">Details</a>
-      </div>
+      <button class="details-btn" onclick="openModal('Bali')">Details</button>
     </div>
+    </div>
+    <!-- list 2 -->
     <div class="packages">
       <div class="package-box-img">
         <img src="../images/sikki.webp" alt="">
@@ -144,13 +146,14 @@
         <p><span style="color: rgb(98, 95, 95); font-weight: bolder;">Features </span>Breakfast Accommmodation >>
           Pick0-up >> Drop >> Sighseeing</p>
       </div>
-      <div class="price">
-        <p>USD 4500</p>
-      </div>
-      <div class="detail">
-        <a href="">Details</a>
+      <div class="ok">
+        <div class="price">
+          <p>USD 4500</p>
+        </div>
+        <button class="details-btn" onclick="openModal('Guwahati')">Details</button>
       </div>
     </div>
+    <!-- list 3 -->
     <div class="packages">
       <div class="package-box-img">
         <img src="../images/dubai.jpg" alt="">
@@ -158,17 +161,18 @@
       <div class="package-box-info">
         <h3>Package Name : Short Trip Dubai</h3>
         <h4>PackagebType : Family</h4>
-        <p><span style="color: rgb(98, 95, 95); font-weight: bolder;">Package Location</span> : Indonesia(Ball)</p>
+        <p><span style="color: rgb(98, 95, 95); font-weight: bolder;">Package Location</span> : Dubai</p>
         <p><span style="color: rgb(98, 95, 95); font-weight: bolder;">Features </span>Free Pickup and drop facility.
           Wi-fi, Free Breakfast</p>
       </div>
-      <div class="price">
-        <p>USD 7000</p>
-      </div>
-      <div class="detail">
-        <a href="">Details</a>
+      <div class="ok">
+        <div class="price">
+          <p>USD 7000</p>
+        </div>
+        <button class="details-btn" onclick="openModal('Dubai')">Details</button>
       </div>
     </div>
+    <!-- list 4 -->
     <div class="packages">
       <div class="package-box-img">
         <img src="../images/bhutan.jpg" alt="">
@@ -180,19 +184,49 @@
         <p><span style="color: rgb(98, 95, 95); font-weight: bolder;">Features </span>Free Wi-fi, Free Breakfast, Free
           Pickup and Drop facility</p>
       </div>
-      <div class="price">
-        <p>USD 2500</p>
-      </div>
-      <div class="detail">
-        <a href="">Details</a>
+      <div class="ok">
+        <div class="price">
+          <p>USD 2500</p>
+        </div>
+        <button class="details-btn" onclick="openModal('Bhutan')">Details</button>
       </div>
     </div>
     <!-- end class packages list -->
-    <!-- end class views-more -->
+    <!-- start class views-more -->
     <div class="views-more four animate fadeLeft">
       <p><a href="">Views More.....</a></p>
     </div>
     <!-- end class views-more -->
+     	<!-- Modal Popup -->
+	<div id="modal" class="modal">
+		<div class="modal-content">
+			<span class="close" onclick="closeModal()">&times;</span>
+			<div class="sub-model">
+				<img id="modalImage" class="modal-img" src="" alt="">
+				<div class="sss">
+          
+					<h2 id="modalTitle"></h2>
+   
+					<p id="modalType"></p>
+					<p id="modalLocation"></p>
+					<p id="modalFeatures"></p>
+
+					<div class="date-section">
+						<label>From: <input type="date" id="fromDate"></label>
+						<label>To: <input type="date" id="toDate"></label>
+					</div>
+				</div>
+			</div>
+			<h3 id="modalPrice" class="price-list"></h3>
+
+			<div class="package-details">
+				<h3>Package Details</h3>
+				<p id="modalDescription"></p>
+			</div>
+			<button class="book-btn-list">Book Now</button>
+		</div>
+	</div>
+  <!-- end class modal pop -->
     <!-- start class awesome-package -->
     <h2 style="color: #49B11E; text-align: center;">Awesome Package</h2>
     <div class="awesome-package">
@@ -347,7 +381,7 @@
           </div>
         </div>
         <p>This archipelago of tiny islands, once a resting spot for traders across Southeast Asia, is now part of
-          Malaysia’s marine park and a popular tourist attraction.</p>
+          Malaysia’s marine par....</p>
         <div class="sub-bottom">
           <button><a href="https://www.educba.com/tourist-places-in-malaysia/" target="_blank">Read More</a></button>
           <button><a href="#book">Book Now</a></button>
@@ -377,7 +411,7 @@
             <i class="fa-solid fa-star"></i>
           </div>
         </div>
-        <p>In just eight days, seize the opportunity to experience a glimpse of China by exploring its three most iconic
+        <p>In just eight days, seize the opportunity to experience a glimpse of China by
           cities.Each city reveals a unique aspect.......</p>
         <div class="sub-bottom">
           <button><a href="https://www.chinalocaltours.com/tour/a-snapshot-of-china-8-days/" target="_blank">Read
@@ -442,7 +476,7 @@
             <i class="fa-solid fa-star"></i>
           </div>
         </div>
-        <p>This archipelago of tiny islands, once a resting spot for traders across Southeast Asia, is now part of
+        <p>This archipelago of tiny islands, once a resting spot for traders across Southeast
           Malaysia’s marine park and a popular tourist attraction.</p>
         <div class="sub-bottom">
           <button><a href="https://www.educba.com/tourist-places-in-malaysia/" target="_blank">Read More</a></button>
@@ -451,11 +485,277 @@
       </div>
     </div>
     <!-- end class awesome-package -->
+    <!-- start class instargram tour  -->
+    <section class="instargram-tour">
+      <div class="left">
+        <h1>The Best <span class="highlight">Instagrammable</span><br>Places and Guided Tours.</h1>
+        <em>- about us</em>
+
+        <p>There are thousands of stunning places in the world, and you can visit all of them! Many of them have already
+          turned into real places of pilgrimage for fans of striking Instagram photos. Don't miss your chance to visit a
+          cool place and have amazing photos on your Instagram!</p>
+
+        <p>Our company offers tours to the most picturesque places on our planet. Visit the coolest countries, take
+          hundreds or even thousands of photos for your Instagram! We will be happy to help you with this.</p>
+
+        <div class="feature">
+          <div class="feature-icon">
+            <img src="../images/icons8-travel-diary-50.png" alt="">
+          </div>
+          <div class="feature-text">
+            <h3>50+ tours</h3>
+            <p>Our company regularly organizes tours. You can see landmarks all over the world. Just choose the
+              countries you like the most.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">
+            <img src="../images/icons8-engineer-80.png" alt="">
+          </div>
+          <div class="feature-text">
+            <h3>Experienced guides</h3>
+            <p>The specialists of our company will organize an unforgettable trip and tell you a lot of interesting
+              things!</p>
+          </div>
+        </div>
+      </div>
+      <div class="right">
+        <img src="../images/instargram.webp" alt="Happy Tourists">
+      </div>
+    </section>
+    <!-- end class instargram tour  -->
+    <!-- sections gudie -->
+    <section class="travel-section">
+      <div class="travel-content">
+        <div class="left-column">
+          <h1>We Will Organize Your <br> Best Travel, Trust Us.</h1>
+          <p class="steps">- steps to book</p>
+          <p class="description">
+            By contacting our company, you will get the most out of your trip. Our company has vast experience in
+            organizing group trips. We provide a full package of services for tourists, the list includes:
+          </p>
+          <ul class="services-list">
+            <li><span>✔</span>
+              <p>Professional photographers;</p>
+            </li>
+            <li><span>✔</span>
+              <p>Transfers;</p>
+            </li>
+            <li><span>✔</span>
+              <p>Staying in beautiful 4* hotels.</p>
+            </li>
+            <li><span>✔</span>
+              <p>Intersting excursions.</p>
+            </li>
+          </ul>
+          <p class="description">
+            You can familiarize yourself with the detailed program of each tour by contacting us. We will send you all
+            the details.
+          </p>
+        </div>
+
+        <div class="right-column">
+          <div class="step">
+            <h2>1. Contact us</h2>
+            <p>To do this, you can fill out a form on our website or contact us directly by e-mail or phone.</p>
+          </div>
+          <div class="step">
+            <h2>2. Select a tour</h2>
+            <p>Yes, we know, the selection of our instagrammable tours make you dizzy. Our managers will be happy to
+              assist you in your decision. Just tell them what you expect from the tour!</p>
+          </div>
+          <div class="step">
+            <h2>3. Enjoy your journey</h2>
+            <p>We will do our best to make your tour as interesting, bright and eventful as possible! We will show you
+              the most beautiful places, you will meet nice people and boost your Instagram, of course!</p>
+            <p>Remember that each tour is accompanied by professional photographers, so you don't need to worry about
+              the content!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- end section guide -->
+    <!-- section adventure -->
+    <section class="adventure-section">
+      <div class="sub-adventure-section">
+        <div class="adventure-header">
+          <div class="header-left">
+            <h1>Adventures You'll <br> Definitely Love<span class="dot">.</span></h1>
+            <p class="subtitle">- why we are so popular</p>
+          </div>
+          <div class="header-right">
+            <p>Travel is our life and our passion. We do what we love - we give pleasant emotions to our clients. Our
+              experts know exactly how to organize a trip so that it will bring maximum pleasure. Want to see those
+              places you've seen on Instagram with your own eyes and get more followers? Travel with us! We promise you
+              won't be disappointed.</p>
+          </div>
+        </div>
+
+        <div class="features">
+          <div class="feature-item">
+            <img src="../images/icons8-travel-diary-50.png" alt="Beautiful Places">
+            <h3>The most beautiful places</h3>
+            <p>You will visit the most popular places on our planet. Enjoy stunning landscapes, touch the history and
+              make brilliant photos!</p>
+          </div>
+          <div class="feature-item">
+            <img src="../images/icons8-professional-photographer-50.png" alt="Professional Photographers">
+            <h3>Professional photographers</h3>
+            <p>During the trip, you will be accompanied by our professional photographers who will take the best photos
+              of you.</p>
+          </div>
+          <div class="feature-item">
+            <img src="../images/icons8-trophy-64.png" alt="Full Support">
+            <h3>Full support</h3>
+            <p>By ordering a tour in our company, you can choose the best outfits for photos because nothing else is
+              required from you! We will fully organize your trip.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- end section adventure -->
+    <!-- section feedback  -->
+    <section class="feedback-section">
+      <div class="sub-feedback-section">
+        <div class="sub-feedback-content-header">
+          <div class="sub-feedback-content-header-left">
+            <h1>Impressions About <br> Our Trips.</h1>
+            <p>- what client say</p>
+          </div>
+          <div class="sub-feedback-content-header-right">
+            <p>We do our best to provide you with maximum comfort. Each client is dear to us, and we try to organize
+              each trip so that it is as interesting, bright, and rich as possible. We give the possibility to see the
+              wonders of the Earth just the way you've seen them on Instagram. Check out our reviews! People who have
+              already traveled with us will tell about us!</p>
+          </div>
+        </div>
+        <div class="sub-feedback-content-buttom">
+          <div class="sub-feedback-content-buttom-grid">
+            <div class="sub-feedback-content-buttom-grid1">
+              <div class="sub-feedback-contents">
+                <img src="../images/pin1-copy.jpg" alt="" class="images">
+                <h1>Dave Peterson</h1>
+                <p>October 28,2018</p>
+                <p>“I love to travel to beautiful places around the world. I've gone on tours with this company three
+                  times already! Everything was amazing! During the entire trip, I have never had any problems, and
+                  their photographers are really professionals.”</p>
+                <div class="socail">
+                  <div class="sub-social"><i class="fa-brands fa-facebook"></i></div>
+                  <div class="sub-social"><i class="fa-brands fa-square-instagram"></i></div>
+                  <div class="sub-social"><i class="fa-brands fa-youtube"></i></div>
+                </div>
+              </div>
+            </div>
+            <div class="sub-feedback-content-buttom-grid1">
+              <div class="sub-feedback-contents">
+                <img src="../images/pin2.jpg" alt="" class="images">
+                <h1>Amanda Olson</h1>
+                <p>December 20,2020</p>
+                <p>“Let's be honest. When traveling, we always try to take beautiful photos for our Instagram and it
+                  doesn't always work out well. But with this agency, you don't have to think about it! You just enjoy
+                  the trip and pose, and then get your stunning photos!”</p>
+                <div class="socail">
+                  <div class="sub-social"><i class="fa-brands fa-facebook"></i></div>
+                  <div class="sub-social"><i class="fa-brands fa-square-instagram"></i></div>
+                  <div class="sub-social"><i class="fa-brands fa-youtube"></i></div>
+                </div>
+              </div>
+            </div>
+            <div class="sub-feedback-content-buttom-grid1">
+              <div class="sub-feedback-contents">
+                <img src="../images/pin3.jpg" alt="" class="images">
+                <h1>Erica Jameson</h1>
+                <p>May 08, 2020</p>
+                <p>“My Instagram is everything for me! I love to post vivid photos and delight my followers! With this
+                  company, it has become much easier. These guys organize great tours to really cool places that look
+                  stunning in real life, too, not just on Instagram.”</p>
+                <div class="socail">
+                  <div class="sub-social"><i class="fa-brands fa-facebook"></i></div>
+                  <div class="sub-social"><i class="fa-brands fa-square-instagram"></i></div>
+                  <div class="sub-social"><i class="fa-brands fa-youtube"></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- end section feedback -->
+    <!-- section faq -->
+    <section class="faq-section">
+      <div class="sub-faq-section-left">
+        <h1>Everthing You Wanted to <br> Know About Our Tours.</h1>
+        <p>-FAQ</p>
+        <p>We are always ready to advise you and answer any question. Here are some answers to the most common
+          questions. Find out everything that interests you right now or contact us in any convenient way!</p>
+        <div class="faq-item">
+          <div class="faq-question">
+            <h3>Can I pay extra for a luxury hotel?</h3>
+            <div class="faq-arrow"></div>
+          </div>
+          <div class="faq-answer">
+            <p>Of course, we offer you several hotel options that you can choose from.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <h3>Can I get printed photos?</h3>
+            <div class="faq-arrow"></div>
+          </div>
+          <div class="faq-answer">
+            <p>Yes. We can send you printed photos by mail.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <h3>What excursions are included in the tour?</h3>
+            <div class="faq-arrow"></div>
+          </div>
+          <div class="faq-answer">
+            <p>It all depends on the tour you have chosen. As a rule, each tour includes a sightseeing tour of each city
+              plus 2-3 excursions to choose from.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <h3>Can I continue the trip on my own after the tour ends?</h3>
+            <div class="faq-arrow"></div>
+          </div>
+          <div class="faq-answer">
+            <p>It all depends on the country and visa requirements.</p>
+          </div>
+        </div>
+        <div class="faq-item"></div>
+      </div>
+      <div class="sub-faq-section-right">
+        <img src="../images/fqa.webp" alt="">
+      </div>
+    </section>
+    <!-- end section faq -->
+    <!-- section photo -->
+    <!-- <div class="slider-container">
+      <div class="slider" id="slider">
+        <div class="slide"><img src="../images/p1.webp" alt=""></div>
+        <div class="slide"><img src="../images/p2.webp" alt=""></div>
+        <div class="slide"><img src="../images/p3.webp" alt=""></div>
+        <div class="slide"><img src="../images/p4.webp" alt=""></div>
+        <div class="slide"><img src="../images/p5.webp" alt=""></div>
+      </div>
+
+      <div class="slider-nav">
+        <button class="slider-button prev"></button>
+        <button class="slider-button next"></button>
+      </div>
+    </div> -->
+    <!-- end section photo -->
     <!-- start class destinations -->
     <h2 class="dis-top">Popular Destinations</h2>
     <div class="sub-sections">
       <div class="sub-sections1">
-        <a href="../html/pop-tours.html">
+        <a href="../html/pop-tours.html" target="_blank">
           <img src="../images/p1.jpeg">
         </a>
         <div class="txt-box1">
@@ -464,7 +764,7 @@
         </div>
       </div>
       <div class="sub-sections2">
-        <a href="../html/pop-tours.html">
+        <a href="../html/pop-tours.html" target="_blank">
           <img src="../images/p2.jpeg">
         </a>
         <div class="txt-box2">
@@ -486,7 +786,7 @@
         </div>
       </div>
       <div class="pop1">
-        <a href="../html/pop-tours.html">
+        <a href="../html/pop-tours.html" target="_blank">
           <img src="../images/p4.jpeg">
         </a>
         <div class="txt-pop">
@@ -495,7 +795,7 @@
         </div>
       </div>
       <div class="pop1">
-        <a href="../html/pop-tours.html">
+        <a href="../html/pop-tours.html" target="_blank">
           <img src="../images/p5.jpeg">
         </a>
         <div class="txt-pop">
@@ -507,99 +807,44 @@
     <!-- <div class="text">
         <img src="../images/pop.html" alt="">
        </div> -->
-    <!-- end clss pop -->
+    <!-- end class pop -->
     <!--  end class Destinations  -->
     <!-- start class our-service -->
-    <h2 style="margin-top: 90px;">Our Service</h2>
+    <!-- <h2 style="margin-top: 90px;">Our Service</h2>
     <div class="our-service">
-      <!-- sub-service1 -->
+   
       <div class="sub-our-service destination-item five animate fadeLeft">
         <i class="fa-solid fa-globe"></i>
         <h4>WorldWide Tour</h4>
         <p>a journey or series of events that takes place across multiple countries or continents</p>
       </div>
-      <!-- sub-service2 -->
+     
       <div class="sub-our-service destination-item four animate fadeRight">
         <i class="fa-solid fa-hotel"></i>
         <h4>Hotel Reservation</h4>
         <p>use online booking platforms like Booking.com, Expedia, or Hotels.com, or contact the hotel directly. </p>
       </div>
-      <!-- sub-service3 -->
+     
       <div class="sub-our-service destination-item two animate fadeDown">
         <i class="fa-solid fa-user"></i>
         <h4>Travel Guide</h4>
         <p> exploring local attractions, experiencing the culture, and potentially finding recommendations for
           restaurants and activities. </p>
       </div>
-      <!-- sub-service4 -->
+    
       <div class="sub-our-service destination-item one animate fadeIn">
         <i class="fa-solid fa-gear"></i>
         <h4>Event Management</h4>
         <p>a trip or experience focused on learning about and observing event management practices</p>
       </div>
-      <!-- sub-service5 -->
+    
       <div class="sub-our-service destination-item three animate fadeUp">
         <i class="fa-solid fa-utensils"></i>
         <h4>Food & Drink</h4>
         <p>Order Foode, Breakfast On Line</p>
       </div>
-    </div>
+    </div> -->
     <!-- end class our-service -->
-    <!-- start class about -->
-    <h2>About Team Members</h2>
-    <p id="p">
-      Our company is dedicated to providing the best travel experiences to <br>
-      our customers. We specialize in creating custom itineraries that cater
-      to each individual's interests and preferences.
-    </p>
-    <section id="about" class="about">
-      <div class="team-member">
-        <img src="../images/phorn.jpg" alt="" />
-        <h4>John PHORN</h4>
-        <p>បុរសសាវ៉ា</p>
-        <div class="info">
-          <p><a href="">Views Info...</a></p>
-        </div>
-      </div>
-      <div class="team-member">
-        <img src="../images/sak.jpg" alt="" />
-        <h4>John SAK</h4>
-        <p>បុរសជោគជាំ</p>
-        <div class="info">
-          <p><a href="">Views Info...</a></p>
-        </div>
-      </div>
-      <div class="team-member">
-        <img src="../images/nang.jpg" alt="" />
-        <h4>John NANG</h4>
-        <p>និយោជិកជាំ</p>
-        <div class="info">
-          <p><a href="">Views Info...</a></p>
-        </div>
-      </div>
-      <div class="team-member">
-        <img src="../images/vutha.jpg" alt="" />
-        <h4>John VUTHA</h4>
-        <p>បងចេកស្មោះស្នេហ៏</p>
-        <div class="info">
-          <p><a href="">Views Info...</a></p>
-        </div>
-      </div>
-      <div class="team-member">
-        <img src="../images/sal.JPG" alt="" />
-        <h4>John VISAL</h4>
-        <p>បុរសរ៉ោករ៉ាក</p>
-        <div class="info">
-          <p><a href="">Views Info...</a></p>
-        </div>
-      </div>
-      <div class="team-member">
-        <img src="../images/team-member-2.jpg" alt="" />
-        <h4>Jane Doe</h4>
-        <p>Head of Operations</p>
-      </div>
-    </section>
-    <!-- end class about -->
     <!-- start class contact -->
     <section id="contact" class="contact">
       <h3>Contact Us</h3>
@@ -636,63 +881,65 @@
     <!-- start class footer -->
     <footer class="footer">
       <div class="footer-section">
-          <div class="logo-txt">
-              <img src="../images/R.png" alt="">
-              <h3>Tour And Travel</h3>
-          </div>
-          <div class="txt-p">
-              <p style="font-size: 1.1rem;">Call Us:</p>
-              <p style="font-size: 1.3rem;">+885 966845539</p>
-              <p style="font-size: 1.1rem;">Mail Us:</p>
-              <p style="font-size: 1.3rem;">sosaophorn3@gmail.com</p>
-              <h4 style="font-size: 1.1rem;">Follow Us</h4>
-          </div>
-          <div class="footer-icons">
-              <a href="">
-                  <i class="fa-solid fa-link"></i>
-              </a>
-              <a href="">
-                  <i class="fa-brands fa-square-instagram"></i>
-              </a>
-              <a href="">
-                  <i class="fa-brands fa-youtube"></i>
-              </a>
-              <a href="">
-                  <i class="fa-brands fa-tiktok"></i>
-              </a>
-          </div>
+        <div class="logo-txt">
+          <img src="../images/R.png" alt="">
+          <h3>Tour And Travel</h3>
+        </div>
+        <div class="txt-p">
+          <p style="font-size: 1.1rem;">Call Us:</p>
+          <p style="font-size: 1.3rem;">+885 966845539</p>
+          <p style="font-size: 1.1rem;">Mail Us:</p>
+          <p style="font-size: 1.3rem;">sosaophorn3@gmail.com</p>
+          <h4 style="font-size: 1.1rem;">Follow Us</h4>
+        </div>
+        <div class="footer-icons">
+          <a href="">
+            <i class="fa-solid fa-link"></i>
+          </a>
+          <a href="">
+            <i class="fa-brands fa-square-instagram"></i>
+          </a>
+          <a href="">
+            <i class="fa-brands fa-youtube"></i>
+          </a>
+          <a href="">
+            <i class="fa-brands fa-tiktok"></i>
+          </a>
+        </div>
       </div>
       <div class="footer-section">
-          <h3 style="font-size: 1.5rem; margin-top: 15px;">Useful Links</h3>
-          <div class="sections-gride">
-              <a href="#">Home</a>
-              <a href="#">Flights</a>
-              <a href="#">Hotels</a>
-              <a href="#">Transfers</a>
-              <a href="#">Activities</a>
-              <a href="#">Organized Trips</a>
-              <a href="#">Booking</a>
-              <a href="#">Requests</a>
-          </div>
+        <h3 style="font-size: 1.5rem; margin-top: 15px;">Useful Links</h3>
+        <div class="sections-gride">
+          <a href="#">Home</a>
+          <a href="#">Flights</a>
+          <a href="#">Hotels</a>
+          <a href="#">Transfers</a>
+          <a href="#">Activities</a>
+          <a href="#">Organized Trips</a>
+          <a href="#">Booking</a>
+          <a href="#">Requests</a>
+        </div>
       </div>
       <div class="footer-section">
-          <h3 style="font-size: 1.5rem; margin-top: 15px;">Contact Info</h3>
-         <div class="txt-p">
+        <h3 style="font-size: 1.5rem; margin-top: 15px;">Contact Info</h3>
+        <div class="txt-p">
           <p>Emirates, United Arab Emirates</p>
           <p>New York City, USA</p>
           <p>One Bridge, Belgium</p>
           <p>Golden Frame, Dubai</p>
-         </div>
+        </div>
       </div>
       <div class="hr-box"></div>
       <div class="footer-bottom">
-          <p>Credit By CEO Quality(So Saophorn) All rights reserved</p>
-          <p>Terms of Services</p>
+        <p>Credit By CEO Quality(So Saophorn) All rights reserved</p>
+        <p>Terms of Services</p>
       </div>
-  </footer>
-  <!-- end class footer -->
+    </footer>
+    <!-- end class footer -->
   </main>
 </body>
-<script src="../js/main.js"></script>
+<script src="../js/main.js">
+
+</script>
 
 </html>

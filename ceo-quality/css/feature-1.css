@@ -643,10 +643,11 @@ input:nth-child(3)[type = "email"]{
     padding: 20px 20px;
     border: 1px solid white;
     border-radius: 5px;
-    color: white;
+    color: black;
     font-size: 1.2rem;
     cursor: pointer;
     margin-bottom: 20px;
+    outline: none;
 }
 .submit .subb-submit .subb-checkbox {
     display: flex;

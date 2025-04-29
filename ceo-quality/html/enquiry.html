@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enquiry</title>
+  <!-- link styles css -->
+  <link rel="stylesheet" href="../css/enquiry.css" />
+  <!-- link google font awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <!-- link google font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Freehand&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap"
+    rel="stylesheet">
+  <!-- link icon browser -->
+  <link rel="shortcut icon" href="../images/R.png" type="image/x-icon">
+</head>
+
+<body>
+  <div class="watcher-scroll"></div>
+  <!-- start class bar bar header -->
+  <div class="bar-header">
+    <div class="bar-head">
+      <div class="right-bottom">
+        <a href=""><i class="fa-solid fa-house"></i></a>
+        <span><a href="login.html" target="_blank" style="text-decoration: none;">Admin Login</a></span>
+      </div>
+      <div class="left-bottom">
+        <p>Tooll Number:123-456789</p>
+        <a href="">
+          <li>Sign Up</li>
+        </a>
+        <p>/</p>
+        <a href="">
+          <li>Sign In</li>
+        </a>
+      </div>
+    </div>
+  </div>
+  <!-- end  class bar bar header -->
+  <!-- start class nav-bar -->
+  <div class="bar">
+    <img src="../images/R.png" alt="">
+    <h2><span style="color: #49B11E;">Tour </span><span style="color: rgb(26, 130, 171);">And </span>Travel Management
+    </h2>
+  </div>
+  <!-- end  class nav-bar -->
+  <!-- start class Menu -->
+  <div class="nav-bar">
+    <div class="sub-nav">
+      <ul>
+        <li><a href="../html/index1.html">Home</a></li>
+        <li><a href="../html/about.html">About</a></li>
+        <li><a href="../html/tour-pack.html">Tour Package</a></li>
+        <li><a href="../html/privacy-policy.html">Privacy Policy</a></li>
+        <!-- <li><a href="">Team of Use</a></li> -->
+        <li><a href="../html/contact.html">Contact Us</a></li>
+        <li><a href="../html/enquiry.html" class="active">Enquiry</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="container">
+    <h1>Tour Enquiry Form</h1>
+    <form class="enquiry-form" action="#" method="POST">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="name">Full Name*</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email*</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="phone">Phone Number*</label>
+          <input type="tel" id="phone" name="phone" required>
+        </div>
+
+        <div class="form-group">
+          <label for="country">Country*</label>
+          <select id="country" name="country" required>
+            <option value="">Select Country</option>
+            <option value="USA">United States</option>
+            <option value="UK">United Kingdom</option>
+            <option value="India">India</option>
+            <option value="Australia">Australia</option>
+            <option value="Canada">Canada</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="tour-package">Tour Package Interested In*</label>
+          <select id="tour-package" name="tour-package" required>
+            <option value="">Select Package</option>
+            <option value="Bali-7Nights">Soulmate Special Ball - 7 Night</option>
+            <option value="Guwahati-6Days">6 Day in Guwahati and Shillong</option>
+            <option value="Dubai-ShortTrip">Short Trip Dubai</option>
+            <option value="Custom">Custom Package</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="travel-date">Preferred Travel Date*</label>
+          <input type="date" id="travel-date" name="travel-date" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="travellers">Number of Travellers*</label>
+        <input type="number" id="travellers" name="travellers" min="1" required>
+      </div>
+
+      <div class="form-group">
+        <label for="message">Special Requirements</label>
+        <textarea id="message" name="message"
+          placeholder="Any special requests or additional information..."></textarea>
+      </div>
+
+      <button type="submit" class="submit-btn">Submit Enquiry</button>
+    </form>
+  </div>
+  <!-- start class footer -->
+  <footer class="footer">
+    <div class="footer-section">
+      <div class="logo-txt">
+        <img src="../images/R.png" alt="">
+        <h3>Tour And Travel</h3>
+      </div>
+      <div class="txt-p">
+        <p style="font-size: 1.1rem;">Call Us:</p>
+        <p style="font-size: 1.3rem;">+885 966845539</p>
+        <p style="font-size: 1.1rem;">Mail Us:</p>
+        <p style="font-size: 1.3rem;">sosaophorn3@gmail.com</p>
+        <h4 style="font-size: 1.1rem;">Follow Us</h4>
+      </div>
+      <div class="footer-icons">
+        <a href="">
+          <i class="fa-solid fa-link"></i>
+        </a>
+        <a href="">
+          <i class="fa-brands fa-square-instagram"></i>
+        </a>
+        <a href="">
+          <i class="fa-brands fa-youtube"></i>
+        </a>
+        <a href="">
+          <i class="fa-brands fa-tiktok"></i>
+        </a>
+      </div>
+    </div>
+    <div class="footer-section">
+      <h3 style="font-size: 1.5rem; margin-top: 15px;">Useful Links</h3>
+      <div class="sections-gride">
+        <a href="#">Home</a>
+        <a href="#">Flights</a>
+        <a href="#">Hotels</a>
+        <a href="#">Transfers</a>
+        <a href="#">Activities</a>
+        <a href="#">Organized Trips</a>
+        <a href="#">Booking</a>
+        <a href="#">Requests</a>
+      </div>
+    </div>
+    <div class="footer-section">
+      <h3 style="font-size: 1.5rem; margin-top: 15px;">Contact Info</h3>
+      <div class="txt-p">
+        <p>Emirates, United Arab Emirates</p>
+        <p>New York City, USA</p>
+        <p>One Bridge, Belgium</p>
+        <p>Golden Frame, Dubai</p>
+      </div>
+    </div>
+    <div class="hr-box"></div>
+    <div class="footer-bottom">
+      <p>Credit By CEO Quality(So Saophorn) All rights reserved</p>
+      <p>Terms of Services</p>
+    </div>
+  </footer>
+  <!-- end class footer -->
+</body>
+
+</html>

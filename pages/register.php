@@ -159,7 +159,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </form>
         <p>Already have an account? <a href="login.php">Login</a></p>
     </div>
-
+    
 <script>
 function togglePassword() {
     var passwordField = document.getElementById("password");
