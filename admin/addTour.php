@@ -12,9 +12,12 @@ include "../includes/admin_header.php";
 // }
 
 // Fetch all destinations for dropdown
+
 $destinations = $conn->query("SELECT * FROM destinations");
 
 // Handle Tour Deletion
+
+// Delete statement 
 if (isset($_GET["delete"])) {
     $tour_id = intval($_GET["delete"]);
     $stmt = $conn->prepare("DELETE FROM tours WHERE tour_id = ?");
@@ -23,6 +26,22 @@ if (isset($_GET["delete"])) {
         echo "<script>alert('Tour deleted successfully!'); window.location.href='addTour.php';</script>";
     }
 }
+
+//  Delete by logical use boolean
+// 1) Handle “logical delete” via boolean flag
+// if (isset($_GET['delete'])) {
+//     $tour_id = intval($_GET['delete']);
+//     $stmt = $conn->prepare("UPDATE tours SET isDeleted = 1 WHERE tour_id = ?");
+//     $stmt->bind_param("i", $tour_id);
+//     if ($stmt->execute()) {
+//         echo "<script>
+//                 alert('Tour deleted successfully!');
+//                 window.location.href='addTour.php';
+//               </script>";
+//         exit;
+//     }
+// }
+// Handle Tour Insertion
 // Handle Tour Insertion
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["add_tour"])) {
     $destination_id = intval($_POST["destination_id"]);
@@ -31,7 +50,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["add_tour"])) {
     $price = floatval($_POST["price"]);
     $duration = htmlspecialchars(trim($_POST["duration"]));
 
-    // Handle image upload
+    // Handle image upload (optional)
+    $new_image_name = null;
     if (!empty($_FILES["image"]["name"])) {
         $image = $_FILES["image"]["name"];
         $image_tmp = $_FILES["image"]["tmp_name"];
@@ -44,19 +64,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["add_tour"])) {
             $new_image_name = uniqid("tour_", true) . "." . $image_ext;
             $upload_path = "../uploads/" . $new_image_name;
             move_uploaded_file($image_tmp, $upload_path);
-
-            // Insert into database
-            $stmt = $conn->prepare("INSERT INTO tours (destination_id, title, description, price, duration, image) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("issdss", $destination_id, $title, $description, $price, $duration, $new_image_name);
-
-            if ($stmt->execute()) {
-                echo "<script>alert('Tour added successfully!'); window.location.href='addTour.php';</script>";
-            } else {
-                echo "<script>alert('Error adding tour!');</script>";
-            }
         }
+    }
+
+    // Insert into database
+    $stmt = $conn->prepare("INSERT INTO tours (destination_id, title, description, price, duration, image) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("issdss", $destination_id, $title, $description, $price, $duration, $new_image_name);
+
+    if ($stmt->execute()) {
+        echo "<script>alert('Tour added successfully!'); window.location.href='addTour.php';</script>";
     } else {
-        echo "<script>alert('Please upload an image.');</script>";
+        echo "<script>alert('Error adding tour!');</script>";
     }
 }
 
@@ -187,6 +205,15 @@ body {
         margin-left: 60px;
     }
 }
+.modal-body label {
+    font-weight: bold;
+    color: #555;
+    margin-top: 10px;
+}
+
+.modal-body .form-control {
+    margin-bottom: 15px;
+}
 
 </style>
 <body>
@@ -198,62 +225,67 @@ body {
 </ul>
 
 <div class="dashboard">
-   <table class="table table-striped">
-        <tr>
-            <th>ID</th>
-            <th>Destination</th>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Price</th>
-            <th>Duration</th>
-            <th>Image</th>
-            <th>Actions</th>
-        </tr>
-        <?php while ($tour = $tours->fetch_assoc()): ?>
-        <tr>
-            <td><?= $tour["tour_id"] ?></td>
-            <td><?= $tour["destination"] ?></td>
-            <td><?= $tour["title"] ?></td>
-            <td><?= $tour["description"] ?></td>
-            <td>$<?= $tour["price"] ?></td>
-            <td><?= $tour["duration"] ?></td>
-            <td><img src="../uploads/<?= $tour["image"] ?>" width="50"></td>
-            <td>
+<table class="table table-striped">
+    <tr>
+        <th>ID</th>
+        <th>Destination</th>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Price</th>
+        <th>Duration</th>
+        <th>Image</th>
+        <th>Actions</th>
+    </tr>
+    <?php while ($tour = $tours->fetch_assoc()): ?>
+    <tr>
+        <td><?= $tour["tour_id"] ?></td>
+        <td><?= htmlspecialchars($tour["destination"]) ?></td>
+        <td><?= htmlspecialchars($tour["title"]) ?></td>
+        <td><?= htmlspecialchars($tour["description"]) ?></td>
+        <td>$<?= number_format($tour["price"], 2) ?></td>
+        <td><?= htmlspecialchars($tour["duration"]) ?></td>
+        <td>
+            <?php if ($tour["image"]): ?>
+                <img src="../uploads/<?= htmlspecialchars($tour["image"]) ?>" width="50" alt="Tour Image">
+            <?php else: ?>
+                No Image
+            <?php endif; ?>
+        </td>
+        <td>
             <a href="#" class="btn btn-success btn-sm edit-btn" 
-                data-id="<?= $tour["tour_id"] ?>" 
-                data-title="<?= $tour["title"] ?>" 
-                data-description="<?= $tour["description"] ?>"
-                data-price="<?= $tour["price"] ?>"
-                data-duration="<?= $tour["duration"] ?>"
-                data-image="<?= $tour["image"] ?>"
-                data-bs-toggle="modal" data-bs-target="#editModal">Edit</a>
+               data-id="<?= $tour["tour_id"] ?>" 
+               data-destination-id="<?= $tour["destination_id"] ?>"
+               data-title="<?= htmlspecialchars($tour["title"]) ?>" 
+               data-description="<?= htmlspecialchars($tour["description"]) ?>"
+               data-price="<?= $tour["price"] ?>"
+               data-duration="<?= htmlspecialchars($tour["duration"]) ?>"
+               data-image="<?= htmlspecialchars($tour["image"]) ?>"
+               data-bs-toggle="modal" data-bs-target="#editModal">Edit</a>
             <a href="?delete=<?= $tour["tour_id"] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
-            </td>
-        </tr>
-        <?php endwhile; ?>
-    </table>
+        </td>
+    </tr>
+    <?php endwhile; ?>
+</table>
 </div>
 
 <!-- Add Tour Modal -->
 <div class="modal fade" id="addTourModal" tabindex="-1" aria-labelledby="addTourModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">  
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addTourModalLabel" style="position: relative;left:5rem">Add New Tour</h5>
+                <h5 class="modal-title" id="addTourModalLabel">Add New Tour</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form action="" method="POST" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label for="destination_id" class="form-label">Destination</label>
-                        <select name="destination_id" class="form-control" required>
+                        <select name="destination_id" id="destination_id" class="form-control" required>
                             <option value="">Select a Destination</option>
-                            <?php while (
-                                $row = $destinations->fetch_assoc()
-                            ): ?>
-                                <option value="<?= $row[
-                                    "destination_id"
-                                ] ?>"><?= $row["name"] ?></option>
+                            <?php 
+                            $destinations->data_seek(0); // Reset pointer
+                            while ($row = $destinations->fetch_assoc()): ?>
+                                <option value="<?= $row["destination_id"] ?>"><?= htmlspecialchars($row["name"]) ?></option>
                             <?php endwhile; ?>
                         </select>
                     </div>
@@ -270,22 +302,20 @@ body {
 
                     <div class="mb-3">
                         <label for="tourPrice" class="form-label">Price</label>
-                        <input type="number" class="form-control" id="tourPrice" name="price" min="1" required>
+                        <input type="number" class="form-control" id="tourPrice" name="price" min="0" step="0.01" required>
                     </div>
 
                     <div class="mb-3">
-                        <label for="tourDuration" class="form-label">Duration</label>
+                        <label for="tourDuration" class="form-label">Duration (e.g., "2 days")</label>
                         <input type="text" class="form-control" id="tourDuration" name="duration" required>
                     </div>
 
                     <div class="mb-3">
-                        <label for="tourImage" class="form-label">Image</label>
-                        <input type="file" class="form-control" id="tourImage" name="image"  accept="image/*" required>
+                        <label for="tourImage" class="form-label">Image (Optional)</label>
+                        <input type="file" class="form-control" id="tourImage" name="image" accept="image/*">
                     </div>
 
                     <button type="submit" class="btn btn-success w-100" name="add_tour">Save Tour</button>
-                    <!-- <button type="submit" name="add_tour" class="btn btn-success w-100">Save Tour</button> -->
-
                 </form>
             </div>
         </div>
@@ -305,35 +335,32 @@ body {
                 <form method="POST" enctype="multipart/form-data">
                     <input type="hidden" name="tour_id" id="edit_tour_id">
 
-                    <label>Destination:</label>
+                    <label for="edit_destination_id">Destination:</label>
                     <select name="destination_id" id="edit_destination_id" class="form-control" required>
-                        <?php
+                        <?php 
                         $destinations->data_seek(0);
                         while ($row = $destinations->fetch_assoc()): ?>
-                            <option value="<?= $row[
-                                "destination_id"
-                            ] ?>"><?= $row["name"] ?></option>
-                        <?php endwhile;
-                        ?>
+                            <option value="<?= $row["destination_id"] ?>"><?= htmlspecialchars($row["name"]) ?></option>
+                        <?php endwhile; ?>
                     </select>
 
-                    <label>Title:</label>
+                    <label for="edit_title">Title:</label>
                     <input type="text" name="title" id="edit_title" class="form-control" required>
 
-                    <label>Description:</label>
-                    <textarea name="description" id="edit_description" class="form-control" required></textarea>
+                    <label for="edit_description">Description:</label>
+                    <textarea name="description" id="edit_description" class="form-control" rows="3" required></textarea>
 
-                    <label>Price:</label>
-                    <input type="number" name="price" id="edit_price" class="form-control" required>
+                    <label for="edit_price">Price:</label>
+                    <input type="number" name="price" id="edit_price" class="form-control" step="0.01" required>
 
-                    <label>Duration:</label>
+                    <label for="edit_duration">Duration:</label>
                     <input type="text" name="duration" id="edit_duration" class="form-control" required>
 
                     <label>Current Image:</label>
-                    <img id="current_image" src="" width="100" class="mb-2">
+                    <img id="current_image" src="" width="100" class="mb-2" alt="Current Image">
 
-                    <label>New Image (optional):</label>
-                    <input type="file" name="image" class="form-control">
+                    <label for="edit_image">New Image (Optional):</label>
+                    <input type="file" name="image" id="edit_image" class="form-control" accept="image/*">
 
                     <button type="submit" name="update_tour" class="btn btn-success w-100 mt-3">Update Tour</button>
                 </form>
@@ -351,11 +378,13 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".edit-btn").forEach(button => {
         button.addEventListener("click", function () {
             document.getElementById("edit_tour_id").value = this.getAttribute("data-id");
+            document.getElementById("edit_destination_id").value = this.getAttribute("data-destination-id");
             document.getElementById("edit_title").value = this.getAttribute("data-title");
             document.getElementById("edit_description").value = this.getAttribute("data-description");
             document.getElementById("edit_price").value = this.getAttribute("data-price");
             document.getElementById("edit_duration").value = this.getAttribute("data-duration");
-            document.getElementById("current_image").src = "../uploads/" + this.getAttribute("data-image");
+            const imageSrc = this.getAttribute("data-image");
+            document.getElementById("current_image").src = imageSrc ? "../uploads/" + imageSrc : "";
         });
     });
 });

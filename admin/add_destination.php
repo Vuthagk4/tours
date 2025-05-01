@@ -1,20 +1,14 @@
 <?php
 include '../includes/admin_header.php';
 include '../includes/config.php';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = $_POST['name'];
     $location = $_POST['location'];
-    $description = $_POST['description'];
-    $image = $_FILES['image']['name'];
-
-    // Upload Image
-    $target_dir = "../assets/uploads/";
-    $target_file = $target_dir . basename($image);
-    move_uploaded_file($_FILES['image']['tmp_name'], $target_file);
 
     // Use Prepared Statement for Security
-    $stmt = $conn->prepare("INSERT INTO destinations (name, location, description, image) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("ssss", $name, $location, $description, $target_file);
+    $stmt = $conn->prepare("INSERT INTO destinations (name, location) VALUES (?, ?)");
+    $stmt->bind_param("ss", $name, $location);
 
     if ($stmt->execute()) {
         echo "<script>alert('Destination added successfully!');</script>";
@@ -27,7 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 
 <style>
-body{
+body {
     font-family: 'Work Sans', sans-serif;
     margin: 0;
     padding: 0;
@@ -37,8 +31,8 @@ body{
 }
 /* Form Styling */
 .form {
-    width: 1000px;  /* Wider Form */
-    height: 500px; /* Fixed Height */
+    width: 800px;  /* Wider Form */
+    height: auto; /* Adjusted Height since we removed fields */
     margin: 50px auto;
     padding: 20px;
     background: #f8f9fa;
@@ -63,8 +57,8 @@ label {
     color: #555;
 }
 
-/* Inputs & Textarea */
-input[type="text"], textarea, input[type="file"] {
+/* Inputs */
+input[type="text"] {
     width: 100%;
     padding: 8px;
     border: 1px solid #ddd;
@@ -72,7 +66,7 @@ input[type="text"], textarea, input[type="file"] {
     font-size: 14px;
 }
 
-input:focus, textarea:focus {
+input:focus {
     border-color: #007bff;
     outline: none;
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
@@ -98,6 +92,7 @@ input:focus, textarea:focus {
     border-radius: 5px;
     margin-top: 10px;
 }
+
 /* Hide the search icon inside the Leaflet search box */
 .leaflet-control-geocoder-icon {
     display: none !important;
@@ -107,38 +102,26 @@ input:focus, textarea:focus {
 .leaflet-control-geocoder {
     padding: 5px !important;
 }
-
 </style>
 
-<form action="add_destination.php" class="form" method="POST" enctype="multipart/form-data">
+<form style="box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;" action="add_destination.php" class="form " method="POST">
     <h3>Add Destination</h3>
 
-    <div class="form-group">
+    <div class="form-group w-100">
         <label for="name">Destination Name:</label>
-        <input type="text" name="name" id="name" required>
+        <input type="text" name="name" id="name" placeholder="Enter destination..." required>
     </div>
 
     <div class="form-group">
         <label for="location">Location:</label>
-        <input type="text" id="location" name="location" required readonly>
-    </div>
-    <div class="form-group">
-        <label for="image">Upload Image:</label>
-        <input type="file" name="image" id="image" accept="image/*">
+        <input type="text" id="location" name="location" placeholder="location" required >
     </div>
 
     <div class="full-width">
         <div id="map"></div>
     </div>
 
-    <div class="form-group">
-        <label for="description">Description:</label>
-        <textarea name="description" id="description"></textarea>
-    </div>
     <input type="submit" class="w-100 btn btn-primary" value="Add Destination">
-
-
-
 </form>
 
 <?php
@@ -149,11 +132,6 @@ include '../admin/footer.php';
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-
-<!-- Load Leaflet.js (Free & No API Key Required) -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <!-- Load Leaflet Search Plugin (For Search Box) -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -169,7 +147,7 @@ include '../admin/footer.php';
         map = L.map('map').setView(defaultLocation, 13);
         // Set OpenStreetMap tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
+            attribution: '© OpenStreetMap contributors'
         }).addTo(map);
         // Add a draggable marker
         marker = L.marker(defaultLocation, { draggable: true }).addTo(map);
@@ -186,26 +164,21 @@ include '../admin/footer.php';
             marker.setLatLng(position);
             document.getElementById("location").value = position.lat + ", " + position.lng;
         });
+
         // Add Search Box (Uses OpenStreetMap's Free Geocoder)
-   // Add a Search Box Without the Search Icon
-L.Control.geocoder({
-    placeholder: "Search location...", // Custom Placeholder
-    collapsed: false, // Always show the input box
-    defaultMarkGeocode: false, // Prevent auto marker
-}).on('markgeocode', function (event) {
-    let center = event.geocode.center;
-    map.setView(center, 13);
-    marker.setLatLng(center);
-    document.getElementById("location").value = center.lat + ", " + center.lng;
-}).addTo(map);
-
-
+        L.Control.geocoder({
+            placeholder: "Search location...", // Custom Placeholder
+            collapsed: false, // Always show the input box
+            defaultMarkGeocode: false, // Prevent auto marker
+        }).on('markgeocode', function (event) {
+            let center = event.geocode.center;
+            map.setView(center, 13);
+            marker.setLatLng(center);
+            document.getElementById("location").value = center.lat + ", " + center.lng;
+        }).addTo(map);
     }
+
     // Initialize the map when the page loads
     document.addEventListener("DOMContentLoaded", initMap);
-
-    // Add Custom Search Box
-
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
