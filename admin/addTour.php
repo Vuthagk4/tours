@@ -173,17 +173,21 @@ body {
 
 /* Sidebar */
 .sidebar {
-    width: 250px;
-    height: 100vh;
-    background:rgb(34, 49, 64);
-    color: white;
-    position: fixed;
-    left: 0;
-    top: 0;
-    display: flex;
-    flex-direction: column;
-    padding-top: 20px;
-}
+            width: 250px;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.91);
+            color: white;
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+            transition: width 0.3s ease;
+            z-index: 99999999999;
+            box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+        }
 
 
 /* Table inside the dashboard */

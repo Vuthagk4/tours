@@ -2,14 +2,10 @@
 include "../includes/config.php";
 include "../includes/header.php";
 
-// Fetch all tours with their destinations
-$tours = $conn->query("SELECT tours.*, destinations.name AS destination, destinations.location FROM tours 
-                        JOIN destinations ON tours.destination_id = destinations.destination_id");
-
-
-
 // Check if a search term is provided via GET
 $searchTerm = isset($_GET['search']) ? trim($_GET['search']) : '';
+// Check sort option
+$sortOption = isset($_GET['sort']) ? htmlspecialchars($_GET['sort']) : 'default';
 
 // Fetch tours based on search term or display all if no search
 if (!empty($searchTerm)) {
@@ -35,116 +31,110 @@ if (!empty($searchTerm)) {
     <title>Available Tours</title>
     <link rel="stylesheet" href="../assets/css/style1.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <style>
-            body{
+        body {
             height: 150vh;
-            }
-            .tour-card {
-                    display: flex;
-                    background: #f7f9fc;
-                    border-radius: 8px;
-                    overflow: hidden;
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-                    margin: 20px auto;
-                    max-width: 900px;
-            }
+        }
 
-            /* container grid: fixed 3 cols, locked to image height */
-            .tour-card {
+        .tour-card {
             display: grid;
             grid-template-columns: 370px 1fr 200px;
             background: #f7f9fc;
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            align-items: stretch;      /* make all three cols same height */
-            min-height: 200px;         /* tie total card height to image height */
-            }
+            align-items: stretch;
+            min-height: 200px;
+            margin: 20px auto;
+            max-width: 900px;
+        }
 
-            /* 1) Image */
-            .tour-image img {
+        .tour-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
-            }
-      
+        }
 
-            /* 2) Info */
-            .tour-info {
+        .tour-info {
             padding: 20px;
             display: flex;
             flex-direction: column;
-            }
-            .tour-info .title {
+        }
+
+        .tour-info .title {
             margin: 0 0 8px;
             color: #0071c2;
-            }
-            .tour-info .meta {
+        }
+
+        .tour-info .meta {
             margin: 4px 0;
             font-size: 14px;
             color: #555;
-            }
-            .tour-info .description {
+        }
+
+        .tour-info .description {
             margin: 12px 0;
             font-size: 14px;
             line-height: 1.4;
-            /* truncate to 3 lines */
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            }
-            .tour-info .see-more {
+        }
+
+        .tour-info .see-more {
             font-size: 14px;
             color: #0071c2;
             text-decoration: underline;
             cursor: pointer;
-            margin-top: auto;  /* push “Show more” to bottom of info section */
-            }
+            margin-top: auto;
+        }
 
-            /* 3) Booking */
-            .tour-book {
+        .tour-book {
             padding: 20px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             border-left: 1px solid #e0e0e0;
-            }
+        }
 
-            .tour-book .price-label {
+        .tour-book .price-label {
             font-size: 12px;
             color: #555;
             margin: 0;
-            }
-            .tour-book .price-amount {
+        }
+
+        .tour-book .price-amount {
             font-size: 20px;
             color: green;
             font-weight: bold;
             margin: 4px 0 12px;
-            }
+        }
 
-            .tour-book label {
+        .tour-book label {
             font-size: 14px;
             color: #333;
             display: block;
             margin-bottom: 8px;
-            }
-            .tour-book input {
+        }
+
+        .tour-book input {
             width: 100%;
             margin-top: 4px;
             padding: 6px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            }
+        }
 
-            .tour-book .total-price {
+        .tour-book .total-price {
             font-size: 14px;
             font-weight: bold;
             margin: 12px 0;
-            }
+        }
 
-            .btn-book {
+        .btn-book {
             display: block;
             text-align: center;
             padding: 10px 0;
@@ -152,309 +142,363 @@ if (!empty($searchTerm)) {
             color: #fff;
             border-radius: 4px;
             text-decoration: none;
-            }
-            .btn-book:hover {
+        }
+
+        .btn-book:hover {
             background: #005999;
-            }
+        }
 
-
-
-            .description {
+        .description {
             color: #555;
-            }
+        }
 
-            .see-more {
-            color: #007bff;
-            cursor: pointer;
-            font-size: 0.9rem;
-            margin-bottom: 0.8rem;
-            }
-
-            .see-more:hover {
-            text-decoration: underline;
-            }
-
-            .see-more {
+        .see-more {
             color: blue;
             cursor: pointer;
             display: block;
             margin-top: 5px;
+        }
+
+        .see-more:hover {
+            text-decoration: underline;
+        }
+
+        .filter-search-container {
+            padding: 15px 0;
+            margin-bottom: 20px;
+        }
+
+        .filter-search-container .form-select,
+        .filter-search-container .form-control {
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .filter-search-container .form-select:focus,
+        .filter-search-container .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+        }
+
+        .filter-search-container .btn-primary {
+            background-color: #007bff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        .filter-search-container .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .filter-search-container .btn-link {
+            color: #dc3545;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .filter-search-container .btn-link:hover {
+            color: #b02a37;
+            text-decoration: underline;
+        }
+
+        .filter-search-container .input-group-text {
+            background: #fff;
+            border: 1px solid #ced4da;
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+        }
+
+        @media (max-width: 576px) {
+            .filter-search-container .col-sm-4,
+            .filter-search-container .col-sm-8 {
+                margin-bottom: 15px;
             }
+
+            .filter-search-container .row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .tour-card {
+                grid-template-columns: 1fr;
+                max-width: 100%;
+            }
+
+            .tour-image img {
+                height: 200px;
+            }
+
+            .tour-book {
+                border-left: none;
+                border-top: 1px solid #e0e0e0;
+            }
+        }
     </style>
 </head>
 <body>
-
 <div class="container mt-5">
     <h2 class="text-center mb-4">Available Tours</h2>
-    <!-- Add Sorting Dropdown -->
-     <div class="d-flex">
-     Order By Popular :
-    <select id="sortSelect" onchange="sortCards()" class="form-select mb-4" style="max-width:200px;">
-      <option value="default">Default</option>
-      <option value="popular">Filter by Popular</option>
-    </select>
-     </div>
-
-    <form method="get" action="" class="mb-4">
-        <div class="input-group">
-            <input style="max-width:300px;" type="text" name="search" class="form-control" placeholder="Search by title or destination" 
-                   value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
-            <button type="submit" class="btn btn-primary">Search</button>
+    <!-- Filter and Search UI -->
+    <div class="filter-search-container">
+        <div class="row align-items-center gx-3">
+            <!-- Sort Dropdown -->
+            <div class="col-sm-4 d-flex align-items-center">
+                <label for="sortSelect" class="me-2 fw-medium">Sort By:</label>
+                <select id="sortSelect" name="sort" onchange="sortCards()" class="form-select" style="max-width: 200px;">
+                    <option value="default" <?php echo $sortOption === 'default' ? 'selected' : ''; ?>>Default</option>
+                    <option value="popular" <?php echo $sortOption === 'popular' ? 'selected' : ''; ?>>Popular</option>
+                </select>
+            </div>
+            <!-- Search Form -->
+            <div class="col-sm-8">
+                <form method="get" action="" class="d-flex align-items-center">
+                    <div class="input-group" style="max-width: 350px;">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" name="search" class="form-control" placeholder="Search by title or destination" 
+                               value="<?php echo htmlspecialchars($searchTerm); ?>">
+                        <input type="hidden" name="sort" value="<?php echo htmlspecialchars($sortOption); ?>">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                    <?php if (!empty($searchTerm)): ?>
+                        <a href="?" class="btn btn-link ms-3">Clear Search</a>
+                    <?php endif; ?>
+                </form>
+            </div>
         </div>
-        <?php if (!empty($searchTerm)): ?>
-            <a href="?" class="btn btn-link mt-2">Clear Search</a>
-        <?php endif; ?>
-    </form>
-
-
-    <div class="row">
-    <?php
-    $index = 0; // Initialize index to track original order
-    while ($tour = $tours->fetch_assoc()): ?>
-    <!-- Add data-original-index to track original order -->
-    <div class="col-12 mb-4" data-original-index="<?= $index ?>">
-      <div class="tour-card">
-        <!-- 1) IMAGE COLUMN -->
-        <div class="tour-image">
-          <img src="../uploads/<?= htmlspecialchars($tour["image"]) ?>"
-               alt="<?= htmlspecialchars($tour["title"]) ?>">
-        </div>
-
-        <!-- 2) INFO COLUMN -->
-        <div class="tour-info" style="position: relative;">
-          <h5 class="title"><?= htmlspecialchars($tour["title"]) ?></h5>
-          <p class="meta"><strong>Destination:</strong> <?= htmlspecialchars(
-              $tour["destination"]
-          ) ?></p>
-
-          <!-- Location Map Link (unchanged) -->
-          <?php
-          $coords = explode(",", $tour["location"]);
-          if (count($coords) == 2) {
-              $lat = trim($coords[0]);
-              $lng = trim($coords[1]);
-              $mapLink = "https://www.google.com/maps?q={$lat},{$lng}";
-          } else {
-              $mapLink = "javascript:void(0);";
-          }
-          ?>
-          <p class="meta">
-            <strong>Location:</strong>
-            <a href="<?= $mapLink ?>" target="_blank">View on Map</a>
-          </p>
-
-          <!-- Description (unchanged) -->
-          <?php
-          $fullDesc = htmlspecialchars($tour["description"]);
-          $shortDesc = substr($fullDesc, 0, 100);
-          ?>
-          <p class="description"
-             data-fulltext="<?= $fullDesc ?>"
-             data-shorttext="<?= $shortDesc ?>">
-            <?= $shortDesc ?>…
-          </p>
-          <a href="javascript:void(0)" class="see-more">Show More</a>
-
-          <!-- Total People Booked with span for sorting -->
-          <div style="position: absolute; right:10px; top:0;">
-            <?php
-            $tour_id = $tour["tour_id"];
-            $stmt = $conn->prepare(
-                "SELECT SUM(people) AS total_people FROM bookings WHERE tour_id = ?"
-            );
-            $stmt->bind_param("i", $tour_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $totalPeople = 0;
-            if ($row = $result->fetch_assoc()) {
-                $totalPeople = intval($row["total_people"]);
-            }
-            $stmt->close();
-            $starColor = $totalPeople >= 100 ? "gold" : "black";
-            ?>
-            <!-- Wrap the number in a span with class booked-count -->
-          <?php
-                    $stars = min(floor($totalPeople / 100), 5);
-            ?>
-            <span class="booked-count"><?= $totalPeople ?></span>
-            <?php for ($i = 0; $i < $stars; $i++): ?>
-                <i style="color: <?= $starColor ?>;" class="fa-solid fa-star"></i>
-            <?php endfor; ?>
-            people booked
-          </div>
-        </div>
-
-        <!-- 3) BOOKING COLUMN (unchanged) -->
-        <div class="tour-book">
-          <?php
-          $defaultDuration = (int) $tour["duration"];
-          $defaultPrice = (float) $tour["price"];
-          ?>
-          <p class="price-label">Price from</p>
-          <p class="price-amount">$<?= number_format($defaultPrice, 2) ?></p>
-          <label>
-            Duration:
-            <input type="number"
-                   class="duration-input"
-                   min="1"
-                   value="<?= $defaultDuration ?>"
-                   data-default-price="<?= $defaultPrice ?>">
-          </label>
-          <label>
-            People:
-            <input type="number" class="people-input" min="1" value="1">
-          </label>
-          <label for="calendar">Travel Date:</label> 
-          <input type="text" id="calendar" name="travel_date" class="travel_date" placeholder="yyyy-mm-dd">
-          <p class="total-price">
-            Total: $<span class="dynamic-price">
-              <?= number_format($defaultPrice * $defaultDuration, 2) ?>
-            </span>
-          </p>
-          <a href="tour_details.php?id=<?= $tour["tour_id"] ?>"
-             onclick="return customizeBooking(this)"
-             class="btn btn-primary btn-book">
-            Book Now
-          </a>
-        </div>
-      </div>
     </div>
-    <?php $index++;endwhile; // Increment index for the next tour card
-    ?>
-    </div>
-</div>
 
+    <!-- Tour Cards Container -->
+    <div class="row" id="tour-cards">
+        <?php
+        $index = 0; // Initialize index to track original order
+        while ($tour = $tours->fetch_assoc()): ?>
+            <!-- Add data-original-index to track original order -->
+            <div class="col-12 mb-4" data-original-index="<?= $index ?>">
+                <div class="tour-card">
+                    <!-- 1) IMAGE COLUMN -->
+                    <div class="tour-image">
+                        <img src="../Uploads/<?= htmlspecialchars($tour['image']) ?>" 
+                             alt="<?= htmlspecialchars($tour['title']) ?>">
+                    </div>
+
+                    <!-- 2) INFO COLUMN -->
+                    <div class="tour-info" style="position: relative;">
+                        <h5 class="title"><?= htmlspecialchars($tour['title']) ?></h5>
+                        <p class="meta"><strong>Destination:</strong> <?= htmlspecialchars($tour['destination']) ?></p>
+
+                        <!-- Location Map Link -->
+                        <?php
+                        $coords = explode(",", $tour['location']);
+                        $mapLink = (count($coords) == 2) 
+                            ? "https://www.google.com/maps?q=" . trim($coords[0]) . "," . trim($coords[1])
+                            : "javascript:void(0);";
+                        ?>
+                        <p class="meta">
+                            <strong>Location:</strong>
+                            <a href="<?= $mapLink ?>" target="_blank">View on Map</a>
+                        </p>
+
+                        <!-- Description -->
+                        <?php
+                        $fullDesc = htmlspecialchars($tour['description']);
+                        $shortDesc = substr($fullDesc, 0, 100);
+                        ?>
+                        <p class="description" 
+                           data-fulltext="<?= $fullDesc ?>" 
+                           data-shorttext="<?= $shortDesc ?>">
+                            <?= $shortDesc ?>…
+                        </p>
+                        <a href="javascript:void(0)" class="see-more">Show More</a>
+
+                        <!-- Total People Booked with span for sorting -->
+                        <div style="position: absolute; right:10px; top:0;">
+                            <?php
+                            $tour_id = $tour['tour_id'];
+                            $stmt = $conn->prepare("SELECT SUM(people) AS total_people FROM bookings WHERE tour_id = ?");
+                            $stmt->bind_param("i", $tour_id);
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+                            $totalPeople = $result->fetch_assoc()['total_people'] ?? 0;
+                            $stmt->close();
+                            $starColor = $totalPeople >= 100 ? "gold" : "black";
+                            $stars = min(floor($totalPeople / 100), 5);
+                            ?>
+                            <span class="booked-count"><?= $totalPeople ?></span>
+                            <?php for ($i = 0; $i < $stars; $i++): ?>
+                                <i style="color: <?= $starColor ?>;" class="fa-solid fa-star"></i>
+                            <?php endfor; ?>
+                            people booked
+                        </div>
+                    </div>
+
+                    <!-- 3) BOOKING COLUMN -->
+                    <div class="tour-book">
+                        <?php
+                        $defaultDuration = (int) $tour['duration'];
+                        $defaultPrice = (float) $tour['price'];
+                        ?>
+                        <p class="price-label">Price from</p>
+                        <p class="price-amount">$<?= number_format($defaultPrice, 2) ?></p>
+                        <label>
+                            Duration:
+                            <input type="number" 
+                                   class="duration-input" 
+                                   min="1" 
+                                   value="<?= $defaultDuration ?>" 
+                                   data-default-price="<?= $defaultPrice ?>">
+                        </label>
+                        <label>
+                            People:
+                            <input type="number" class="people-input" min="1" value="1">
+                        </label>
+                        <label for="calendar-<?= $tour['tour_id'] ?>">Travel Date:</label> 
+                        <input type="text" 
+                               id="calendar-<?= $tour['tour_id'] ?>" 
+                               name="travel_date" 
+                               class="travel_date" 
+                               placeholder="yyyy-mm-dd">
+                        <p class="total-price">
+                            Total: $<span class="dynamic-price">
+                                <?= number_format($defaultPrice * $defaultDuration, 2) ?>
+                            </span>
+                        </p>
+                        <a href="tour_details.php?id=<?= $tour['tour_id'] ?>" 
+                           onclick="return customizeBooking(this)" 
+                           class="btn btn-primary btn-book">
+                            Book Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        <?php $index++; endwhile; ?>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Start Of Des dynamic -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".see-more").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const desc     = btn.previousElementSibling;
-      const fullText = desc.dataset.fulltext;
-      const shortText= desc.dataset.shorttext;
+    // Show More/Show Less for description
+    document.querySelectorAll(".see-more").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const desc = btn.previousElementSibling;
+            const fullText = desc.dataset.fulltext;
+            const shortText = desc.dataset.shorttext;
 
-      if (desc.textContent.trim().endsWith("…")) {
-        desc.textContent = fullText;
-        btn.textContent  = "Show Less";
-      } else {
-        desc.textContent = shortText + "…";
-        btn.textContent  = "Show More";
-      }
+            if (desc.textContent.trim().endsWith("…")) {
+                desc.textContent = fullText;
+                btn.textContent = "Show Less";
+            } else {
+                desc.textContent = shortText + "…";
+                btn.textContent = "Show More";
+            }
+        });
     });
-  });
+
+    // Dynamic Price Update
+    document.querySelectorAll(".tour-card").forEach(card => {
+        const durationInput = card.querySelector(".duration-input");
+        const peopleInput = card.querySelector(".people-input");
+        const priceSpan = card.querySelector(".dynamic-price");
+
+        function updatePrice() {
+            const defaultPrice = parseFloat(durationInput.dataset.defaultPrice) || 0;
+            const days = parseInt(durationInput.value, 10) || 1;
+            const people = parseInt(peopleInput.value, 10) || 1;
+            priceSpan.textContent = (defaultPrice * days * people).toFixed(2);
+        }
+
+        updatePrice();
+        durationInput.addEventListener("input", updatePrice);
+        peopleInput.addEventListener("input", updatePrice);
+    });
 });
-</script>
 
-<!-- End Of Des dynamic -->
-
-<!-- Dynamic Price -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".tour-card").forEach(card => {
+// Customize Booking
+function customizeBooking(link) {
+    const card = link.closest(".tour-card");
     const durationInput = card.querySelector(".duration-input");
-    const peopleInput   = card.querySelector(".people-input");
-    const priceSpan     = card.querySelector(".dynamic-price");
+    const peopleInput = card.querySelector(".people-input");
+    const dateInput = card.querySelector(".travel_date");
 
-    function updatePrice() {
-      const defaultPrice = parseFloat(durationInput.dataset.defaultPrice) || 0;
-      const days         = parseInt(durationInput.value, 10) || 1;
-      const people       = parseInt(peopleInput.value,   10) || 1;
-      priceSpan.textContent = (defaultPrice * days * people).toFixed(2);
+    const duration = parseInt(durationInput.value) || 1;
+    const people = parseInt(peopleInput.value) || 1;
+    const travelDate = dateInput.value || '';
+
+    if (travelDate.trim() === '') {
+        alert('Please select a travel date.');
+        return false;
     }
 
-    // initialize
-    updatePrice();
+    const url = new URL(link.href);
+    url.searchParams.set('duration', duration);
+    url.searchParams.set('people', people);
+    url.searchParams.set('travel_date', travelDate);
 
-    durationInput.addEventListener("input", updatePrice);
-    peopleInput.addEventListener("input", updatePrice);
-  });
-});
-
-// Fixing customizeBooking
-function customizeBooking(link) {
-  const card = link.closest(".tour-card");
-  const durationInput = card.querySelector(".duration-input");
-  const peopleInput = card.querySelector(".people-input");
-  const dateInput = card.querySelector(".travel_date");
-
-  const duration = parseInt(durationInput.value) || 1;
-  const people = parseInt(peopleInput.value) || 1;
-  const travelDate = dateInput.value || '';
-
-  if (travelDate.trim() === '') {
-    alert('Please select a travel date.');
-    return false; // prevent navigation
-  }
-
-  const url = new URL(link.href);
-  url.searchParams.set('duration', duration);
-  url.searchParams.set('people', people);
-  url.searchParams.set('travel_date', travelDate);
-
-  window.location.href = url.toString();
-  return false; // prevent default <a> behavior
+    window.location.href = url.toString();
+    return false;
 }
-</script>
 
-<script>
-document.getElementById("calendar").addEventListener("change", function() {
-  let inputDate = this.value.trim();
-  
-  let formattedDate = "";
+// Date Input Validation
+document.querySelectorAll(".travel_date").forEach(input => {
+    input.addEventListener("change", function() {
+        let inputDate = this.value.trim();
+        let formattedDate = "";
 
-  if (/^\d{2}-\d{2}-\d{4}$/.test(inputDate)) {
-    // d-m-y
-    let [day, month, year] = inputDate.split("-");
-    formattedDate = `${year}-${month}-${day}`; // to standard yyyy-mm-dd
-  } else if (/^\d{4}-\d{2}-\d{2}$/.test(inputDate)) {
-    // y-m-d
-    let [year, month, day] = inputDate.split("-");
-    formattedDate = `${year}-${month}-${day}`;
-  } else {
-    alert("Please enter date in dd-mm-yyyy or yyyy-mm-dd format!");
-    this.value = "";
-    return;
-  }
+        if (/^\d{2}-\d{2}-\d{4}$/.test(inputDate)) {
+            // dd-mm-yyyy
+            let [day, month, year] = inputDate.split("-");
+            formattedDate = `${year}-${month}-${day}`; // to yyyy-mm-dd
+        } else if (/^\d{4}-\d{2}-\d{2}$/.test(inputDate)) {
+            // yyyy-mm-dd
+            formattedDate = inputDate;
+        } else {
+            alert("Please enter date in dd-mm-yyyy or yyyy-mm-dd format!");
+            this.value = "";
+            return;
+        }
 
-  console.log(formattedDate);
+        this.value = formattedDate;
+    });
 });
 
-</script>
-
-
-<!-- End Of Dynamic Price -->
-<script>
+// Sort Cards
 function sortCards() {
-  const container = document.querySelector(".row"); // The div that holds all tour cards
-  const cards = Array.from(container.querySelectorAll(".col-12")); // All tour cards
-  const sortOption = document.getElementById("sortSelect").value;
+    const container = document.getElementById('tour-cards');
+    const cards = Array.from(container.querySelectorAll('.col-12'));
+    const sortOption = document.getElementById('sortSelect').value;
 
-  if (sortOption === "popular") {
-    // Sort by popularity (highest number of people booked first)
-    cards.sort((a, b) => {
-      const aBooked = parseInt(a.querySelector(".booked-count").textContent) || 0;
-      const bBooked = parseInt(b.querySelector(".booked-count").textContent) || 0;
-      return bBooked - aBooked; // Descending order
-    });
-  } else if (sortOption === "default") {
-    // Sort by original order
-    cards.sort((a, b) => {
-      const aIndex = parseInt(a.dataset.originalIndex);
-      const bIndex = parseInt(b.dataset.originalIndex);
-      return aIndex - bIndex; // Ascending order
-    });
-  }
+    try {
+        if (sortOption === 'popular') {
+            cards.sort((a, b) => {
+                const aBooked = parseInt(a.querySelector('.booked-count')?.textContent) || 0;
+                const bBooked = parseInt(b.querySelector('.booked-count')?.textContent) || 0;
+                return bBooked - aBooked; // Descending order
+            });
+        } else if (sortOption === 'default') {
+            cards.sort((a, b) => {
+                const aIndex = parseInt(a.dataset.originalIndex) || 0;
+                const bIndex = parseInt(b.dataset.originalIndex) || 0;
+                return aIndex - bIndex; // Ascending order
+            });
+        }
 
-  // Re-append cards in the sorted order
-  container.innerHTML = "";
-  cards.forEach(card => container.appendChild(card));
+        // Re-append cards
+        container.innerHTML = '';
+        cards.forEach(card => container.appendChild(card));
+
+        // Persist sort selection in URL
+        const url = new URL(window.location);
+        url.searchParams.set('sort', sortOption);
+        window.history.pushState({}, '', url);
+    } catch (error) {
+        console.error('Error sorting cards:', error);
+    }
 }
 </script>
 </body>
 </html>
-<?php include "../admin/footer.php";
-?>
+<?php include "../admin/footer.php"; ?>

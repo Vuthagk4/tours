@@ -26,7 +26,7 @@ $result = $conn->query($query);
 <body>
 
 <div class="container mt-5 w-75" style="position:absolute; right:0px">
-    <h2 class="text-center mb-4">Booking Dashboard</h2>
+    <h2 class="text- mb-4">Booking Dashboard</h2>
 
     <!-- Search and Filter -->
     <div class="d-flex justify-content-between mb-3">

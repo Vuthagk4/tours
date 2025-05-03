@@ -74,13 +74,12 @@ $result = $conn->query($query);
     }
 </style>
 <body>
-<div class="row">
-    <div class="col">
-        Booking Managment/
+
+<div style="position:absolute; right:2rem;padding-top:1rem;" class="w-75 table-responsive mt-3">
+    <div class="row">
+        <div class="col"><h5>Booking Management/</h5></div>
     </div>
-</div>
-<div style="position:absolute; right:2rem;" class="w-75 table-responsive mt-3">
-    <table class="table table-bordered table-sm">
+    <table class="table table-bordered table-sm mt-3">
         <thead>
             <tr>
                 <th>Booking ID</th>
