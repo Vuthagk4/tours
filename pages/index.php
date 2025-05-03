@@ -304,8 +304,8 @@ if (!empty($searchTerm)) {
             People:
             <input type="number" class="people-input" min="1" value="1">
           </label>
-          <label for="calendar">Date:</label> 
-          <input type="text" id="calendar" name="booking_date" class="booking_date" placeholder="yyyy-mm-dd">
+          <label for="calendar">Travel Date:</label> 
+          <input type="text" id="calendar" name="travel_date" class="travel_date" placeholder="yyyy-mm-dd">
           <p class="total-price">
             Total: $<span class="dynamic-price">
               <?= number_format($defaultPrice * $defaultDuration, 2) ?>
@@ -379,21 +379,21 @@ function customizeBooking(link) {
   const card = link.closest(".tour-card");
   const durationInput = card.querySelector(".duration-input");
   const peopleInput = card.querySelector(".people-input");
-  const dateInput = card.querySelector(".booking_date");
+  const dateInput = card.querySelector(".travel_date");
 
   const duration = parseInt(durationInput.value) || 1;
   const people = parseInt(peopleInput.value) || 1;
-  const bookingDate = dateInput.value || '';
+  const travelDate = dateInput.value || '';
 
-  if (bookingDate.trim() === '') {
-    alert('Please select a booking date.');
+  if (travelDate.trim() === '') {
+    alert('Please select a travel date.');
     return false; // prevent navigation
   }
 
   const url = new URL(link.href);
   url.searchParams.set('duration', duration);
   url.searchParams.set('people', people);
-  url.searchParams.set('booking_date', bookingDate);
+  url.searchParams.set('travel_date', travelDate);
 
   window.location.href = url.toString();
   return false; // prevent default <a> behavior
