@@ -46,7 +46,7 @@ if (!empty($searchTerm)) {
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             align-items: stretch;
             min-height: 200px;
-            margin: 20px auto;
+            margin: 20px 0;
             max-width: 900px;
         }
 
@@ -212,15 +212,189 @@ if (!empty($searchTerm)) {
             border-radius: 8px 0 0 8px;
         }
 
-        @media (max-width: 576px) {
-            .filter-search-container .col-sm-4,
-            .filter-search-container .col-sm-8 {
-                margin-bottom: 15px;
+        /* New Container Layout */
+        .tour-container {
+            display: flex;
+            justify-content: flex-start;
+            gap: 20px;
+            padding: 0 15px;
+        }
+
+        .tour-cards {
+            flex: 3;
+        }
+
+        .highlights-column {
+            flex: 1;
+            max-width: 300px;
+            padding: 15px;
+        }
+
+        .highlight-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .highlight-card i {
+            font-size: 24px;
+            color: #0071c2;
+            margin-right: 10px;
+        }
+
+        .highlight-card .content {
+            flex: 1;
+        }
+
+        .highlight-card h6 {
+            font-size: 14px;
+            color: #333;
+            margin: 0 0 5px;
+        }
+
+        .highlight-card p {
+            font-size: 12px;
+            color: #666;
+            margin: 0;
+        }
+        .highlights-column {
+            position: fixed;
+            top: 14rem;
+            right: 0.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            z-index: 1000;
+        }
+        .highlights-column >a {
+            text-decoration: none;
+        }
+
+        .emergency_contact {
+            width: 40px;
+            height: 40px;
+            background-color: dodgerblue;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .emergency_contact:hover {
+            transform: scale(1.1);
+        }
+
+        .emergency_contact i {
+            color: white;
+            font-size: 18px;
+        }
+
+        .contact-modal {
+            position: fixed;
+            top: 14rem;
+            right: -300px;
+            width: 250px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            padding: 15px;
+            z-index: 1001;
+            transition: right 0.3s ease;
+        }
+
+        .contact-modal.show {
+            right: 3rem;
+        }
+
+        .contact-modal .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .contact-modal h6 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .contact-option {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .contact-option:hover {
+            background: #f0f0f0;
+        }
+
+        .contact-option i {
+            margin-right: 10px;
+            font-size: 18px;
+            color: dodgerblue;
+        }
+
+        .contact-option a {
+            text-decoration: none;
+            color: #333;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .highlights-column {
+                position: static;
+                flex-direction: row;
+                justify-content: center;
+                gap: 1rem;
+                margin-bottom: 20px;
             }
 
-            .filter-search-container .row {
+            .emergency_contact {
+                width: 35px;
+                height: 35px;
+            }
+
+            .emergency_contact i {
+                font-size: 16px;
+            }
+
+            .contact-modal {
+                top: auto;
+                bottom: 0;
+                right: 0;
+                width: 100%;
+                border-radius: 8px 8px 0 0;
+            }
+
+            .contact-modal.show {
+                right: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .tour-container {
                 flex-direction: column;
-                align-items: stretch;
+            }
+
+            .tour-cards {
+                order: 2;
+            }
+
+            .highlights-column {
+                order: 1;
+                max-width: 100%;
             }
 
             .tour-card {
@@ -271,110 +445,175 @@ if (!empty($searchTerm)) {
         </div>
     </div>
 
-    <!-- Tour Cards Container -->
-    <div class="row" id="tour-cards">
-        <?php
-        $index = 0; // Initialize index to track original order
-        while ($tour = $tours->fetch_assoc()): ?>
-            <!-- Add data-original-index to track original order -->
-            <div class="col-12 mb-4" data-original-index="<?= $index ?>">
-                <div class="tour-card">
-                    <!-- 1) IMAGE COLUMN -->
-                    <div class="tour-image">
-                        <img src="../Uploads/<?= htmlspecialchars($tour['image']) ?>" 
-                             alt="<?= htmlspecialchars($tour['title']) ?>">
-                    </div>
+    <!-- New Tour Container with Cards and Highlights Column -->
+    <div class="tour-container">
+        <!-- Tour Cards -->
+        <div class="tour-cards" id="tour-cards">
+            <?php
+            $index = 0; // Initialize index to track original order
+            while ($tour = $tours->fetch_assoc()): ?>
+                <div class="col-12 mb-4" data-original-index="<?= $index ?>">
+                    <div class="tour-card">
+                        <!-- 1) IMAGE COLUMN -->
+                        <div class="tour-image">
+                            <img src="../Uploads/<?= htmlspecialchars($tour['image']) ?>" 
+                                 alt="<?= htmlspecialchars($tour['title']) ?>">
+                        </div>
 
-                    <!-- 2) INFO COLUMN -->
-                    <div class="tour-info" style="position: relative;">
-                        <h5 class="title"><?= htmlspecialchars($tour['title']) ?></h5>
-                        <p class="meta"><strong>Destination:</strong> <?= htmlspecialchars($tour['destination']) ?></p>
+                        <!-- 2) INFO COLUMN -->
+                        <div class="tour-info" style="position: relative;">
+                            <h5 class="title"><?= htmlspecialchars($tour['title']) ?></h5>
+                            <p class="meta"><strong>Destination:</strong> <?= htmlspecialchars($tour['destination']) ?></p>
 
-                        <!-- Location Map Link -->
-                        <?php
-                        $coords = explode(",", $tour['location']);
-                        $mapLink = (count($coords) == 2) 
-                            ? "https://www.google.com/maps?q=" . trim($coords[0]) . "," . trim($coords[1])
-                            : "javascript:void(0);";
-                        ?>
-                        <p class="meta">
-                            <strong>Location:</strong>
-                            <a href="<?= $mapLink ?>" target="_blank">View on Map</a>
-                        </p>
-
-                        <!-- Description -->
-                        <?php
-                        $fullDesc = htmlspecialchars($tour['description']);
-                        $shortDesc = substr($fullDesc, 0, 100);
-                        ?>
-                        <p class="description" 
-                           data-fulltext="<?= $fullDesc ?>" 
-                           data-shorttext="<?= $shortDesc ?>">
-                            <?= $shortDesc ?>…
-                        </p>
-                        <a href="javascript:void(0)" class="see-more">Show More</a>
-
-                        <!-- Total People Booked with span for sorting -->
-                        <div style="position: absolute; right:10px; top:0;">
+                            <!-- Location Map Link -->
                             <?php
-                            $tour_id = $tour['tour_id'];
-                            $stmt = $conn->prepare("SELECT SUM(people) AS total_people FROM bookings WHERE tour_id = ?");
-                            $stmt->bind_param("i", $tour_id);
-                            $stmt->execute();
-                            $result = $stmt->get_result();
-                            $totalPeople = $result->fetch_assoc()['total_people'] ?? 0;
-                            $stmt->close();
-                            $starColor = $totalPeople >= 100 ? "gold" : "black";
-                            $stars = min(floor($totalPeople / 100), 5);
+                            $coords = explode(",", $tour['location']);
+                            $mapLink = (count($coords) == 2) 
+                                ? "https://www.google.com/maps?q=" . trim($coords[0]) . "," . trim($coords[1])
+                                : "javascript:void(0);";
                             ?>
-                            <span class="booked-count"><?= $totalPeople ?></span>
-                            <?php for ($i = 0; $i < $stars; $i++): ?>
-                                <i style="color: <?= $starColor ?>;" class="fa-solid fa-star"></i>
-                            <?php endfor; ?>
-                            people booked
+                            <p class="meta">
+                                <strong>Location:</strong>
+                                <a href="<?= $mapLink ?>" target="_blank">View on Map</a>
+                            </p>
+                            <p>
+                            <strong class="meta">Type: <span><?= htmlspecialchars($tour['type'] ?? '--') ?></span></strong>
+                            </p>
+
+                            <!-- Description -->
+                            <?php
+                            $fullDesc = htmlspecialchars($tour['description']);
+                            $shortDesc = substr($fullDesc, 0, 100);
+                            ?>
+                            <p class="description" 
+                               data-fulltext="<?= $fullDesc ?>" 
+                               data-shorttext="<?= $shortDesc ?>">
+                                <?= $shortDesc ?>…
+                            </p>
+                            <a href="javascript:void(0)" class="see-more">Show More</a>
+
+                            <!-- Total People Booked with span for sorting -->
+                            <div style="position: absolute; right:10px; top:0;">
+                                <?php
+                                $tour_id = $tour['tour_id'];
+                                $stmt = $conn->prepare("SELECT SUM(people) AS total_people FROM bookings WHERE tour_id = ?");
+                                $stmt->bind_param("i", $tour_id);
+                                $stmt->execute();
+                                $result = $stmt->get_result();
+                                $totalPeople = $result->fetch_assoc()['total_people'] ?? 0;
+                                $stmt->close();
+                                $starColor = $totalPeople >= 100 ? "gold" : "black";
+                                $stars = min(floor($totalPeople / 100), 5);
+                                ?>
+                                <span class="booked-count"><?= $totalPeople ?></span>
+                                <?php for ($i = 0; $i < $stars; $i++): ?>
+                                    <i style="color: <?= $starColor ?>;" class="fa-solid fa-star"></i>
+                                <?php endfor; ?>
+                                people booked
+                            </div>
+                        </div>
+
+                        <!-- 3) BOOKING COLUMN -->
+                        <div class="tour-book">
+                            <?php
+                            $defaultDuration = (int) $tour['duration'];
+                            $defaultPrice = (float) $tour['price'];
+                            ?>
+                            <p class="price-label">Price from</p>
+                            <p class="price-amount">$<?= number_format($defaultPrice, 2) ?></p>
+                            <label>
+                                Duration:
+                                <input type="number" 
+                                       class="duration-input" 
+                                       min="1" 
+                                       value="<?= $defaultDuration ?>" 
+                                       data-default-price="<?= $defaultPrice ?>">
+                            </label>
+                            <label>
+                                People:
+                                <input type="number" class="people-input" min="1" value="1">
+                            </label>
+                            <label for="calendar-<?= $tour['tour_id'] ?>">Travel Date:</label> 
+                            <input type="text" 
+                                   id="calendar-<?= $tour['tour_id'] ?>" 
+                                   name="travel_date" 
+                                   class="travel_date" 
+                                   placeholder="yyyy-mm-dd">
+                            <p class="total-price">
+                                Total: $<span class="dynamic-price">
+                                    <?= number_format($defaultPrice * $defaultDuration, 2) ?>
+                                </span>
+                            </p>
+                            <a href="tour_details.php?id=<?= $tour['tour_id'] ?>" 
+                               onclick="return customizeBooking(this)" 
+                               class="btn btn-primary btn-book">
+                                Book Now
+                            </a>
                         </div>
                     </div>
+                </div>
+            <?php $index++; endwhile; ?>
+        </div>
 
-                    <!-- 3) BOOKING COLUMN -->
-                    <div class="tour-book">
-                        <?php
-                        $defaultDuration = (int) $tour['duration'];
-                        $defaultPrice = (float) $tour['price'];
-                        ?>
-                        <p class="price-label">Price from</p>
-                        <p class="price-amount">$<?= number_format($defaultPrice, 2) ?></p>
-                        <label>
-                            Duration:
-                            <input type="number" 
-                                   class="duration-input" 
-                                   min="1" 
-                                   value="<?= $defaultDuration ?>" 
-                                   data-default-price="<?= $defaultPrice ?>">
-                        </label>
-                        <label>
-                            People:
-                            <input type="number" class="people-input" min="1" value="1">
-                        </label>
-                        <label for="calendar-<?= $tour['tour_id'] ?>">Travel Date:</label> 
-                        <input type="text" 
-                               id="calendar-<?= $tour['tour_id'] ?>" 
-                               name="travel_date" 
-                               class="travel_date" 
-                               placeholder="yyyy-mm-dd">
-                        <p class="total-price">
-                            Total: $<span class="dynamic-price">
-                                <?= number_format($defaultPrice * $defaultDuration, 2) ?>
-                            </span>
-                        </p>
-                        <a href="tour_details.php?id=<?= $tour['tour_id'] ?>" 
-                           onclick="return customizeBooking(this)" 
-                           class="btn btn-primary btn-book">
-                            Book Now
-                        </a>
-                    </div>
+        <!-- Why Book With Us Column -->
+        <div class="highlights-column" style="position:fixed; top: 14rem;right :8rem;">
+            <h5 class="mb-3">Why Book With Us</h5>
+            <div class="highlight-card">
+                <i class="fas fa-users"></i>
+                <div class="content">
+                    <h6>Expert Guides</h6>
+                    <p>Our tours are led by knowledgeable local guides who ensure an enriching experience.</p>
                 </div>
             </div>
-        <?php $index++; endwhile; ?>
+            <div class="highlight-card">
+                <i class="fas fa-undo-alt"></i>
+                <div class="content">
+                    <h6>Flexible Cancellations</h6>
+                    <p>Change of plans? Cancel or modify your booking with ease up to 24 hours before departure.</p>
+                </div>
+            </div>
+            <div class="highlight-card">
+                <i class="fas fa-tag"></i>
+                <div class="content">
+                    <h6>Best Price Guarantee</h6>
+                    <p>We offer competitive prices with no hidden fees, ensuring you get the best deal.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Emergency contact -->
+<!-- Emergency Contact Column -->
+<div class="highlights-column">
+        <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
+            <i class="fa-solid fa-phone"></i>
+        </a>
+        <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
+            <i class="fa-brands fa-telegram"></i>
+        </a>
+        <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
+            <i class="fa-solid fa-envelope"></i>
+        </a>
+    </div>
+
+    <!-- Contact Modal -->
+    <div class="contact-modal" id="contactModal">
+        <span class="close-btn" onclick="toggleContactModal()"> <i class="fa-solid fa-xmark"></i> </span>
+        <h6>Contact Us</h6>
+        <div class="contact-option">
+            <i class="fa-solid fa-phone"></i>
+            <a href="tel:+1234567890">015 769 953</a>
+        </div>
+        <div class="contact-option">
+            <i class="fa-brands fa-telegram"></i>
+            <a href="https://t.me/thany_oun" target="_blank">OUN THANY</a>
+        </div>
+        <div class="contact-option">
+            <i class="fa-solid fa-envelope"></i>
+            <a href="mailto:support@tours.com">ounthany@gmail.com</a>
+        </div>
+    </div>
+        <!--  -->
     </div>
 </div>
 
@@ -498,7 +737,12 @@ function sortCards() {
         console.error('Error sorting cards:', error);
     }
 }
+
+function toggleContactModal() {
+            const modal = document.getElementById('contactModal');
+            modal.classList.toggle('show');
+        }
 </script>
 </body>
 </html>
-<?php include "../admin/footer.php"; ?>
+<?php include "./user_footer.php"; ?>

@@ -2,14 +2,14 @@
 include '../includes/config.php';
 include '../includes/admin_header.php';
 
-// Fetch all bookings with user and tour details
-$query = "SELECT b.booking_id, u.name AS user_name, t.title AS tour_title, b.travel_date, b.status, 
+// Fetch all bookings with user, tour details, and type
+$query = "SELECT b.booking_id, u.name AS user_name, t.title AS tour_title, t.type, b.travel_date, b.status, 
                  p.status AS payment_status 
           FROM bookings b
           JOIN users u ON b.user_id = u.user_id
           JOIN tours t ON b.tour_id = t.tour_id
           LEFT JOIN payments p ON b.booking_id = p.booking_id
-          ORDER BY b.booking_date DESC";
+          ORDER BY b.booking_id DESC";
 
 $result = $conn->query($query);
 ?>
@@ -47,6 +47,7 @@ $result = $conn->query($query);
                 <th>User</th>
                 <th>Tour</th>
                 <th>Travel Date</th>
+                <th>Type</th>
                 <th>Status</th>
                 <th>Payment</th>
             </tr>
@@ -58,6 +59,8 @@ $result = $conn->query($query);
                     <td><?= htmlspecialchars($row['user_name']); ?></td>
                     <td><?= htmlspecialchars($row['tour_title']); ?></td>
                     <td><?= htmlspecialchars($row['travel_date']); ?></td>
+                    <td><?= htmlspecialchars($row['type']) && $row['type'] !== '' ? htmlspecialchars($row['type']) : '--' ?></td>
+
                     <td class="status"><?= ucfirst($row['status']); ?></td>
                     <td class="payment"><?= ucfirst($row['payment_status'] ?? 'Pending'); ?></td>
                 </tr>

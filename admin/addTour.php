@@ -47,6 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["add_tour"])) {
     $destination_id = intval($_POST["destination_id"]);
     $title = htmlspecialchars(trim($_POST["title"]));
     $description = htmlspecialchars(trim($_POST["description"]));
+    $type=htmlspecialchars(trim($_POST["type"]));
     $price = floatval($_POST["price"]);
     $duration = htmlspecialchars(trim($_POST["duration"]));
 
@@ -68,8 +69,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["add_tour"])) {
     }
 
     // Insert into database
-    $stmt = $conn->prepare("INSERT INTO tours (destination_id, title, description, price, duration, image) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("issdss", $destination_id, $title, $description, $price, $duration, $new_image_name);
+    $stmt = $conn->prepare("INSERT INTO tours (destination_id, title, description, type , price, duration, image) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("isssdss", $destination_id, $title, $description,$type, $price, $duration, $new_image_name);
 
     if ($stmt->execute()) {
         echo "<script>alert('Tour added successfully!'); window.location.href='addTour.php';</script>";
@@ -84,6 +85,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["update_tour"])) {
     $destination_id = intval($_POST["destination_id"]);
     $title = htmlspecialchars(trim($_POST["title"]));
     $description = htmlspecialchars(trim($_POST["description"]));
+    $type=htmlspecialchars(trim($_POST["type"]));
     $price = floatval($_POST["price"]);
     $duration = htmlspecialchars(trim($_POST["duration"]));
 
@@ -106,13 +108,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["update_tour"])) {
 
         // Update with image
         $stmt = $conn->prepare(
-            "UPDATE tours SET destination_id = ?, title = ?, description = ?, price = ?, duration = ?, image = ? WHERE tour_id = ?"
+            "UPDATE tours SET destination_id = ?, title = ?, description = ?, type=?, price = ?, duration = ?, image = ? WHERE tour_id = ?"
         );
         $stmt->bind_param(
-            "issdssi",
+            "isssdssi",
             $destination_id,
             $title,
             $description,
+            $type,
             $price,
             $duration,
             $new_image_name,
@@ -121,13 +124,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["update_tour"])) {
     } else {
         // Update without image
         $stmt = $conn->prepare(
-            "UPDATE tours SET destination_id = ?, title = ?, description = ?, price = ?, duration = ? WHERE tour_id = ?"
+            "UPDATE tours SET destination_id = ?, title = ?, description = ?, type= ?, price = ?, duration = ? WHERE tour_id = ?"
         );
         $stmt->bind_param(
-            "issdsi",
+            "isssdsi",
             $destination_id,
             $title,
             $description,
+            $type,
             $price,
             $duration,
             $tour_id
@@ -235,6 +239,7 @@ body {
         <th>Destination</th>
         <th>Title</th>
         <th>Description</th>
+        <th>Type</th>
         <th>Price</th>
         <th>Duration</th>
         <th>Image</th>
@@ -246,6 +251,7 @@ body {
         <td><?= htmlspecialchars($tour["destination"]) ?></td>
         <td><?= htmlspecialchars($tour["title"]) ?></td>
         <td><?= htmlspecialchars($tour["description"]) ?></td>
+        <td><?= htmlspecialchars($tour["type"]) ?></td> <!-- Fixed line -->
         <td>$<?= number_format($tour["price"], 2) ?></td>
         <td><?= htmlspecialchars($tour["duration"]) ?></td>
         <td>
@@ -261,6 +267,7 @@ body {
                data-destination-id="<?= $tour["destination_id"] ?>"
                data-title="<?= htmlspecialchars($tour["title"]) ?>" 
                data-description="<?= htmlspecialchars($tour["description"]) ?>"
+               data-type="<?= htmlspecialchars($tour["type"]) ?>"
                data-price="<?= $tour["price"] ?>"
                data-duration="<?= htmlspecialchars($tour["duration"]) ?>"
                data-image="<?= htmlspecialchars($tour["image"]) ?>"
@@ -301,7 +308,12 @@ body {
 
                     <div class="mb-3">
                         <label for="tourDescription" class="form-label">Description</label>
-                        <textarea class="form-control" id="tourDescription" name="description" rows="3" required></textarea>
+                        <textarea class="form-control" id="tourDescription" name="description" rows="1" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                    <label for="tourType" class="form-label">Type</label>
+                    <input type="text" class="form-control" id="tourType" placeholder=" hotel ,sea, island , temple..." name="type" required>
+                        
                     </div>
 
                     <div class="mb-3">
@@ -354,6 +366,12 @@ body {
                     <label for="edit_description">Description:</label>
                     <textarea name="description" id="edit_description" class="form-control" rows="3" required></textarea>
 
+            
+                    <label for="edit_tourType" class="form-label">Type</label>
+                    <input type="text" class="form-control" id="edit_tourType" name="type" required>
+                        
+            
+
                     <label for="edit_price">Price:</label>
                     <input type="number" name="price" id="edit_price" class="form-control" step="0.01" required>
 
@@ -385,6 +403,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("edit_destination_id").value = this.getAttribute("data-destination-id");
             document.getElementById("edit_title").value = this.getAttribute("data-title");
             document.getElementById("edit_description").value = this.getAttribute("data-description");
+            document.getElementById("edit_tourType").value= this.getAttribute("data-type")
             document.getElementById("edit_price").value = this.getAttribute("data-price");
             document.getElementById("edit_duration").value = this.getAttribute("data-duration");
             const imageSrc = this.getAttribute("data-image");
