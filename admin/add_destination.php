@@ -5,10 +5,24 @@ include '../includes/config.php';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = $_POST['name'];
     $location = $_POST['location'];
+    $category = $_POST['category'];
+
+    // Handle image upload
+    $image = $_FILES['image'];
+    $image_name = uniqid() . '_' . basename($image['name']);
+    $upload_dir = '../uploads/';
+    $upload_file = $upload_dir . $image_name;
+
+    if (move_uploaded_file($image['tmp_name'], $upload_file)) {
+        // Image uploaded successfully
+    } else {
+        echo "Error uploading image.";
+        exit;
+    }
 
     // Use Prepared Statement for Security
-    $stmt = $conn->prepare("INSERT INTO destinations (name, location) VALUES (?, ?)");
-    $stmt->bind_param("ss", $name, $location);
+    $stmt = $conn->prepare("INSERT INTO destinations (name, location, type, image) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("ssss", $name, $location, $category, $image_name);
 
     if ($stmt->execute()) {
         echo "<script>alert('Destination added successfully!');</script>";
@@ -104,7 +118,7 @@ input:focus {
 }
 </style>
 
-<form style="box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;" action="add_destination.php" class="form " method="POST">
+<form style="box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;" action="add_destination.php" class="form" method="POST" enctype="multipart/form-data">
     <h3>Add Destination</h3>
 
     <div class="form-group w-100">
@@ -114,7 +128,17 @@ input:focus {
 
     <div class="form-group">
         <label for="location">Location:</label>
-        <input type="text" id="location" name="location" placeholder="location" required >
+        <input type="text" id="location" name="location" placeholder="location" required>
+    </div>
+
+    <div class="form-group">
+        <label for="category">Category:</label>
+        <input type="text" name="category" id="category" placeholder="Enter category..." required>
+    </div>
+
+    <div class="form-group">
+        <label for="image">Image:</label>
+        <input type="file" name="image" id="image" accept="image/*" required>
     </div>
 
     <div class="full-width">
@@ -123,6 +147,46 @@ input:focus {
 
     <input type="submit" class="w-100 btn btn-primary" value="Add Destination">
 </form>
+
+<!-- Destination Table -->
+<div class="container mt-4">
+    <h3 class="text-center mb-3">All Destinations</h3>
+    <table class="table table-bordered table-hover w-75" style="position:relative; right:1rem;">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Type</th>
+                <th>Image</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            $result = $conn->query("SELECT * FROM destinations WHERE isDelete = 0 ORDER BY destination_id DESC");
+            if ($result->num_rows > 0) {
+                $i = 1;
+                while ($row = $result->fetch_assoc()) {
+                    echo "<tr>
+                        <td>" . $i++ . "</td>
+                        <td>{$row['name']}</td>
+                        <td>{$row['location']}</td>
+                        <td>{$row['type']}</td>
+                        <td><img src='../uploads/{$row['image']}' width='100' height='70'></td>
+                        <td>
+                            <a href='update_destination.php?id={$row['destination_id']}' class='btn btn-sm btn-warning'>Update</a>
+                            <a href='?delete_id={$row['destination_id']}' class='btn btn-sm btn-danger' onclick='return confirm(\"Are you sure to delete this destination?\")'>Delete</a>
+                        </td>
+                    </tr>";
+                }
+            } else {
+                echo "<tr><td colspan='6' class='text-center'>No destinations found.</td></tr>";
+            }
+            ?>
+        </tbody>
+    </table>
+</div>
 
 <?php
 include '../admin/footer.php';

@@ -37,7 +37,7 @@ $query = "
     FROM bookings b
     JOIN users u ON b.user_id = u.user_id
     JOIN tours t ON b.tour_id = t.tour_id
-    ORDER BY b.booking_date DESC
+    ORDER BY b.booking_id DESC
 ";
 $result = $conn->query($query);
 ?>

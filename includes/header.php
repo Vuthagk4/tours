@@ -227,7 +227,7 @@ include 'config.php';
     </div>
 
     <!-- Navigation Menu -->
-    <nav class="navbar navbar-expand-lg navbar-custom" style="position:sticky;top:0px;z-index:999999;">
+    <nav class="navbar navbar-expand-lg navbar-custom" style="position:sticky;top:0px;z-index:9999;">
         <div class="container">
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>

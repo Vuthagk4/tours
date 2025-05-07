@@ -1,26 +1,38 @@
+
 <?php
 include "../includes/config.php";
 include "../includes/header.php";
 
 // Check if a search term is provided via GET
 $searchTerm = isset($_GET['search']) ? trim($_GET['search']) : '';
-// Check sort option
 $sortOption = isset($_GET['sort']) ? htmlspecialchars($_GET['sort']) : 'default';
 
-// Fetch tours based on search term or display all if no search
+// Fetch tours with primary image
 if (!empty($searchTerm)) {
     $searchTerm = '%' . $searchTerm . '%';
-    $stmt = $conn->prepare("SELECT tours.*, destinations.name AS destination, destinations.location 
-                            FROM tours 
-                            JOIN destinations ON tours.destination_id = destinations.destination_id 
-                            WHERE tours.title LIKE ? OR destinations.name LIKE ?");
+    $stmt = $conn->prepare("SELECT t.*, d.name AS destination, d.location 
+                            FROM tours t 
+                            JOIN destinations d ON t.destination_id = d.destination_id 
+                            WHERE t.title LIKE ? OR d.name LIKE ? AND t.isDeleted = 0");
     $stmt->bind_param("ss", $searchTerm, $searchTerm);
     $stmt->execute();
     $tours = $stmt->get_result();
 } else {
-    $tours = $conn->query("SELECT tours.*, destinations.name AS destination, destinations.location 
-                           FROM tours 
-                           JOIN destinations ON tours.destination_id = destinations.destination_id");
+    $tours = $conn->query("SELECT t.*, d.name AS destination, d.location 
+                           FROM tours t 
+                           JOIN destinations d ON t.destination_id = d.destination_id 
+                           WHERE t.isDeleted = 0");
+}
+
+// Fetch all images for each tour (primary + additional)
+$tour_images = [];
+$result = $conn->query("SELECT tour_id, image AS primary_image FROM tours WHERE isDeleted = 0");
+while ($row = $result->fetch_assoc()) {
+    $tour_images[$row['tour_id']] = [['image_path' => $row['primary_image'], 'description' => 'Primary Image']];
+}
+$result = $conn->query("SELECT tour_id, image_path, description FROM tour_images");
+while ($row = $result->fetch_assoc()) {
+    $tour_images[$row['tour_id']][] = $row;
 }
 ?>
 <!DOCTYPE html>
@@ -33,10 +45,24 @@ if (!empty($searchTerm)) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <style>
-        body {
-            height: 150vh;
-        }
+            html, body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
 
+            .container {
+                flex: 1 0 auto; /* Grow to fill available space, pushing footer down */
+            }
+        body { 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Ensure the body takes up at least the viewport height */
+            margin: 0; 
+            padding-bottom: 60px; /* Space for the footer */
+            min-height: 100vh;
+            position: relative;
+        }
         .tour-card {
             display: grid;
             grid-template-columns: 370px 1fr 200px;
@@ -49,31 +75,16 @@ if (!empty($searchTerm)) {
             margin: 20px 0;
             max-width: 900px;
         }
-
         .tour-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
+            cursor: pointer;
         }
-
-        .tour-info {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .tour-info .title {
-            margin: 0 0 8px;
-            color: #0071c2;
-        }
-
-        .tour-info .meta {
-            margin: 4px 0;
-            font-size: 14px;
-            color: #555;
-        }
-
+        .tour-info { padding: 20px; display: flex; flex-direction: column; }
+        .tour-info .title { margin: 0 0 8px; color: #0071c2; }
+        .tour-info .meta { margin: 4px 0; font-size: 14px; color: #555; }
         .tour-info .description {
             margin: 12px 0;
             font-size: 14px;
@@ -83,7 +94,6 @@ if (!empty($searchTerm)) {
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
-
         .tour-info .see-more {
             font-size: 14px;
             color: #0071c2;
@@ -91,7 +101,6 @@ if (!empty($searchTerm)) {
             cursor: pointer;
             margin-top: auto;
         }
-
         .tour-book {
             padding: 20px;
             display: flex;
@@ -99,27 +108,9 @@ if (!empty($searchTerm)) {
             justify-content: space-between;
             border-left: 1px solid #e0e0e0;
         }
-
-        .tour-book .price-label {
-            font-size: 12px;
-            color: #555;
-            margin: 0;
-        }
-
-        .tour-book .price-amount {
-            font-size: 20px;
-            color: green;
-            font-weight: bold;
-            margin: 4px 0 12px;
-        }
-
-        .tour-book label {
-            font-size: 14px;
-            color: #333;
-            display: block;
-            margin-bottom: 8px;
-        }
-
+        .tour-book .price-label { font-size: 12px; color: #555; margin: 0; }
+        .tour-book .price-amount { font-size: 20px; color: green; font-weight: bold; margin: 4px 0 12px; }
+        .tour-book label { font-size: 14px; color: #333; display: block; margin-bottom: 8px; }
         .tour-book input {
             width: 100%;
             margin-top: 4px;
@@ -127,13 +118,7 @@ if (!empty($searchTerm)) {
             border: 1px solid #ccc;
             border-radius: 4px;
         }
-
-        .tour-book .total-price {
-            font-size: 14px;
-            font-weight: bold;
-            margin: 12px 0;
-        }
-
+        .tour-book .total-price { font-size: 14px; font-weight: bold; margin: 12px 0; }
         .btn-book {
             display: block;
             text-align: center;
@@ -143,44 +128,22 @@ if (!empty($searchTerm)) {
             border-radius: 4px;
             text-decoration: none;
         }
-
-        .btn-book:hover {
-            background: #005999;
-        }
-
-        .description {
-            color: #555;
-        }
-
-        .see-more {
-            color: blue;
-            cursor: pointer;
-            display: block;
-            margin-top: 5px;
-        }
-
-        .see-more:hover {
-            text-decoration: underline;
-        }
-
-        .filter-search-container {
-            padding: 15px 0;
-            margin-bottom: 20px;
-        }
-
+        .btn-book:hover { background: #005999; }
+        .description { color: #555; }
+        .see-more { color: blue; cursor: pointer; display: block; margin-top: 5px; }
+        .see-more:hover { text-decoration: underline; }
+        .filter-search-container { padding: 15px 0; margin-bottom: 20px; }
         .filter-search-container .form-select,
         .filter-search-container .form-control {
             border-radius: 8px;
             border: 1px solid #ced4da;
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
-
         .filter-search-container .form-select:focus,
         .filter-search-container .form-control:focus {
             border-color: #007bff;
             box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
         }
-
         .filter-search-container .btn-primary {
             background-color: #007bff;
             border: none;
@@ -188,48 +151,26 @@ if (!empty($searchTerm)) {
             padding: 10px 20px;
             transition: background-color 0.3s ease;
         }
-
-        .filter-search-container .btn-primary:hover {
-            background-color: #0056b3;
-        }
-
+        .filter-search-container .btn-primary:hover { background-color: #0056b3; }
         .filter-search-container .btn-link {
             color: #dc3545;
             text-decoration: none;
             font-size: 0.9rem;
             transition: color 0.3s ease;
         }
-
         .filter-search-container .btn-link:hover {
             color: #b02a37;
             text-decoration: underline;
         }
-
         .filter-search-container .input-group-text {
             background: #fff;
             border: 1px solid #ced4da;
             border-right: none;
             border-radius: 8px 0 0 8px;
         }
-
-        /* New Container Layout */
-        .tour-container {
-            display: flex;
-            justify-content: flex-start;
-            gap: 20px;
-            padding: 0 15px;
-        }
-
-        .tour-cards {
-            flex: 3;
-        }
-
-        .highlights-column {
-            flex: 1;
-            max-width: 300px;
-            padding: 15px;
-        }
-
+        .tour-container { display: flex; justify-content: flex-start; gap: 20px; padding: 0 15px; }
+        .tour-cards { flex: 3; }
+        .highlights-column { flex: 1; max-width: 300px; padding: 15px; }
         .highlight-card {
             background: #fff;
             border-radius: 8px;
@@ -239,28 +180,10 @@ if (!empty($searchTerm)) {
             display: flex;
             align-items: center;
         }
-
-        .highlight-card i {
-            font-size: 24px;
-            color: #0071c2;
-            margin-right: 10px;
-        }
-
-        .highlight-card .content {
-            flex: 1;
-        }
-
-        .highlight-card h6 {
-            font-size: 14px;
-            color: #333;
-            margin: 0 0 5px;
-        }
-
-        .highlight-card p {
-            font-size: 12px;
-            color: #666;
-            margin: 0;
-        }
+        .highlight-card i { font-size: 24px; color: #0071c2; margin-right: 10px; }
+        .highlight-card .content { flex: 1; }
+        .highlight-card h6 { font-size: 14px; color: #333; margin: 0 0 5px; }
+        .highlight-card p { font-size: 12px; color: #666; margin: 0; }
         .highlights-column {
             position: fixed;
             top: 14rem;
@@ -270,10 +193,7 @@ if (!empty($searchTerm)) {
             gap: 2rem;
             z-index: 1000;
         }
-        .highlights-column >a {
-            text-decoration: none;
-        }
-
+        .highlights-column > a { text-decoration: none; }
         .emergency_contact {
             width: 40px;
             height: 40px;
@@ -285,16 +205,8 @@ if (!empty($searchTerm)) {
             transition: transform 0.3s ease;
             cursor: pointer;
         }
-
-        .emergency_contact:hover {
-            transform: scale(1.1);
-        }
-
-        .emergency_contact i {
-            color: white;
-            font-size: 18px;
-        }
-
+        .emergency_contact:hover { transform: scale(1.1); }
+        .emergency_contact i { color: white; font-size: 18px; }
         .contact-modal {
             position: fixed;
             top: 14rem;
@@ -307,11 +219,7 @@ if (!empty($searchTerm)) {
             z-index: 1001;
             transition: right 0.3s ease;
         }
-
-        .contact-modal.show {
-            right: 3rem;
-        }
-
+        .contact-modal.show { right: 3rem; }
         .contact-modal .close-btn {
             position: absolute;
             top: 10px;
@@ -320,106 +228,66 @@ if (!empty($searchTerm)) {
             font-size: 18px;
             color: #666;
         }
-
-        .contact-modal h6 {
-            font-size: 16px;
-            margin-bottom: 15px;
-            color: #333;
-        }
-
-        .contact-option {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            transition: background 0.3s ease;
-        }
-
-        .contact-option:hover {
-            background: #f0f0f0;
-        }
-
-        .contact-option i {
-            margin-right: 10px;
-            font-size: 18px;
-            color: dodgerblue;
-        }
-
-        .contact-option a {
-            text-decoration: none;
-            color: #333;
-            font-size: 14px;
-        }
-
-        @media (max-width: 768px) {
-            .highlights-column {
-                position: static;
-                flex-direction: row;
-                justify-content: center;
-                gap: 1rem;
-                margin-bottom: 20px;
+        .contact-modal h6 { font-size: 16px; margin-bottom: 15px; color: #333; }
+        .contact-option { display: flex; align-items: center; padding: 10px; margin-bottom: 10px; border-radius: 5px; transition: background 0.3s ease; }
+        .contact-option:hover { background: #f0f0f0; }
+        .contact-option i { margin-right: 10px; font-size: 18px; color: dodgerblue; }
+        .contact-option a { text-decoration: none; color: #333; font-size: 14px; }
+        /* Modal Image Size */
+                    #imageModal {
+                z-index: 99999999999999999999999999999; /* Extremely high z-index to ensure modal is on top */
             }
-
-            .emergency_contact {
-                width: 35px;
-                height: 35px;
+            #imageModal .modal-dialog {
+                max-width: 600px; /* Reduced modal width */
+                max-height: 60vh; /* Reduced modal height */
             }
-
-            .emergency_contact i {
-                font-size: 16px;
-            }
-
-            .contact-modal {
-                top: auto;
-                bottom: 0;
-                right: 0;
+            #imageModal .modal-body {
+                height: 100%;
                 width: 100%;
-                border-radius: 8px 8px 0 0;
             }
-
-            .contact-modal.show {
-                right: 0;
+            #imageModal .carousel-inner {
+                position: relative;
+                height: 100%;
             }
+            #imageModal .carousel-inner img {
+                max-width: 100%;
+                max-height: 100%;
+                width: 100%;
+                height: 100%;
+                object-fit: cover; /* Ensures image covers the full area, cropping if necessary */
+                margin: auto;
+            }
+                    /* Sticky Footer */
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #f8f9fa; /* Adjust based on your footer style */
+            z-index: 1000; /* Ensure it stays above other content */
+            padding: 10px 0;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
         }
-
         @media (max-width: 768px) {
-            .tour-container {
-                flex-direction: column;
-            }
-
-            .tour-cards {
-                order: 2;
-            }
-
-            .highlights-column {
-                order: 1;
-                max-width: 100%;
-            }
-
-            .tour-card {
-                grid-template-columns: 1fr;
-                max-width: 100%;
-            }
-
-            .tour-image img {
-                height: 200px;
-            }
-
-            .tour-book {
-                border-left: none;
-                border-top: 1px solid #e0e0e0;
-            }
+            .highlights-column { position: static; flex-direction: row; justify-content: center; gap: 1rem; margin-bottom: 20px; }
+            .emergency_contact { width: 35px; height: 35px; }
+            .emergency_contact i { font-size: 16px; }
+            .contact-modal { top: auto; bottom: 60px; right: 0; width: 100%; border-radius: 8px 8px 0 0; } /* Adjusted for footer height */
+            .contact-modal.show { right: 0; }
+            .tour-container { flex-direction: column; }
+            .tour-cards { order: 2; }
+            .highlights-column { order: 1; max-width: 100%; }
+            .tour-card { grid-template-columns: 1fr; max-width: 100%; }
+            .tour-image img { height: 200px; }
+            .tour-book { border-left: none; border-top: 1px solid #e0e0e0; }
         }
     </style>
 </head>
 <body>
 <div class="container mt-5">
     <h2 class="text-center mb-4">Available Tours</h2>
-    <!-- Filter and Search UI -->
     <div class="filter-search-container">
         <div class="row align-items-center gx-3">
-            <!-- Sort Dropdown -->
             <div class="col-sm-4 d-flex align-items-center">
                 <label for="sortSelect" class="me-2 fw-medium">Sort By:</label>
                 <select id="sortSelect" name="sort" onchange="sortCards()" class="form-select" style="max-width: 200px;">
@@ -427,7 +295,6 @@ if (!empty($searchTerm)) {
                     <option value="popular" <?php echo $sortOption === 'popular' ? 'selected' : ''; ?>>Popular</option>
                 </select>
             </div>
-            <!-- Search Form -->
             <div class="col-sm-8">
                 <form method="get" action="" class="d-flex align-items-center">
                     <div class="input-group" style="max-width: 350px;">
@@ -444,28 +311,23 @@ if (!empty($searchTerm)) {
             </div>
         </div>
     </div>
-
-    <!-- New Tour Container with Cards and Highlights Column -->
     <div class="tour-container">
-        <!-- Tour Cards -->
         <div class="tour-cards" id="tour-cards">
             <?php
-            $index = 0; // Initialize index to track original order
+            $index = 0;
             while ($tour = $tours->fetch_assoc()): ?>
                 <div class="col-12 mb-4" data-original-index="<?= $index ?>">
                     <div class="tour-card">
-                        <!-- 1) IMAGE COLUMN -->
                         <div class="tour-image">
-                            <img src="../Uploads/<?= htmlspecialchars($tour['image']) ?>" 
-                                 alt="<?= htmlspecialchars($tour['title']) ?>">
+                            <img src="../Uploads/<?= htmlspecialchars($tour['image'] ?? 'placeholder.jpg') ?>" 
+                                 alt="<?= htmlspecialchars($tour['title']) ?>" 
+                                 data-bs-toggle="modal" 
+                                 data-bs-target="#imageModal"
+                                 data-tour-id="<?= $tour['tour_id'] ?>">
                         </div>
-
-                        <!-- 2) INFO COLUMN -->
                         <div class="tour-info" style="position: relative;">
                             <h5 class="title"><?= htmlspecialchars($tour['title']) ?></h5>
                             <p class="meta"><strong>Destination:</strong> <?= htmlspecialchars($tour['destination']) ?></p>
-
-                            <!-- Location Map Link -->
                             <?php
                             $coords = explode(",", $tour['location']);
                             $mapLink = (count($coords) == 2) 
@@ -476,11 +338,7 @@ if (!empty($searchTerm)) {
                                 <strong>Location:</strong>
                                 <a href="<?= $mapLink ?>" target="_blank">View on Map</a>
                             </p>
-                            <p>
-                            <strong class="meta">Type: <span><?= htmlspecialchars($tour['type'] ?? '--') ?></span></strong>
-                            </p>
-
-                            <!-- Description -->
+                            <p><strong class="meta">Type: <span><?= htmlspecialchars($tour['type'] ?? '--') ?></span></strong></p>
                             <?php
                             $fullDesc = htmlspecialchars($tour['description']);
                             $shortDesc = substr($fullDesc, 0, 100);
@@ -491,8 +349,6 @@ if (!empty($searchTerm)) {
                                 <?= $shortDesc ?>…
                             </p>
                             <a href="javascript:void(0)" class="see-more">Show More</a>
-
-                            <!-- Total People Booked with span for sorting -->
                             <div style="position: absolute; right:10px; top:0;">
                                 <?php
                                 $tour_id = $tour['tour_id'];
@@ -512,8 +368,6 @@ if (!empty($searchTerm)) {
                                 people booked
                             </div>
                         </div>
-
-                        <!-- 3) BOOKING COLUMN -->
                         <div class="tour-book">
                             <?php
                             $defaultDuration = (int) $tour['duration'];
@@ -554,9 +408,7 @@ if (!empty($searchTerm)) {
                 </div>
             <?php $index++; endwhile; ?>
         </div>
-
-        <!-- Why Book With Us Column -->
-        <div class="highlights-column" style="position:fixed; top: 14rem;right :8rem;">
+        <div class="highlights-column" style="position:fixed; top: 14rem; right: 8rem;">
             <h5 class="mb-3">Why Book With Us</h5>
             <div class="highlight-card">
                 <i class="fas fa-users"></i>
@@ -579,44 +431,36 @@ if (!empty($searchTerm)) {
                     <p>We offer competitive prices with no hidden fees, ensuring you get the best deal.</p>
                 </div>
             </div>
-
         </div>
-
-        <!-- Emergency contact -->
-<!-- Emergency Contact Column -->
-<div class="highlights-column">
-        <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
-            <i class="fa-solid fa-phone"></i>
-        </a>
-        <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
-            <i class="fa-brands fa-telegram"></i>
-        </a>
-        <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
-            <i class="fa-solid fa-envelope"></i>
-        </a>
-    </div>
-
-    <!-- Contact Modal -->
-    <div class="contact-modal" id="contactModal">
-        <span class="close-btn" onclick="toggleContactModal()"> <i class="fa-solid fa-xmark"></i> </span>
-        <h6>Contact Us</h6>
-        <div class="contact-option">
-            <i class="fa-solid fa-phone"></i>
-            <a href="tel:+1234567890">015 769 953</a>
+        <div class="highlights-column">
+            <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
+                <i class="fa-solid fa-phone"></i>
+            </a>
+            <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
+                <i class="fa-brands fa-telegram"></i>
+            </a>
+            <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
+                <i class="fa-solid fa-envelope"></i>
+            </a>
         </div>
-        <div class="contact-option">
-            <i class="fa-brands fa-telegram"></i>
-            <a href="https://t.me/thany_oun" target="_blank">OUN THANY</a>
+        <div class="contact-modal" id="contactModal">
+            <span class="close-btn" onclick="toggleContactModal()"> <i class="fa-solid fa-xmark"></i> </span>
+            <h6>Contact Us</h6>
+            <div class="contact-option">
+                <i class="fa-solid fa-phone"></i>
+                <a href="tel:+1234567890">015 769 953</a>
+            </div>
+            <div class="contact-option">
+                <i class="fa-brands fa-telegram"></i>
+                <a href="https://t.me/thany_oun" target="_blank">OUN THANY</a>
+            </div>
+            <div class="contact-option">
+                <i class="fa-solid fa-envelope"></i>
+                <a href="mailto:support@tours.com">ounthany@gmail.com</a>
+            </div>
         </div>
-        <div class="contact-option">
-            <i class="fa-solid fa-envelope"></i>
-            <a href="mailto:support@tours.com">ounthany@gmail.com</a>
-        </div>
-    </div>
-        <!--  -->
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -626,7 +470,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const desc = btn.previousElementSibling;
             const fullText = desc.dataset.fulltext;
             const shortText = desc.dataset.shorttext;
-
             if (desc.textContent.trim().endsWith("…")) {
                 desc.textContent = fullText;
                 btn.textContent = "Show Less";
@@ -636,100 +479,107 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     });
-
     // Dynamic Price Update
     document.querySelectorAll(".tour-card").forEach(card => {
         const durationInput = card.querySelector(".duration-input");
         const peopleInput = card.querySelector(".people-input");
         const priceSpan = card.querySelector(".dynamic-price");
-
         function updatePrice() {
             const defaultPrice = parseFloat(durationInput.dataset.defaultPrice) || 0;
             const days = parseInt(durationInput.value, 10) || 1;
             const people = parseInt(peopleInput.value, 10) || 1;
             priceSpan.textContent = (defaultPrice * days * people).toFixed(2);
         }
-
         updatePrice();
         durationInput.addEventListener("input", updatePrice);
         peopleInput.addEventListener("input", updatePrice);
     });
+    // Image Modal
+    document.querySelectorAll(".tour-image img").forEach(img => {
+        img.addEventListener("click", () => {
+            const tour_id = img.dataset.tourId;
+            const images = <?php echo json_encode($tour_images); ?>[tour_id] || [];
+            const carousel = document.getElementById("carouselImages");
+            carousel.innerHTML = '';
+            images.forEach((image, index) => {
+                const div = document.createElement("div");
+                div.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+                div.innerHTML = `
+                    <img src="../Uploads/${image.image_path}" class="d-block w-100" 
+                         alt="Tour Image" 
+                         data-bs-toggle="popover" 
+                         data-bs-trigger="hover" 
+                         data-bs-content="${image.description || 'No description'}">
+                `;
+                carousel.appendChild(div);
+            });
+            // Initialize popovers
+            const popoverImages = carousel.querySelectorAll('img');
+            popoverImages.forEach(img => {
+                new bootstrap.Popover(img);
+            });
+        });
+    });
 });
-
 // Customize Booking
 function customizeBooking(link) {
     const card = link.closest(".tour-card");
     const durationInput = card.querySelector(".duration-input");
     const peopleInput = card.querySelector(".people-input");
     const dateInput = card.querySelector(".travel_date");
-
     const duration = parseInt(durationInput.value) || 1;
     const people = parseInt(peopleInput.value) || 1;
     const travelDate = dateInput.value || '';
-
     if (travelDate.trim() === '') {
         alert('Please select a travel date.');
         return false;
     }
-
     const url = new URL(link.href);
     url.searchParams.set('duration', duration);
     url.searchParams.set('people', people);
     url.searchParams.set('travel_date', travelDate);
-
     window.location.href = url.toString();
     return false;
 }
-
 // Date Input Validation
 document.querySelectorAll(".travel_date").forEach(input => {
     input.addEventListener("change", function() {
         let inputDate = this.value.trim();
         let formattedDate = "";
-
         if (/^\d{2}-\d{2}-\d{4}$/.test(inputDate)) {
-            // dd-mm-yyyy
             let [day, month, year] = inputDate.split("-");
-            formattedDate = `${year}-${month}-${day}`; // to yyyy-mm-dd
+            formattedDate = `${year}-${month}-${day}`;
         } else if (/^\d{4}-\d{2}-\d{2}$/.test(inputDate)) {
-            // yyyy-mm-dd
             formattedDate = inputDate;
         } else {
             alert("Please enter date in dd-mm-yyyy or yyyy-mm-dd format!");
             this.value = "";
             return;
         }
-
         this.value = formattedDate;
     });
 });
-
 // Sort Cards
 function sortCards() {
     const container = document.getElementById('tour-cards');
     const cards = Array.from(container.querySelectorAll('.col-12'));
     const sortOption = document.getElementById('sortSelect').value;
-
     try {
         if (sortOption === 'popular') {
             cards.sort((a, b) => {
                 const aBooked = parseInt(a.querySelector('.booked-count')?.textContent) || 0;
                 const bBooked = parseInt(b.querySelector('.booked-count')?.textContent) || 0;
-                return bBooked - aBooked; // Descending order
+                return bBooked - aBooked;
             });
         } else if (sortOption === 'default') {
             cards.sort((a, b) => {
                 const aIndex = parseInt(a.dataset.originalIndex) || 0;
                 const bIndex = parseInt(b.dataset.originalIndex) || 0;
-                return aIndex - bIndex; // Ascending order
+                return aIndex - bIndex;
             });
         }
-
-        // Re-append cards
         container.innerHTML = '';
         cards.forEach(card => container.appendChild(card));
-
-        // Persist sort selection in URL
         const url = new URL(window.location);
         url.searchParams.set('sort', sortOption);
         window.history.pushState({}, '', url);
@@ -737,12 +587,35 @@ function sortCards() {
         console.error('Error sorting cards:', error);
     }
 }
-
 function toggleContactModal() {
-            const modal = document.getElementById('contactModal');
-            modal.classList.toggle('show');
-        }
+    const modal = document.getElementById('contactModal');
+    modal.classList.toggle('show');
+}
 </script>
+<!-- Image Slideshow Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">Tour Images</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="imageCarousel" class="carousel slide">
+                    <div class="carousel-inner" id="carouselImages"></div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php include "./user_footer.php"; ?>
 </body>
 </html>
-<?php include "./user_footer.php"; ?>

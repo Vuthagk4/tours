@@ -60,7 +60,6 @@ $result = $conn->query($query);
                     <td><?= htmlspecialchars($row['tour_title']); ?></td>
                     <td><?= htmlspecialchars($row['travel_date']); ?></td>
                     <td><?= htmlspecialchars($row['type']) && $row['type'] !== '' ? htmlspecialchars($row['type']) : '--' ?></td>
-
                     <td class="status"><?= ucfirst($row['status']); ?></td>
                     <td class="payment"><?= ucfirst($row['payment_status'] ?? 'Pending'); ?></td>
                 </tr>
