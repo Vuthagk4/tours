@@ -2,6 +2,16 @@
 // session_name('UserSession')
 session_start(); 
 include 'config.php';
+$cartCount = 0;
+if (isset($_SESSION['user_id'])) {
+    $userId = $_SESSION['user_id'];
+    $stmt = mysqli_prepare($conn, "SELECT COUNT(*) as count FROM bookings WHERE user_id = ?");
+    mysqli_stmt_bind_param($stmt, "i", $userId);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    $cartCount = $row['count'];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -241,6 +251,12 @@ include 'config.php';
                     <li class="nav-item"><a class="nav-link" href="#">Term of Use</a></li>
                     <li class="nav-item"><a class="nav-link" href="contact.php">Contact Us</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Enquiry</a></li>
+                    <li class="nav-item position-relative">
+                        <a class="nav-link" href="cart.php">
+                            <i class="fas fa-shopping-cart"></i> Buy
+                            <span id="cart-count" class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill"><?php echo $cartCount; ?></span>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -249,4 +265,16 @@ include 'config.php';
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
 </body>
+<script>
+let cart = JSON.parse(localStorage.getItem(userCartKey)) || [];
+cart.push(booking);
+localStorage.setItem(userCartKey, JSON.stringify(cart));
+updateCartCount();
+function updateCartCount() {
+    let cart = JSON.parse(localStorage.getItem(userCartKey)) || [];
+    document.getElementById('cart-count').textContent = cart.length;
+}
+    </script>
+
+</script>
 </html>
