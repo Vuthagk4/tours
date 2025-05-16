@@ -1,4 +1,3 @@
-
 <?php
 include "../includes/config.php";
 include "../includes/header.php";
@@ -37,319 +36,674 @@ while ($row = $result->fetch_assoc()) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Available Tours</title>
-    <link rel="stylesheet" href="../assets/css/style1.css">
+    <title>Explore Tours - Discover Your Next Adventure</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <style>
-            html, body {
-                height: 100%;
-                margin: 0;
-                padding: 0;
-            }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
 
-            .container {
-                flex: 1 0 auto; /* Grow to fill available space, pushing footer down */
-            }
-        body { 
+        /* Hero Banner (Replaces Header Section) */
+        .hero-section {
+            position: relative;
+            height: 600px;
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
             display: flex;
-            flex-direction: column;
-            min-height: 100vh; /* Ensure the body takes up at least the viewport height */
-            margin: 0; 
-            padding-bottom: 60px; /* Space for the footer */
-            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .hero-section h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero-section p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        /* Search Bar */
+        .search-bar {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            max-width: 900px;
+            margin: -60px auto 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .search-bar .nav-tabs {
+            border-bottom: none;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .search-bar .nav-link {
+            color: #555;
+            font-weight: 600;
+            border: none;
+            padding: 10px 25px;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar .nav-link.active {
+            background: #ff6f61;
+            color: white;
+            border-radius: 20px;
+        }
+
+        .search-bar .form-control {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-bar .form-control:focus {
+            border-color: #ff6f61;
+            box-shadow: 0 0 8px rgba(255, 111, 97, 0.3);
+        }
+
+        .search-bar .btn-search {
+            background: #ff6f61;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .search-bar .btn-search:hover {
+            background: #e65b50;
+        }
+
+        /* Promo Section */
+        .promo-section {
+            max-width: 1200px;
+            margin: 50px auto;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .promo-card {
+            background: linear-gradient(135deg, #ff6f61 0%, #ff9a8b 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .promo-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .promo-card h3 {
+            font-size: 1.6rem;
+            margin-bottom: 10px;
+        }
+
+        .promo-card p {
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .promo-card .btn-claim {
+            background: white;
+            color: #ff6f61;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .promo-card .btn-claim:hover {
+            background: #f0f0f0;
+        }
+
+        .promo-card .badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #ff4d4d;
+            color: white;
+            font-size: 0.9rem;
+            padding: 5px 12px;
+            border-radius: 15px;
+        }
+
+        /* Tour Section */
+        .tour-section {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .tour-section h2 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 30px;
+            position: relative;
+            text-align: center;
+        }
+
+        .tour-section h2::after {
+            content: '';
+            width: 60px;
+            height: 4px;
+            background: #ff6f61;
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        .tour-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .tour-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .tour-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .tour-image {
             position: relative;
         }
-        .tour-card {
-            display: grid;
-            grid-template-columns: 370px 1fr 200px;
-            background: #f7f9fc;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            align-items: stretch;
-            min-height: 200px;
-            margin: 20px 0;
-            max-width: 900px;
-        }
+
         .tour-image img {
             width: 100%;
-            height: 100%;
+            height: 200px;
             object-fit: cover;
-            display: block;
-            cursor: pointer;
         }
-        .tour-info { padding: 20px; display: flex; flex-direction: column; }
-        .tour-info .title { margin: 0 0 8px; color: #0071c2; }
-        .tour-info .meta { margin: 4px 0; font-size: 14px; color: #555; }
-        .tour-info .description {
-            margin: 12px 0;
-            font-size: 14px;
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+
+        .tour-image .discount-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ff4d4d;
+            color: white;
+            font-size: 0.9rem;
+            padding: 5px 12px;
+            border-radius: 15px;
         }
-        .tour-info .see-more {
-            font-size: 14px;
-            color: #0071c2;
-            text-decoration: underline;
-            cursor: pointer;
-            margin-top: auto;
-        }
-        .tour-book {
+
+        .tour-info {
             padding: 20px;
+        }
+
+        .tour-info h5 {
+            font-size: 1.3rem;
+            color: #ff6f61;
+            margin-bottom: 10px;
+        }
+
+        .tour-info .rating {
+            color: #ffcc00;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .tour-info .reviews {
+            font-size: 0.9rem;
+            color: #666;
+            margin-left: 5px;
+        }
+
+        .tour-info p {
+            font-size: 0.95rem;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .tour-book {
+            padding: 0 20px 20px;
             display: flex;
-            flex-direction: column;
             justify-content: space-between;
-            border-left: 1px solid #e0e0e0;
+            align-items: center;
         }
-        .tour-book .price-label { font-size: 12px; color: #555; margin: 0; }
-        .tour-book .price-amount { font-size: 20px; color: green; font-weight: bold; margin: 4px 0 12px; }
-        .tour-book label { font-size: 14px; color: #333; display: block; margin-bottom: 8px; }
-        .tour-book input {
-            width: 100%;
-            margin-top: 4px;
-            padding: 6px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+
+        .tour-book .price-info {
+            text-align: left;
         }
-        .tour-book .total-price { font-size: 14px; font-weight: bold; margin: 12px 0; }
-        .btn-book {
-            display: block;
-            text-align: center;
-            padding: 10px 0;
-            background: #0071c2;
-            color: #fff;
-            border-radius: 4px;
-            text-decoration: none;
+
+        .tour-book .original-price {
+            font-size: 0.9rem;
+            color: #999;
+            text-decoration: line-through;
         }
-        .btn-book:hover { background: #005999; }
-        .description { color: #555; }
-        .see-more { color: blue; cursor: pointer; display: block; margin-top: 5px; }
-        .see-more:hover { text-decoration: underline; }
-        .filter-search-container { padding: 15px 0; margin-bottom: 20px; }
-        .filter-search-container .form-select,
-        .filter-search-container .form-control {
-            border-radius: 8px;
-            border: 1px solid #ced4da;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+        .tour-book .price {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #ff6f61;
         }
-        .filter-search-container .form-select:focus,
-        .filter-search-container .form-control:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-        }
-        .filter-search-container .btn-primary {
-            background-color: #007bff;
+
+        .tour-book .btn-book {
+            background: #ff6f61;
+            color: white;
             border: none;
             border-radius: 8px;
             padding: 10px 20px;
-            transition: background-color 0.3s ease;
-        }
-        .filter-search-container .btn-primary:hover { background-color: #0056b3; }
-        .filter-search-container .btn-link {
-            color: #dc3545;
+            font-weight: 600;
             text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.3s ease;
+            transition: background 0.3s ease;
         }
-        .filter-search-container .btn-link:hover {
-            color: #b02a37;
-            text-decoration: underline;
+
+        .tour-book .btn-book:hover {
+            background: #e65b50;
         }
-        .filter-search-container .input-group-text {
-            background: #fff;
-            border: 1px solid #ced4da;
-            border-right: none;
-            border-radius: 8px 0 0 8px;
-        }
-        .tour-container { display: flex; justify-content: flex-start; gap: 20px; padding: 0 15px; }
-        .tour-cards { flex: 3; }
-        .highlights-column { flex: 1; max-width: 300px; padding: 15px; }
-        .highlight-card {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            padding: 15px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-        }
-        .highlight-card i { font-size: 24px; color: #0071c2; margin-right: 10px; }
-        .highlight-card .content { flex: 1; }
-        .highlight-card h6 { font-size: 14px; color: #333; margin: 0 0 5px; }
-        .highlight-card p { font-size: 12px; color: #666; margin: 0; }
-        .highlights-column {
-            position: fixed;
-            top: 14rem;
-            right: 0.2rem;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-            z-index: 1000;
-        }
-        .highlights-column > a { text-decoration: none; }
-        .emergency_contact {
-            width: 40px;
-            height: 40px;
-            background-color: dodgerblue;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: transform 0.3s ease;
-            cursor: pointer;
-        }
-        .emergency_contact:hover { transform: scale(1.1); }
-        .emergency_contact i { color: white; font-size: 18px; }
-        .contact-modal {
-            position: fixed;
-            top: 14rem;
-            right: -300px;
-            width: 250px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            padding: 15px;
-            z-index: 1001;
-            transition: right 0.3s ease;
-        }
-        .contact-modal.show { right: 3rem; }
-        .contact-modal .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            cursor: pointer;
-            font-size: 18px;
-            color: #666;
-        }
-        .contact-modal h6 { font-size: 16px; margin-bottom: 15px; color: #333; }
-        .contact-option { display: flex; align-items: center; padding: 10px; margin-bottom: 10px; border-radius: 5px; transition: background 0.3s ease; }
-        .contact-option:hover { background: #f0f0f0; }
-        .contact-option i { margin-right: 10px; font-size: 18px; color: dodgerblue; }
-        .contact-option a { text-decoration: none; color: #333; font-size: 14px; }
+
         /* Modal Image Size */
-                    #imageModal {
-                z-index: 99999999999999999999999999999; /* Extremely high z-index to ensure modal is on top */
-            }
-            #imageModal .modal-dialog {
-                max-width: 600px; /* Reduced modal width */
-                max-height: 60vh; /* Reduced modal height */
-            }
-            #imageModal .modal-body {
-                height: 100%;
-                width: 100%;
-            }
-            #imageModal .carousel-inner {
-                position: relative;
-                height: 100%;
-            }
-            #imageModal .carousel-inner img {
-                max-width: 100%;
-                max-height: 100%;
-                width: 100%;
-                height: 100%;
-                object-fit: cover; /* Ensures image covers the full area, cropping if necessary */
-                margin: auto;
-            }
-                    /* Sticky Footer */
-        footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: #f8f9fa; /* Adjust based on your footer style */
-            z-index: 1000; /* Ensure it stays above other content */
-            padding: 10px 0;
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        #imageModal {
+            z-index: 9999;
         }
+
+        #imageModal .modal-dialog {
+            max-width: 600px;
+            max-height: 60vh;
+        }
+
+        #imageModal .modal-body {
+            height: 100%;
+            width: 100%;
+        }
+
+        #imageModal .carousel-inner img {
+            max-width: 100%;
+            max-height: 100%;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            margin: auto;
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
-            .highlights-column { position: static; flex-direction: row; justify-content: center; gap: 1rem; margin-bottom: 20px; }
-            .emergency_contact { width: 35px; height: 35px; }
-            .emergency_contact i { font-size: 16px; }
-            .contact-modal { top: auto; bottom: 60px; right: 0; width: 100%; border-radius: 8px 8px 0 0; } /* Adjusted for footer height */
-            .contact-modal.show { right: 0; }
-            .tour-container { flex-direction: column; }
-            .tour-cards { order: 2; }
-            .highlights-column { order: 1; max-width: 100%; }
-            .tour-card { grid-template-columns: 1fr; max-width: 100%; }
-            .tour-image img { height: 200px; }
-            .tour-book { border-left: none; border-top: 1px solid #e0e0e0; }
+            .hero-section {
+                height: 400px;
+            }
+
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+
+            .search-bar {
+                margin: -30px 15px 0;
+                padding: 15px;
+            }
+
+            .search-bar .tab-content {
+                flex-direction: column;
+            }
+
+            .promo-section {
+                flex-direction: column;
+                margin: 30px 15px;
+            }
+
+            .tour-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .tour-book {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+
+            .tour-book .btn-book {
+                text-align: center;
+            }
+        }
+
+        /* Testimonials Section */
+        .testimonials-section {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .testimonials-section h2 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .testimonials-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .testimonial-card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .testimonial-card p {
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .testimonial-card .customer-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Featured Destinations Section */
+        .featured-destinations {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .featured-destinations h2 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .destinations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .destination-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .destination-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .destination-card h3 {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: white;
+            font-size: 1.2rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .destination-card p {
+            position: absolute;
+            bottom: 30px;
+            left: 10px;
+            color: white;
+            font-size: 0.9rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Why Choose Us Section */
+        .why-choose-us {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .why-choose-us h2 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .reasons {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .reason {
+            text-align: center;
+            width: 250px;
+            margin: 10px;
+        }
+
+        .reason i {
+            font-size: 2.5rem;
+            color: #ff6f61;
+            margin-bottom: 15px;
+        }
+
+        .reason h3 {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .reason p {
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-section {
+                height: 400px;
+            }
+
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+
+            .search-bar {
+                margin: -30px 15px 0;
+                padding: 15px;
+            }
+
+            .search-bar .tab-content {
+                flex-direction: column;
+            }
+
+            .promo-section {
+                flex-direction: column;
+                margin: 30px 15px;
+            }
+
+            .tour-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .tour-book {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+
+            .tour-book .btn-book {
+                text-align: center;
+            }
+
+            .testimonials-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .testimonial-card {
+                width: 90%;
+            }
+
+            .destinations-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .reasons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .reason {
+                width: 90%;
+            }
         }
     </style>
 </head>
+
 <body>
-<div class="container mt-5">
-    <h2 class="text-center mb-4">Available Tours</h2>
-    <div class="filter-search-container">
-        <div class="row align-items-center gx-3">
-            <div class="col-sm-4 d-flex align-items-center">
-                <label for="sortSelect" class="me-2 fw-medium">Sort By:</label>
-                <select id="sortSelect" name="sort" onchange="sortCards()" class="form-select" style="max-width: 200px;">
-                    <option value="default" <?php echo $sortOption === 'default' ? 'selected' : ''; ?>>Default</option>
-                    <option value="popular" <?php echo $sortOption === 'popular' ? 'selected' : ''; ?>>Popular</option>
-                </select>
-            </div>
-            <div class="col-sm-8">
-                <form method="get" action="" class="d-flex align-items-center">
-                    <div class="input-group" style="max-width: 350px;">
-                        <span class="input-group-text"><i class="fas fa-search"></i></span>
-                        <input type="text" name="search" class="form-control" placeholder="Search by title or destination" 
-                               value="<?php echo htmlspecialchars($searchTerm); ?>">
-                        <input type="hidden" name="sort" value="<?php echo htmlspecialchars($sortOption); ?>">
-                        <button type="submit" class="btn btn-primary">Search</button>
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div>
+            <h1>Discover Your Next Adventure</h1>
+            <p>Explore the world with our curated tours and exclusive offers.</p>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tours-tab" data-bs-toggle="tab" data-bs-target="#tours"
+                    type="button" role="tab" aria-controls="tours" aria-selected="true">
+                    <i class="fas fa-map-marker-alt me-2"></i> Tours
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="hotels-tab" data-bs-toggle="tab" data-bs-target="#hotels" type="button"
+                    role="tab" aria-controls="hotels" aria-selected="false">
+                    <i class="fas fa-hotel me-2"></i> Hotels & Homes
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="flights-tab" data-bs-toggle="tab" data-bs-target="#flights" type="button"
+                    role="tab" aria-controls="flights" aria-selected="false">
+                    <i class="fas fa-plane me-2"></i> Flights
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="tours" role="tabpanel" aria-labelledby="tours-tab">
+                <form method="get" action="" class="d-flex align-items-center gap-3">
+                    <div class="flex-grow-1">
+                        <input type="text" name="search" class="form-control"
+                            placeholder="Destination, city, or tour name"
+                            value="<?php echo htmlspecialchars($searchTerm); ?>">
                     </div>
-                    <?php if (!empty($searchTerm)): ?>
-                        <a href="?" class="btn btn-link ms-3">Clear Search</a>
-                    <?php endif; ?>
+                    <div>
+                        <input type="date" class="form-control" name="checkin"
+                            value="<?php echo date('Y-m-d', strtotime('today')); ?>">
+                    </div>
+                    <div>
+                        <input type="date" class="form-control" name="checkout"
+                            value="<?php echo date('Y-m-d', strtotime('+1 day')); ?>">
+                    </div>
+                    <div>
+                        <select class="form-control" name="guests">
+                            <option>1 guest</option>
+                            <option>2 guests</option>
+                            <option>3 guests</option>
+                            <option>4+ guests</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-search"><i class="fas fa-search me-2"></i> Search</button>
                 </form>
+            </div>
+            <div class="tab-pane fade" id="hotels" role="tabpanel" aria-labelledby="hotels-tab">
+                <!-- Add hotel search form here if needed -->
+            </div>
+            <div class="tab-pane fade" id="flights" role="tabpanel" aria-labelledby="flights-tab">
+                <!-- Add flight search form here if needed -->
             </div>
         </div>
     </div>
-    <div class="tour-container">
-        <div class="tour-cards" id="tour-cards">
+
+    <!-- Promo Section -->
+    <div class="promo-section">
+        <div class="promo-card">
+            <span class="badge">Welcome Pack</span>
+            <h3>Save Big on Your First Tour</h3>
+            <p>Get 5% OFF your first booking with us!</p>
+            <button class="btn-claim">Claim Now</button>
+        </div>
+        <div class="promo-card">
+            <span class="badge">Limited Offer</span>
+            <h3>Exclusive Group Discounts</h3>
+            <p>Book for 4+ guests and save more!</p>
+            <button class="btn-claim">Claim Now</button>
+        </div>
+    </div>
+
+    <!-- Tour Section -->
+    <div class="tour-section">
+        <h2>Explore Our Top Tours</h2>
+        <div class="tour-cards">
             <?php
             $index = 0;
             while ($tour = $tours->fetch_assoc()): ?>
-                <div class="col-12 mb-4" data-original-index="<?= $index ?>">
-                    <div class="tour-card">
-                        <div class="tour-image">
-                            <img src="../Uploads/<?= htmlspecialchars($tour['image'] ?? 'placeholder.jpg') ?>" 
-                                 alt="<?= htmlspecialchars($tour['title']) ?>" 
-                                 data-bs-toggle="modal" 
-                                 data-bs-target="#imageModal"
-                                 data-tour-id="<?= $tour['tour_id'] ?>">
-                        </div>
-                        <div class="tour-info" style="position: relative;">
-                            <h5 class="title"><?= htmlspecialchars($tour['title']) ?></h5>
-                            <p class="meta"><strong>Destination:</strong> <?= htmlspecialchars($tour['destination']) ?></p>
+                <div class="tour-card">
+                    <div class="tour-image">
+                        <img src="../Uploads/<?= htmlspecialchars($tour['image'] ?? 'placeholder.jpg') ?>"
+                            alt="<?= htmlspecialchars($tour['title']) ?>" data-bs-toggle="modal"
+                            data-bs-target="#imageModal" data-tour-id="<?= $tour['tour_id'] ?>">
+                        <span class="discount-badge">10% OFF</span>
+                    </div>
+                    <div class="tour-info">
+                        <h5><?= htmlspecialchars($tour['title']) ?></h5>
+                        <div class="rating">
                             <?php
-                            $coords = explode(",", $tour['location']);
-                            $mapLink = (count($coords) == 2) 
-                                ? "https://www.google.com/maps?q=" . trim($coords[0]) . "," . trim($coords[1])
-                                : "javascript:void(0);";
+                            $rating = 4.5; // Example rating, replace with dynamic logic if available
+                            for ($i = 1; $i <= 5; $i++) {
+                                if ($i <= floor($rating)) {
+                                    echo '<i class="fas fa-star"></i>';
+                                } elseif ($i - 0.5 <= $rating) {
+                                    echo '<i class="fas fa-star-half-alt"></i>';
+                                } else {
+                                    echo '<i class="far fa-star"></i>';
+                                }
+                            }
                             ?>
-                            <p class="meta">
-                                <strong>Location:</strong>
-                                <a href="<?= $mapLink ?>" target="_blank">View on Map</a>
-                            </p>
-                            <p><strong class="meta">Type: <span><?= htmlspecialchars($tour['type'] ?? '--') ?></span></strong></p>
-                            <?php
-                            $fullDesc = htmlspecialchars($tour['description']);
-                            $shortDesc = substr($fullDesc, 0, 100);
-                            ?>
-                            <p class="description" 
-                               data-fulltext="<?= $fullDesc ?>" 
-                               data-shorttext="<?= $shortDesc ?>">
-                                <?= $shortDesc ?>…
-                            </p>
-                            <a href="javascript:void(0)" class="see-more">Show More</a>
-                            <div style="position: absolute; right:10px; top:0;">
+                            <span class="reviews">
                                 <?php
                                 $tour_id = $tour['tour_id'];
                                 $stmt = $conn->prepare("SELECT SUM(people) AS total_people FROM bookings WHERE tour_id = ?");
@@ -358,264 +712,139 @@ while ($row = $result->fetch_assoc()) {
                                 $result = $stmt->get_result();
                                 $totalPeople = $result->fetch_assoc()['total_people'] ?? 0;
                                 $stmt->close();
-                                $starColor = $totalPeople >= 100 ? "gold" : "black";
-                                $stars = min(floor($totalPeople / 100), 5);
+                                echo $totalPeople . ' bookings';
                                 ?>
-                                <span class="booked-count"><?= $totalPeople ?></span>
-                                <?php for ($i = 0; $i < $stars; $i++): ?>
-                                    <i style="color: <?= $starColor ?>;" class="fa-solid fa-star"></i>
-                                <?php endfor; ?>
-                                people booked
-                            </div>
+                            </span>
                         </div>
-                        <div class="tour-book">
-                            <?php
-                            $defaultDuration = (int) $tour['duration'];
-                            $defaultPrice = (float) $tour['price'];
-                            ?>
-                            <p class="price-label">Price from</p>
-                            <p class="price-amount">$<?= number_format($defaultPrice, 2) ?></p>
-                            <label>
-                                Duration:
-                                <input type="number" 
-                                       class="duration-input" 
-                                       min="1" 
-                                       value="<?= $defaultDuration ?>" 
-                                       data-default-price="<?= $defaultPrice ?>">
-                            </label>
-                            <label>
-                                People:
-                                <input type="number" class="people-input" min="1" value="1">
-                            </label>
-                            <label for="calendar-<?= $tour['tour_id'] ?>">Travel Date:</label> 
-                            <input type="text" 
-                                   id="calendar-<?= $tour['tour_id'] ?>" 
-                                   name="travel_date" 
-                                   class="travel_date" 
-                                   placeholder="yyyy-mm-dd">
-                            <p class="total-price">
-                                Total: $<span class="dynamic-price">
-                                    <?= number_format($defaultPrice * $defaultDuration, 2) ?>
-                                </span>
-                            </p>
-                            <a href="tour_details.php?id=<?= $tour['tour_id'] ?>" 
-                               onclick="return customizeBooking(this)" 
-                               class="btn btn-primary btn-book">
-                                Book Now
-                            </a>
+                        <p><strong>Destination:</strong> <?= htmlspecialchars($tour['destination']) ?></p>
+                    </div>
+                    <div class="tour-book">
+                        <div class="price-info">
+                            <span class="original-price">$<?= number_format((float) $tour['price'], 2) ?></span>
+                            <div class="price">$<?= number_format((float) $tour['price'] * 0.9, 2) ?></div>
                         </div>
+                        <a href="booking.php?id=<?= $tour['tour_id'] ?>" class="btn-book">Book Now</a>
                     </div>
                 </div>
-            <?php $index++; endwhile; ?>
+                <?php $index++; endwhile; ?>
         </div>
-        <div class="highlights-column" style="position:fixed; top: 14rem; right: 8rem;">
-            <h5 class="mb-3">Why Book With Us</h5>
-            <div class="highlight-card">
-                <i class="fas fa-users"></i>
-                <div class="content">
-                    <h6>Expert Guides</h6>
-                    <p>Our tours are led by knowledgeable local guides who ensure an enriching experience.</p>
-                </div>
+    </div>
+    <!-- Testimonials Section -->
+    <div class="testimonials-section">
+        <h2>What Our Customers Say</h2>
+        <div class="testimonials-container">
+            <div class="testimonial-card">
+                <p>"Amazing experience! The tour guide was knowledgeable and friendly. We loved the sunset cruise in
+                    Santorini!"</p>
+                <span class="customer-name">John Doe</span>
             </div>
-            <div class="highlight-card">
-                <i class="fas fa-undo-alt"></i>
-                <div class="content">
-                    <h6>Flexible Cancellations</h6>
-                    <p>Change of plans? Cancel or modify your booking with ease up to 24 hours before departure.</p>
-                </div>
-            </div>
-            <div class="highlight-card">
-                <i class="fas fa-tag"></i>
-                <div class="content">
-                    <h6>Best Price Guarantee</h6>
-                    <p>We offer competitive prices with no hidden fees, ensuring you get the best deal.</p>
-                </div>
-            </div>
-        </div>
-        <div class="highlights-column">
-            <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
-                <i class="fa-solid fa-phone"></i>
-            </a>
-            <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
-                <i class="fa-brands fa-telegram"></i>
-            </a>
-            <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
-                <i class="fa-solid fa-envelope"></i>
-            </a>
-        </div>
-        <div class="contact-modal" id="contactModal">
-            <span class="close-btn" onclick="toggleContactModal()"> <i class="fa-solid fa-xmark"></i> </span>
-            <h6>Contact Us</h6>
-            <div class="contact-option">
-                <i class="fa-solid fa-phone"></i>
-                <a href="tel:+1234567890">015 769 953</a>
-            </div>
-            <div class="contact-option">
-                <i class="fa-brands fa-telegram"></i>
-                <a href="https://t.me/thany_oun" target="_blank">OUN THANY</a>
-            </div>
-            <div class="contact-option">
-                <i class="fa-solid fa-envelope"></i>
-                <a href="mailto:support@tours.com">ounthany@gmail.com</a>
+            <div class="testimonial-card">
+                <p>"Best vacation ever! The itinerary was well-planned, and the accommodations were top-notch. Highly
+                    recommend the Bali retreat!"</p>
+                <span class="customer-name">Jane Smith</span>
             </div>
         </div>
     </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    // Show More/Show Less for description
-    document.querySelectorAll(".see-more").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const desc = btn.previousElementSibling;
-            const fullText = desc.dataset.fulltext;
-            const shortText = desc.dataset.shorttext;
-            if (desc.textContent.trim().endsWith("…")) {
-                desc.textContent = fullText;
-                btn.textContent = "Show Less";
-            } else {
-                desc.textContent = shortText + "…";
-                btn.textContent = "Show More";
-            }
-        });
-    });
-    // Dynamic Price Update
-    document.querySelectorAll(".tour-card").forEach(card => {
-        const durationInput = card.querySelector(".duration-input");
-        const peopleInput = card.querySelector(".people-input");
-        const priceSpan = card.querySelector(".dynamic-price");
-        function updatePrice() {
-            const defaultPrice = parseFloat(durationInput.dataset.defaultPrice) || 0;
-            const days = parseInt(durationInput.value, 10) || 1;
-            const people = parseInt(peopleInput.value, 10) || 1;
-            priceSpan.textContent = (defaultPrice * days * people).toFixed(2);
-        }
-        updatePrice();
-        durationInput.addEventListener("input", updatePrice);
-        peopleInput.addEventListener("input", updatePrice);
-    });
-    // Image Modal
-    document.querySelectorAll(".tour-image img").forEach(img => {
-        img.addEventListener("click", () => {
-            const tour_id = img.dataset.tourId;
-            const images = <?php echo json_encode($tour_images); ?>[tour_id] || [];
-            const carousel = document.getElementById("carouselImages");
-            carousel.innerHTML = '';
-            images.forEach((image, index) => {
-                const div = document.createElement("div");
-                div.className = `carousel-item ${index === 0 ? 'active' : ''}`;
-                div.innerHTML = `
-                    <img src="../Uploads/${image.image_path}" class="d-block w-100" 
-                         alt="Tour Image" 
-                         data-bs-toggle="popover" 
-                         data-bs-trigger="hover" 
-                         data-bs-content="${image.description || 'No description'}">
-                `;
-                carousel.appendChild(div);
-            });
-            // Initialize popovers
-            const popoverImages = carousel.querySelectorAll('img');
-            popoverImages.forEach(img => {
-                new bootstrap.Popover(img);
-            });
-        });
-    });
-});
-// Customize Booking
-function customizeBooking(link) {
-    const card = link.closest(".tour-card");
-    const durationInput = card.querySelector(".duration-input");
-    const peopleInput = card.querySelector(".people-input");
-    const dateInput = card.querySelector(".travel_date");
-    const duration = parseInt(durationInput.value) || 1;
-    const people = parseInt(peopleInput.value) || 1;
-    const travelDate = dateInput.value || '';
-    if (travelDate.trim() === '') {
-        alert('Please select a travel date.');
-        return false;
-    }
-    const url = new URL(link.href);
-    url.searchParams.set('duration', duration);
-    url.searchParams.set('people', people);
-    url.searchParams.set('travel_date', travelDate);
-    window.location.href = url.toString();
-    return false;
-}
-// Date Input Validation
-document.querySelectorAll(".travel_date").forEach(input => {
-    input.addEventListener("change", function() {
-        let inputDate = this.value.trim();
-        let formattedDate = "";
-        if (/^\d{2}-\d{2}-\d{4}$/.test(inputDate)) {
-            let [day, month, year] = inputDate.split("-");
-            formattedDate = `${year}-${month}-${day}`;
-        } else if (/^\d{4}-\d{2}-\d{2}$/.test(inputDate)) {
-            formattedDate = inputDate;
-        } else {
-            alert("Please enter date in dd-mm-yyyy or yyyy-mm-dd format!");
-            this.value = "";
-            return;
-        }
-        this.value = formattedDate;
-    });
-});
-// Sort Cards
-function sortCards() {
-    const container = document.getElementById('tour-cards');
-    const cards = Array.from(container.querySelectorAll('.col-12'));
-    const sortOption = document.getElementById('sortSelect').value;
-    try {
-        if (sortOption === 'popular') {
-            cards.sort((a, b) => {
-                const aBooked = parseInt(a.querySelector('.booked-count')?.textContent) || 0;
-                const bBooked = parseInt(b.querySelector('.booked-count')?.textContent) || 0;
-                return bBooked - aBooked;
-            });
-        } else if (sortOption === 'default') {
-            cards.sort((a, b) => {
-                const aIndex = parseInt(a.dataset.originalIndex) || 0;
-                const bIndex = parseInt(b.dataset.originalIndex) || 0;
-                return aIndex - bIndex;
-            });
-        }
-        container.innerHTML = '';
-        cards.forEach(card => container.appendChild(card));
-        const url = new URL(window.location);
-        url.searchParams.set('sort', sortOption);
-        window.history.pushState({}, '', url);
-    } catch (error) {
-        console.error('Error sorting cards:', error);
-    }
-}
-function toggleContactModal() {
-    const modal = document.getElementById('contactModal');
-    modal.classList.toggle('show');
-}
-</script>
-<!-- Image Slideshow Modal -->
-<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="imageModalLabel">Tour Images</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+    <!-- Featured Destinations Section -->
+    <div class="featured-destinations">
+        <h2>Popular Destinations</h2>
+        <div class="destinations-grid">
+            <div class="destination-card">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/La_Tour_Eiffel_vue_de_la_Tour_Saint-Jacques%2C_Paris_ao%C3%BBt_2014_%282%29.jpg/960px-La_Tour_Eiffel_vue_de_la_Tour_Saint-Jacques%2C_Paris_ao%C3%BBt_2014_%282%29.jpg"
+                    alt="Paris">
+                <h3>Paris, France</h3>
+                <p>Experience the city of love and lights.</p>
             </div>
-            <div class="modal-body">
-                <div id="imageCarousel" class="carousel slide">
-                    <div class="carousel-inner" id="carouselImages"></div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
-                    </button>
+            <div class="destination-card">
+                <img src="https://media.cntravellerme.com/photos/64e73087238bdd124237b565/16:9/w_6016,h_3384,c_limit/GettyImages-1145042281.jpeg" alt="Bali">
+                <h3>Bali, Indonesia</h3>
+                <p>Relax on beautiful beaches and explore temples.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Why Choose Us Section -->
+    <div class="why-choose-us">
+        <h2>Why Choose Us</h2>
+        <div class="reasons">
+            <div class="reason">
+                <i class="fas fa-user-tie"></i>
+                <h3>Expert Guides</h3>
+                <p>Our guides are knowledgeable and passionate about travel.</p>
+            </div>
+            <div class="reason">
+                <i class="fas fa-tags"></i>
+                <h3>Best Price Guarantee</h3>
+                <p>We offer competitive prices with no hidden fees.</p>
+            </div>
+            <div class="reason">
+                <i class="fas fa-headset"></i>
+                <h3>24/7 Support</h3>
+                <p>Our support team is available around the clock to assist you.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Slideshow Modal -->
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalLabel">Tour Images</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="imageCarousel" class="carousel slide">
+                        <div class="carousel-inner" id="carouselImages"></div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel"
+                            data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel"
+                            data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<?php include "./user_footer.php"; ?>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Image Modal
+            document.querySelectorAll(".tour-image img").forEach(img => {
+                img.addEventListener("click", () => {
+                    const tour_id = img.dataset.tourId;
+                    const images = <?php echo json_encode($tour_images); ?>[tour_id] || [];
+                    const carousel = document.getElementById("carouselImages");
+                    carousel.innerHTML = '';
+                    images.forEach((image, index) => {
+                        const div = document.createElement("div");
+                        div.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+                        div.innerHTML = `
+                            <img src="../Uploads/${image.image_path}" class="d-block w-100" 
+                                 alt="Tour Image" 
+                                 data-bs-toggle="popover" 
+                                 data-bs-trigger="hover" 
+                                 data-bs-content="${image.description || 'No description'}">
+                        `;
+                        carousel.appendChild(div);
+                    });
+                    // Initialize popovers
+                    const popoverImages = carousel.querySelectorAll('img');
+                    popoverImages.forEach(img => {
+                        new bootstrap.Popover(img);
+                    });
+                });
+            });
+        });
+    </script>
+    <?php include "./user_footer.php"; ?>
 </body>
+
 </html>

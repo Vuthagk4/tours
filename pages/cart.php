@@ -1,5 +1,5 @@
 <?php
-session_start();
+include "../includes/header.php";
 include '../includes/config.php';
 $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
 $cartItems = [];
@@ -12,7 +12,9 @@ if (isset($_SESSION['user_id'])) {
             t.title,
             b.duration,
             b.people,
-            (b.people * b.price) AS total
+            (b.people * b.price) AS total,
+            b.status,
+            b.qr_code_image
         FROM bookings b
         JOIN users u ON b.user_id = u.user_id
         JOIN tours t ON b.tour_id = t.tour_id
@@ -25,6 +27,7 @@ if (isset($_SESSION['user_id'])) {
     while ($row = mysqli_fetch_assoc($result)) {
         $cartItems[] = $row;
     }
+    mysqli_stmt_close($stmt);
 } else {
     echo "<p class='text-danger text-center mt-5'>You must be logged in to view your cart.</p>";
     exit;
@@ -165,6 +168,8 @@ if (isset($_SESSION['user_id'])) {
                             <th>Duration</th>
                             <th>People</th>
                             <th>Total Price</th>
+                            <th>Status</th>
+                            <th>QR Code</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -173,22 +178,30 @@ if (isset($_SESSION['user_id'])) {
                         if (!empty($cartItems)) {
                             foreach ($cartItems as $index => $item) {
                                 echo "<tr data-item-id='{$item['item_id']}'>
-                <td>" . ($index + 1) . "</td>
-                <td><button class='btn btn-sm btn-outline-info' onclick='showTransferModal($index)'>Transfer</button></td>
-                <td>{$item['username']}</td>
-                <td>{$item['title']}</td>
-                <td>{$item['duration']} day(s)</td>
-                <td>{$item['people']}</td>
-                <td>\${$item['total']}</td>
-                <td class='action-btns'>
-                    <button class='btn btn-sm btn-danger' onclick='removeFromCart($index)'>
-                        <i class='fas fa-trash-alt'></i>
-                    </button>
-                </td>
-            </tr>";
+                                    <td>" . ($index + 1) . "</td>
+                                    <td><button class='btn btn-sm btn-outline-info' onclick='showTransferModal($index)'>Transfer</button></td>
+                                    <td>" . htmlspecialchars($item['username']) . "</td>
+                                    <td>" . htmlspecialchars($item['title']) . "</td>
+                                    <td>{$item['duration']} day(s)</td>
+                                    <td>{$item['people']}</td>
+                                    <td>\${$item['total']}</td>
+                                    <td>{$item['status']}</td>
+                                    <td>";
+                                if ($item['qr_code_image'] && file_exists("../Uploads/qr_codes/{$item['qr_code_image']}")) {
+                                    echo "<img src='../Uploads/qr_codes/{$item['qr_code_image']}' alt='QR Code' style='max-width: 50px;'>";
+                                } else {
+                                    echo "No QR Code";
+                                }
+                                echo "</td>
+                                    <td class='action-btns'>
+                                        <button class='btn btn-sm btn-danger' onclick='removeFromCart($index)'>
+                                            <i class='fas fa-trash-alt'></i>
+                                        </button>
+                                    </td>
+                                </tr>";
                             }
                         } else {
-                            echo "<tr><td colspan='8' class='text-center'>No items in the cart.</td></tr>";
+                            echo "<tr><td colspan='10' class='text-center'>No items in the cart.</td></tr>";
                         }
                         ?>
                     </tbody>
@@ -208,8 +221,10 @@ if (isset($_SESSION['user_id'])) {
                 <div class="modal-body">
                     <p><strong>Net Salary:</strong></p>
                     <input id="salaryField" class="form-control mb-3 text-center" readonly>
+                    <p><strong>Upload QR Code:</strong></p>
+                    <input type="file" id="qrCodeInput" accept="image/*" class="form-control mb-3">
                     <p><strong>KHQR:</strong></p>
-                    <img src="../assets/images/myqr.jpg" alt="QR Code" class="img-fluid mb-2">
+                    <img id="qrCodePreview" src="" alt="QR Code" class="img-fluid mb-2" style="display: none;">
                     <p class="fw-bold" id="username">USERNAME HERE</p>
                     <div class="form-check mt-3">
                         <input class="form-check-input" type="checkbox" id="transferConfirm">
@@ -266,8 +281,8 @@ if (isset($_SESSION['user_id'])) {
             const date = new Date().toLocaleString();
             const data = [
                 ["Tour Booking Receipt"],
-                [`Customer Name:`, username],
-                [`Date:`, date],
+                ["Customer Name:", username],
+                ["Date:", date],
                 [],
                 ["No.", "Title", "Duration", "People", "Total (USD)"]
             ];
@@ -301,27 +316,77 @@ if (isset($_SESSION['user_id'])) {
             const modal = new bootstrap.Modal(document.getElementById('transferModal'));
             const username = document.querySelector(`#cartTableBody tr:nth-child(${index + 1}) td:nth-child(3)`).innerText;
             const total = document.querySelector(`#cartTableBody tr:nth-child(${index + 1}) td:nth-child(7)`).innerText.replace('$', '');
+            const itemId = document.querySelector(`#cartTableBody tr:nth-child(${index + 1})`).dataset.itemId;
 
             document.getElementById('salaryField').value = `$${total}`;
             document.getElementById('username').innerText = username;
             document.getElementById('transferConfirm').checked = false;
+            document.getElementById('qrCodeInput').value = '';
+            document.getElementById('qrCodePreview').src = '';
+            document.getElementById('qrCodePreview').style.display = 'none';
+            document.getElementById('transferModal').dataset.itemId = itemId;
             modal.show();
         }
 
+        document.getElementById('qrCodeInput').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const qrCodePreview = document.getElementById('qrCodePreview');
+                    qrCodePreview.src = e.target.result;
+                    qrCodePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                const qrCodePreview = document.getElementById('qrCodePreview');
+                qrCodePreview.src = '';
+                qrCodePreview.style.display = 'none';
+            }
+        });
+
         function confirmTransfer() {
             const checkbox = document.getElementById('transferConfirm');
+            const qrCodeInput = document.getElementById('qrCodeInput');
+            const itemId = document.getElementById('transferModal').dataset.itemId;
+
             if (!checkbox.checked) {
                 alert("Please confirm that the money has been transferred.");
                 return;
             }
-            alert("Transfer confirmed!");
-            const modal = bootstrap.Modal.getInstance(document.getElementById('transferModal'));
-            modal.hide();
+
+            if (!qrCodeInput.files.length) {
+                alert("Please upload a QR code image.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('qrCode', qrCodeInput.files[0]);
+            formData.append('booking_id', itemId);
+
+            fetch('upload_qr_code.php', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("QR code uploaded successfully! Booking is now pending admin confirmation.");
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('transferModal'));
+                        modal.hide();
+                        location.reload();
+                    } else {
+                        alert("Error uploading QR code: " + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert("Error: " + error);
+                });
         }
 
         function clearCart() {
             if (confirm("Are you sure you want to clear your entire cart?")) {
-                window.location.href = "clear_cart.php"; // Optional: implement this file
+                window.location.href = "clear_cart.php";
             }
         }
 
@@ -330,89 +395,85 @@ if (isset($_SESSION['user_id'])) {
             const username = "<?php echo $_SESSION['name'] ?? 'Customer'; ?>";
             const date = new Date().toLocaleString();
 
-            // Open a new window for printing
             let printWindow = window.open('', '', 'width=800,height=600');
 
             printWindow.document.write(`
-        <html>
-        <head>
-            <title>Tour Booking Receipt</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    padding: 20px;
-                    margin: 0;
-                    color: #333;
-                }
-                h2 {
-                    text-align: center;
-                    font-size: 24px;
-                    margin-bottom: 20px;
-                }
-                .info {
-                    margin-top: 10px;
-                    font-size: 16px;
-                    margin-bottom: 20px;
-                }
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin-top: 20px;
-                }
-                th, td {
-                    border: 1px solid #333;
-                    padding: 10px;
-                    text-align: center;
-                    font-size: 14px;
-                }
-                th {
-                    background-color: #f2f2f2;
-                    font-weight: bold;
-                }
-                td {
-                    background-color: #fafafa;
-                }
-                .total {
-                    font-weight: bold;
-                    font-size: 18px;
-                    text-align: right;
-                    margin-top: 20px;
-                }
-                .footer {
-                    text-align: center;
-                    margin-top: 40px;
-                    font-size: 14px;
-                    color: #777;
-                }
-                .footer p {
-                    margin: 5px 0;
-                }
-            </style>
-        </head>
-        <body>
-            <h2>Tour Booking Receipt</h2>
-            <div class="info">Customer Name: <strong>${username}</strong></div>
-            <div class="info">Date: <strong>${date}</strong></div>
-            
-            <h3>Booking Cart</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>No.</th>
-                        <th>Username</th>
-                        <th>Tour Title</th>
-                        <th>Duration</th>
-                        <th>People</th>
-                        <th>Total (USD)</th>
-                    </tr>
-                </thead>
-                <tbody>
-    `);
+                <html>
+                <head>
+                    <title>Tour Booking Receipt</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            padding: 20px;
+                            margin: 0;
+                            color: #333;
+                        }
+                        h2 {
+                            text-align: center;
+                            font-size: 24px;
+                            margin-bottom: 20px;
+                        }
+                        .info {
+                            margin-top: 10px;
+                            font-size: 16px;
+                            margin-bottom: 20px;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 20px;
+                        }
+                        th, td {
+                            border: 1px solid #333;
+                            padding: 10px;
+                            text-align: center;
+                            font-size: 14px;
+                        }
+                        th {
+                            background-color: #f2f2f2;
+                            font-weight: bold;
+                        }
+                        td {
+                            background-color: #fafafa;
+                        }
+                        .total {
+                            font-weight: bold;
+                            font-size: 18px;
+                            text-align: right merci, margin-top: 20px;
+                        }
+                        .footer {
+                            text-align: center;
+                            margin-top: 40px;
+                            font-size: 14px;
+                            color: #777;
+                        }
+                        .footer p {
+                            margin: 5px 0;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h2>Tour Booking Receipt</h2>
+                    <div class="info">Customer Name: <strong>${username}</strong></div>
+                    <div class="info">Date: <strong>${date}</strong></div>
+                    <h3>Booking Cart</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>Username</th>
+                                <th>Tour Title</th>
+                                <th>Duration</th>
+                                <th>People</th>
+                                <th>Total (USD)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `);
 
             let totalAmount = 0;
             let index = 1;
 
-            // Loop through the cart items and print each row dynamically
             table.querySelectorAll("tr").forEach(row => {
                 const cols = row.querySelectorAll("td");
                 if (cols.length >= 4) {
@@ -424,42 +485,40 @@ if (isset($_SESSION['user_id'])) {
 
                     totalAmount += total;
 
-                    // Add each row to the printed table
                     printWindow.document.write(`
-                <tr>
-                    <td>${index++}</td>
-                    <td>${username}</td>
-                    <td>${title}</td>
-                    <td>${duration} day(s)</td>
-                    <td>${people}</td>
-                    <td>$${total.toFixed(2)}</td>
-                </tr>
-            `);
+                        <tr>
+                            <td>${index++}</td>
+                            <td>${username}</td>
+                            <td>${title}</td>
+                            <td>${duration}</td>
+                            <td>${people}</td>
+                            <td>$${total.toFixed(2)}</td>
+                        </tr>
+                    `);
                 }
             });
 
-            // Close the original cart table section
             printWindow.document.write(`
-        </tbody>
-    </table>
-    <div class="total">Grand Total: $${totalAmount.toFixed(2)}</div>
-    <br>
-    <div class="footer">
-        <p>Thank you for your booking!</p>
-        <p>If you have any questions, please contact support@example.com</p>
-    </div>
-    `);
-
-
+                        </tbody>
+                    </table>
+                    <div class="total">Grand Total: $${totalAmount.toFixed(2)}</div>
+                    <br>
+                    <div class="footer">
+                        <p>Thank you for your booking!</p>
+                        <p>If you have any questions, please contact support@example.com</p>
+                    </div>
+                </body>
+                </html>
+            `);
 
             printWindow.document.close();
             printWindow.print();
         }
-
     </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <?php include "./user_footer.php"; ?>
 </body>
 
 </html>

@@ -1,4 +1,3 @@
-
 <?php
 session_name('AdminSession');
 session_start();
@@ -6,6 +5,6 @@ session_start();
 // Verify CSRF token
 
 session_destroy();
-header("Location: admin_login.php");
+header("Location: admin_auth.php");
 exit();
 ?>

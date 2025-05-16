@@ -4,6 +4,7 @@ include 'config.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,10 +16,14 @@ include 'config.php';
     <!-- link google fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@200;300;400;500;600&display=swap"
+        rel="stylesheet">
     <!-- Bootstrap CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
+        crossorigin="anonymous"></script>
     <style>
         .sidebar {
             width: 250px;
@@ -114,7 +119,7 @@ include 'config.php';
         }
 
         .sidebar ul li a:hover {
-            background:rgba(66, 70, 64, 0.5);
+            background: rgba(66, 70, 64, 0.5);
         }
 
         .sidebar.collapsed ul li a span {
@@ -154,7 +159,7 @@ include 'config.php';
         }
 
         .sidebar-toggle {
-            
+
             color: black;
             font-size: larger;
             padding: 15px;
@@ -179,7 +184,7 @@ include 'config.php';
             background: white;
             padding: 10px 15px;
             border-radius: 8px;
-            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
             color: black;
             font-weight: 500;
         }
@@ -244,69 +249,73 @@ include 'config.php';
         }
     </style>
 </head>
+
 <body>
-<!-- Sidebar -->
-<div class="sidebar" id="sidebar">
-    <!-- Section 1: Logo and Company Name -->
-    <div class="section-1">
-        <div class="row d-flex justify-content-center align-items-center">
-            <div class="col-3 d-flex justify-content-center">
-                <img class="img" src="../assets/images/logo.jpg" alt="Khmer Tour Logo">
-            </div>
-            <div class="col-9 d-flex align-items-center">
-                <span class="company-name">Khmer Tour</span>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <!-- Section 1: Logo and Company Name -->
+        <div class="section-1">
+            <div class="row d-flex justify-content-center align-items-center">
+                <div class="col-3 d-flex justify-content-center">
+                    <img class="img" src="../assets/images/logo.jpg" alt="Khmer Tour Logo">
+                </div>
+                <div class="col-9 d-flex align-items-center">
+                    <span class="company-name">Khmer Tour</span>
+                </div>
             </div>
         </div>
+        <hr>
+        <!-- Section 2: Menu -->
+        <ul>
+            <li><a href="index.php"><i class="fa fa-home"></i> <span>Dashboard</span></a></li>
+            <li><a href="../admin/add_destination.php"><i class="fa fa-map"></i> <span>Add Destination</span></a></li>
+            <li><a href="../admin/addTour.php"><i class="fa fa-plane"></i> <span>Add Tour</span></a></li>
+            <li><a href="../admin/manage_bookings.php"><i class="fa fa-book"></i> <span>View Booking</span></a></li>
+            <li><a href="../admin/manage_payments.php"><i class="fa fa-credit-card"></i> <span>Check Payment</span></a>
+            </li>
+        </ul>
     </div>
-    <hr>
-    <!-- Section 2: Menu -->
-    <ul>
-        <li><a href="index.php"><i class="fa fa-home"></i> <span>Dashboard</span></a></li>
-        <li><a href="../admin/add_destination.php"><i class="fa fa-map"></i> <span>Add Destination</span></a></li>
-        <li><a href="../admin/addTour.php"><i class="fa fa-plane"></i> <span>Add Tour</span></a></li>
-        <li><a href="../admin/manage_bookings.php"><i class="fa fa-book"></i> <span>View Booking</span></a></li>
-        <li><a href="#"><i class="fa fa-credit-card"></i> <span>Check Payment</span></a></li>
-    </ul>
-</div>
 
-<!-- Main Content (Header) -->
-<div class="main-content" id="main-content">
-    <div class="sidebar-toggle" id="sidebar-toggle">
-        <i class="fa fa-bars"></i>
-    </div>
-    <!-- User Session -->
-    <?php 
-    if (isset($_SESSION['admin_id'])) {
-        $adminId = $_SESSION['admin_id'];
-        $query = mysqli_query($conn, "SELECT * FROM admins WHERE admin_id = $adminId");
-        $admin = mysqli_fetch_assoc($query);
+    <!-- Main Content (Header) -->
+    <div class="main-content" id="main-content">
+        <div class="sidebar-toggle" id="sidebar-toggle">
+            <i class="fa fa-bars"></i>
+        </div>
+        <!-- User Session -->
+        <?php
+        if (isset($_SESSION['admin_id'])) {
+            $adminId = $_SESSION['admin_id'];
+            $query = mysqli_query($conn, "SELECT * FROM admins WHERE admin_id = $adminId");
+            $admin = mysqli_fetch_assoc($query);
 
-        if ($admin) {
-            echo '
+            if ($admin) {
+                echo '
             <div class="admin-info d-flex">
-                <span>' . htmlspecialchars($admin['name']) .'</span>
+                <span>' . htmlspecialchars($admin['name']) . '</span>
                 <form action="admin_logout.php" method="POST">
                     <button type="submit" class="btn btn-danger">Logout <i class="fa-solid fa-right-from-bracket"></i></button>
                 </form>
             </div>';
+            }
+        } else {
+            echo '<a href="admin_login.php" style="color: black;">Login</a>';
         }
-    } else {
-        echo '<a href="admin_login.php" style="color: black;">Login</a>';
-    }
-    ?>
-</div>
+        ?>
+    </div>
 
-<script>
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('main-content');
-    const toggleButton = document.getElementById('sidebar-toggle');
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        const toggleButton = document.getElementById('sidebar-toggle');
 
-    toggleButton.addEventListener('click', () => {
-        requestAnimationFrame(() => {
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('collapsed');
+
+        toggleButton.addEventListener('click', () => {
+            requestAnimationFrame(() => {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('collapsed');
+            });
         });
-    });
-</script>
+    </script>
 </body>
+
 </html>

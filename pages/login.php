@@ -2,233 +2,376 @@
 session_start();
 include '../includes/config.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['sign_in'])) {
+  $email = $_POST['email'];
+  $password = $_POST['password'];
 
-    $stmt = $conn->prepare("SELECT user_id, name, password, role FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
+  $stmt = $conn->prepare("SELECT user_id, name, password, role FROM users WHERE email = ?");
+  $stmt->bind_param("s", $email);
+  $stmt->execute();
+  $result = $stmt->get_result();
 
-    if ($result->num_rows == 1) {
-        $row = $result->fetch_assoc();
-        
-        if (password_verify($password, $row['password'])) {
-            $_SESSION['user_id'] = $row['user_id'];
-            $_SESSION['name'] = $row['name'];
-            $_SESSION['role'] = $row['role'];
+  if ($result->num_rows == 1) {
+    $row = $result->fetch_assoc();
 
-            if ($row['role'] === 'admin') {
-                echo "<script>alert('Admin Login Successful!'); window.location.href='../admin/index.php';</script>";
-            } else {
-                echo "<script>alert('Customer Login Successful!'); window.location.href='index.php';</script>";
-            }
-            exit();
-        } else {
-            echo "<script>alert('Invalid Password!'); window.location.href='login.php';</script>";
-        }
+    if (password_verify($password, $row['password'])) {
+      $_SESSION['user_id'] = $row['user_id'];
+      $_SESSION['name'] = $row['name'];
+      $_SESSION['role'] = $row['role'];
+
+      if ($row['role'] === 'admin') {
+        echo "<script>alert('Admin Login Successful!'); window.location.href='../admin/index.php';</script>";
+      } else {
+        echo "<script>alert('Customer Login Successful!'); window.location.href='index.php';</script>";
+      }
+      exit();
     } else {
-        echo "<script>alert('Invalid Password!'); window.location.href='login.php';</script>";
+      echo "<script>alert('Invalid Password!');</script>";
     }
+  } else {
+    echo "<script>alert('Invalid Email!');</script>";
+  }
 
-    $stmt->close();
-    $conn->close();
+  $stmt->close();
+  $conn->close();
 }
 ?>
 
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in/up Form</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
 
-<script>
-function togglePassword() {
-    var passwordField = document.getElementById("password");
-    var icon = document.querySelector(".toggle-password i");
-    if (passwordField.type === "password") {
-        passwordField.type = "text";
-        icon.classList.remove("fa-eye");
-        icon.classList.add("fa-eye-slash");
-    } else {
-        passwordField.type = "password";
-        icon.classList.remove("fa-eye-slash");
-        icon.classList.add("fa-eye");
+    * {
+      box-sizing: border-box;
     }
-}
-</script>
-<style>
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Open Sans", sans-serif;
-}
+    body {
+      background: #f6f5f7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      font-family: 'Montserrat', sans-serif;
+      height: 100vh;
+      margin: -20px 0 50px;
+    }
 
-body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  width: 100%;
-  padding: 0 10px;
-  /* background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%); */
-}
+    h1 {
+      font-weight: bold;
+      margin: 0;
+    }
 
-body::before {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: url("../assets/images/4k.jpg"), #000;
-  background-position: center;
-  background-size: cover;
-  z-index: -1;
-}
+    h2 {
+      text-align: center;
+    }
 
-.wrapper {
-  width: 400px;
-  border-radius: 15px;
-  padding: 40px;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
-  transition: all 0.3s ease;
-}
+    p {
+      font-size: 14px;
+      font-weight: 100;
+      line-height: 20px;
+      letter-spacing: 0.5px;
+      margin: 20px 0 30px;
+    }
 
-.wrapper:hover {
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
-}
+    span {
+      font-size: 12px;
+    }
 
-form {
-  display: flex;
-  flex-direction: column;
-}
+    a {
+      color: #333;
+      font-size: 14px;
+      text-decoration: none;
+      margin: 15px 0;
+    }
 
-h2 {
-  font-size: 2.4rem;
-  margin-bottom: 25px;
-  color: #ffffff;
-  letter-spacing: 1px;
-}
+    button {
+      border-radius: 20px;
+      border: 1px solid #FF4B2B;
+      background-color: #FF4B2B;
+      color: #FFFFFF;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 12px 45px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: transform 80ms ease-in;
+    }
 
-.input-field {
-  position: relative;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
-  margin: 20px 0;
-}
+    button:active {
+      transform: scale(0.95);
+    }
 
-.input-field label {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  color: #ffffff;
-  font-size: 1.4rem;
-  pointer-events: none;
-  transition: 0.3s ease;
-}
+    button:focus {
+      outline: none;
+    }
 
-.input-field input {
-  width: 100%;
-  height: 40px;
-  background: transparent;
-  border: none;
-  outline: none;
-  font-size: 17px;
-  color: #ffffff;
-  padding: 0 10px;
-}
+    button.ghost {
+      background-color: transparent;
+      border-color: #FFFFFF;
+    }
 
-.input-field input:focus~label,
-.input-field input:valid~label {
-  font-size: 0.9rem;
-  top: 10px;
-  transform: translateY(-150%);
-  color: #ffdde1;
-}
+    form {
+      background-color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 0 50px;
+      height: 100%;
+      text-align: center;
+    }
 
-.forget {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 25px 0 35px 0;
-  color: #ffffff;
-}
+    input {
+      background-color: #eee;
+      border: none;
+      padding: 12px 15px;
+      margin: 8px 0;
+      width: 100%;
+    }
 
-#remember {
-  accent-color: #ffdde1;
-}
+    .container {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25),
+        0 10px 10px rgba(0, 0, 0, 0.22);
+      position: relative;
+      overflow: hidden;
+      width: 768px;
+      max-width: 100%;
+      min-height: 480px;
+    }
 
-.forget label {
-  display: flex;
-  align-items: center;
-}
+    .form-container {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      transition: all 0.6s ease-in-out;
+    }
 
-.forget label p {
-  margin-left: 8px;
-}
+    .sign-in-container {
+      left: 0;
+      width: 50%;
+      z-index: 2;
+    }
 
-.wrapper a {
-  color: #ffdde1;
-  text-decoration: none;
-}
+    .container.right-panel-active .sign-in-container {
+      transform: translateX(100%);
+    }
 
-.wrapper a:hover {
-  text-decoration: underline;
-}
+    .sign-up-container {
+      left: 0;
+      width: 50%;
+      opacity: 0;
+      z-index: 1;
+    }
 
-button {
-  background-color: #271930;
-  color: #ffffff;
-  font-weight: 600;
-  border: none;
-  padding: 15px 20px;
-  cursor: pointer;
-  border-radius: 25px;
-  font-size: 17px;
-  border: 2px solid transparent;
-  transition: all 0.3s ease;
-}
+    .container.right-panel-active .sign-up-container {
+      transform: translateX(100%);
+      opacity: 1;
+      z-index: 5;
+      animation: show 0.6s;
+    }
 
-button:hover {
-  color: #000000;
-  background: rgba(255, 255, 255, 0.2);
-  border-color: #ffffff;
-}
+    @keyframes show {
 
-.register {
-  text-align: center;
-  margin-top: 30px;
-  color: #ffffff;
-}
-                                         
-                                                     
-            
-</style>
+      0%,
+      49.99% {
+        opacity: 0;
+        z-index: 1;
+      }
 
-<div class="wrapper">
-    <form action="login.php" method="POST">
-      <h2>Login Form</h2>
-      <div class="input-field">
-        <input type="email" name="email" required>
-        <label>Enter your email</label>
+      50%,
+      100% {
+        opacity: 1;
+        z-index: 5;
+      }
+    }
+
+    .overlay-container {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 50%;
+      height: 100%;
+      overflow: hidden;
+      transition: transform 0.6s ease-in-out;
+      z-index: 100;
+    }
+
+    .container.right-panel-active .overlay-container {
+      transform: translateX(-100%);
+    }
+
+    .overlay {
+      background: #FF416C;
+      background: -webkit-linear-gradient(to right, #FF4B2B, #FF416C);
+      background: linear-gradient(to right, #FF4B2B, #FF416C);
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: 0 0;
+      color: #FFFFFF;
+      position: relative;
+      left: -100%;
+      height: 100%;
+      width: 200%;
+      transform: translateX(0);
+      transition: transform 0.6s ease-in-out;
+    }
+
+    .container.right-panel-active .overlay {
+      transform: translateX(50%);
+    }
+
+    .overlay-panel {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 0 40px;
+      text-align: center;
+      top: 0;
+      height: 100%;
+      width: 50%;
+      transform: translateX(0);
+      transition: transform 0.6s ease-in-out;
+    }
+
+    .overlay-left {
+      transform: translateX(-20%);
+    }
+
+    .container.right-panel-active .overlay-left {
+      transform: translateX(0);
+    }
+
+    .overlay-right {
+      right: 0;
+      transform: translateX(0);
+    }
+
+    .container.right-panel-active .overlay-right {
+      transform: translateX(20%);
+    }
+
+    .social-container {
+      margin: 20px 0;
+    }
+
+    .social-container a {
+      border: 1px solid #DDDDDD;
+      border-radius: 50%;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 5px;
+      height: 40px;
+      width: 40px;
+    }
+
+    footer {
+      background-color: #222;
+      color: #fff;
+      font-size: 14px;
+      bottom: 0;
+      position: fixed;
+      left: 0;
+      right: 0;
+      text-align: center;
+      z-index: 999;
+    }
+
+    footer p {
+      margin: 10px 0;
+    }
+
+    footer i {
+      color: red;
+    }
+
+    footer a {
+      color: #3c97bf;
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>Welcome</h2>
+  <div class="container" id="container">
+    <div class="form-container sign-up-container">
+      <form action="register.php" method="POST">
+        <h1>Create Account</h1>
+        <div class="social-container">
+          <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
+          <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+        <span>or use your email for registration</span>
+        <input type="text" name="name" placeholder="Name" required />
+        <input type="email" name="email" placeholder="Email" required />
+        <input type="password" name="password" placeholder="Password" required />
+        <button type="submit">Sign Up</button>
+      </form>
+    </div>
+    <div class="form-container sign-in-container">
+      <form action="login.php" method="POST">
+        <h1>Sign in</h1>
+        <div class="social-container">
+          <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
+          <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+        <span>or use your account</span>
+        <input type="email" name="email" placeholder="Email" required />
+        <input type="password" name="password" placeholder="Password" required />
+        <a href="#">Forgot your password?</a>
+        <button type="submit" name="sign_in">Sign In</button>
+      </form>
+    </div>
+    <div class="overlay-container">
+      <div class="overlay">
+        <div class="overlay-panel overlay-left">
+          <h1>Welcome Back!</h1>
+          <p>To keep connected with us please login with your personal info</p>
+          <button class="ghost" id="signIn">Sign In</button>
+        </div>
+        <div class="overlay-panel overlay-right">
+          <h1>Hello, Friend!</h1>
+          <p>Enter your personal details and start journey with us</p>
+          <button class="ghost" id="signUp">Sign Up</button>
+        </div>
       </div>
-      <div class="input-field">
-        <input type="password" name="password"  required>
-        <label>Enter your password</label>
-      </div>
-      <div class="forget">
-        <label for="remember">
-          <input type="checkbox" id="remember">
-          <p>Remember me</p>
-        </label>
-        <a href="#">Forgot password?</a>
-      </div>
-      <button type="submit">Log In</button>
-      <div class="register">
-        <p>Don't have an account? <a href="register.php" onclick="return true;">Register</a></p>
-      </div>
-    </form>
+    </div>
   </div>
+  <footer>
+    <p>
+      Created with <i class="fa fa-heart"></i> by
+      <a target="_blank" href="https://florin-pop.com">Team 8(E6)</a>
+      - Read how I created this and how you can join
+      <a target="_blank" href="https://www.florin-pop.com/blog/2019/03/double-slider-sign-in-up-form/">here</a>.
+    </p>
+  </footer>
+  <script>
+    const signUpButton = document.getElementById('signUp');
+    const signInButton = document.getElementById('signIn');
+    const container = document.getElementById('container');
+
+    signUpButton.addEventListener('click', () => {
+      container.classList.add("right-panel-active");
+    });
+
+    signInButton.addEventListener('click', () => {
+      container.classList.remove("right-panel-active");
+    });
+  </script>
+</body>
+
+</html>
