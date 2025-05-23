@@ -39,7 +39,7 @@ include 'config.php';
             align-items: center;
             padding-top: 20px;
             transition: width 0.3s ease;
-            z-index: 99999999999;
+            z-index: 999;
             box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
         }
 

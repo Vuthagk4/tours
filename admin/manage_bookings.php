@@ -78,6 +78,54 @@ $result = $conn->query($query);
         width: calc(100% - 60px);
     }
 
+    .sidebar-toggle {
+        color: #333;
+        font-size: 1.5rem;
+        padding: 10px;
+        cursor: pointer;
+        border-radius: 50%;
+        transition: background 0.2s ease;
+        margin-left: 10px;
+    }
+
+    .sidebar-toggle:hover {
+        background: #e9ecef;
+    }
+
+    .dashboard-card {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        margin-bottom: 20px;
+        transition: transform 0.2s ease;
+    }
+
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .dashboard-card h3 {
+        margin: 0;
+        font-size: 1rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .dashboard-card p {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #007bff;
+        margin: 10px 0 0;
+    }
+
+    .dashboard-card i {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+        color: #007bff;
+    }
+
     .table th,
     .table td {
         padding: 8px 10px;

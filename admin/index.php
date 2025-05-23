@@ -52,138 +52,24 @@ $chartValuesJson = json_encode($chartValues);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .sidebar {
-            width: 250px;
-            height: 100vh;
-            background: #1a1a1a;
-            color: white;
-            position: fixed;
-            left: 0;
-            top: 0;
-            padding: 20px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: width 0.3s ease;
-            z-index: 99999999999;
-            box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
-        }
-
-        .sidebar.collapsed {
-            width: 60px;
-        }
-
-        .sidebar .section-1 {
-            width: 100%;
-            padding: 0 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .sidebar.collapsed .section-1 {
-            justify-content: center;
-        }
-
-        .sidebar .section-1 .row {
-            width: 100%;
-            transition: opacity 0.2s ease;
-        }
-
-        .sidebar.collapsed .section-1 .row .col-9 {
-            opacity: 0;
-            display: none;
-        }
-
-        .sidebar .section-1 .company-name {
-            color: white;
-            font-weight: 500;
-            opacity: 1;
-            transition: opacity 0.2s ease;
-            font-size: 1.5rem;
-        }
-
-        .sidebar.collapsed .section-1 .company-name {
-            opacity: 0;
-            display: none;
-        }
-
-        .sidebar hr {
-            width: 100%;
-            border-color: rgba(255, 255, 255, 0.2);
-            margin: 15px 0;
-            transition: width 0.3s ease;
-        }
-
-        .sidebar.collapsed hr {
-            width: 100%;
-        }
-
-        .sidebar ul {
-            margin-top: 1rem;
-            list-style: none;
+        body {
+            font-family: 'Work Sans', sans-serif;
+            margin: 0;
             padding: 0;
-            width: 100%;
+            background: #f8f9fa;
         }
 
-        .sidebar ul li {
-            width: 100%;
-        }
-
-        .sidebar ul li a {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            color: white;
-            text-decoration: none;
-            font-size: 16px;
-            transition: padding 0.3s ease, background 0.3s ease;
-        }
-
-        .sidebar ul li a i {
-            margin-right: 10px;
-            transition: margin-right 0.3s ease;
-            font-size: 1.2rem;
-        }
-
-        .sidebar ul li a:hover {
-            background: #343a40;
-        }
-
-        .sidebar.collapsed ul li a span {
-            opacity: 0;
-            display: none;
-        }
-
-        .sidebar.collapsed ul li a {
-            justify-content: center;
-            padding: 12px 10px;
-        }
-
-        .sidebar.collapsed ul li a i {
-            margin-right: 0;
-        }
-
-        .main-content {
+        .dashboard-content {
             margin-left: 250px;
             padding: 20px;
-            height: 80px;
-            transition: margin-left 0.3s ease, width 0.3s ease;
-            display: flex;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            width: calc(100% - 250px);
-            z-index: 999;
-            background: #f8f9fa;
-            color: #333;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: margin-left 0.3s ease;
+            min-height: calc(100vh - 60px);
         }
 
-        .main-content.collapsed {
+        .dashboard-content.collapsed {
             margin-left: 60px;
-            width: calc(100% - 60px);
         }
+
 
         .sidebar-toggle {
             color: #333;

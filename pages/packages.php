@@ -393,7 +393,11 @@ while ($row = $result->fetch_assoc()) {
       <div class="tour-cards" id="tour-cards">
         <?php
         $index = 0;
-        while ($tour = $tours->fetch_assoc()): ?>
+        while ($tour = $tours->fetch_assoc()):
+          // Simulate user booking count (replace with real data from a bookings table if available)
+          $userBookingCount = rand(0, 5); // Placeholder: Random number between 0 and 5
+          $yellowStars = min(floor($userBookingCount / 2), 5); // One yellow star per 2 bookings, max 5 stars
+          ?>
           <div class="col-12 mb-4" data-original-index="<?= $index ?>">
             <div class="tour-card">
               <div class="tour-image">
@@ -402,19 +406,22 @@ while ($row = $result->fetch_assoc()) {
                   data-tour-id="<?= $tour['tour_id'] ?>">
               </div>
               <div class="tour-info">
-                <h5 class="title"><?= htmlspecialchars($tour['title']) ?></h5>
-                <p class="meta"><strong>Destination:</strong> <?= htmlspecialchars($tour['destination']) ?></p>
-                <?php
-                $coords = explode(",", $tour['location']);
-                $mapLink = (count($coords) == 2)
-                  ? "https://www.google.com/maps?q=" . trim($coords[0]) . "," . trim($coords[1])
-                  : "javascript:void(0);";
-                ?>
-                <p class="meta">
-                  <strong>Location:</strong>
-                  <a href="<?= $mapLink ?>" target="_blank">View on Map</a>
+                <h5 class="title"><?= htmlspecialchars($tour['title']) ?>
+                  <?php for ($i = 0; $i < 5; $i++): ?>
+                    <i class="fas fa-star" style="color: <?= $i < $yellowStars ? '#ffc107' : '#ccc' ?>;"></i>
+                  <?php endfor; ?>
+                </h5>
+                <p class="tour-location"><?= htmlspecialchars($tour['destination']) ?> -
+                  <?php
+                  $coords = explode(",", $tour['location']);
+                  $mapLink = (count($coords) == 2)
+                    ? "https://www.google.com/maps?q=" . trim($coords[0]) . "," . trim($coords[1])
+                    : "javascript:void(0);";
+                  ?>
+                  <a href="<?= $mapLink ?>" target="_blank">Show on map</a> <?= rand(0, 2) ?>.<?= rand(0, 9) ?>km from
+                  centre
                 </p>
-                <p class="meta"><strong>Type:</strong> <?= htmlspecialchars($tour['type'] ?? '--') ?></p>
+
                 <?php
                 $fullDesc = htmlspecialchars($tour['description']);
                 $shortDesc = substr($fullDesc, 0, 100);
@@ -425,24 +432,7 @@ while ($row = $result->fetch_assoc()) {
                   <a href="javascript:void(0)" class="see-more" role="button" aria-label="Toggle description">Show
                     More</a>
                 </div>
-                <div style="position: absolute; right:10px; top:0;">
-                  <?php
-                  $tour_id = $tour['tour_id'];
-                  $stmt = $conn->prepare("SELECT SUM(people) AS total_people FROM bookings WHERE tour_id = ?");
-                  $stmt->bind_param("i", $tour_id);
-                  $stmt->execute();
-                  $result = $stmt->get_result();
-                  $totalPeople = $result->fetch_assoc()['total_people'] ?? 0;
-                  $stmt->close();
-                  $starColor = $totalPeople >= 100 ? "gold" : "black";
-                  $stars = min(floor($totalPeople / 100), 5);
-                  ?>
-                  <span class="booked-count"><?= $totalPeople ?></span>
-                  <?php for ($i = 0; $i < $stars; $i++): ?>
-                    <i style="color: <?= $starColor ?>;" class="fa-solid fa-star"></i>
-                  <?php endfor; ?>
-                  people booked
-                </div>
+
               </div>
               <div class="tour-book">
                 <?php
@@ -464,57 +454,57 @@ while ($row = $result->fetch_assoc()) {
           </div>
           <?php $index++; endwhile; ?>
       </div>
-      <div class="highlights-column">
-        <h5 class="mb-3">Why Book With Us</h5>
-        <div class="highlight-card">
-          <i class="fas fa-users"></i>
-          <div class="content">
-            <h6>Expert Guides</h6>
-            <p>Our tours are led by knowledgeable local guides.</p>
-          </div>
-        </div>
-        <div class="highlight-card">
-          <i class="fas fa-undo-alt"></i>
-          <div class="content">
-            <h6>Flexible Cancellations</h6>
-            <p>Cancel or modify up to 24 hours before departure.</p>
-          </div>
-        </div>
-        <div class="highlight-card">
-          <i class="fas fa-tag"></i>
-          <div class="content">
-            <h6>Best Price Guarantee</h6>
-            <p>Competitive prices with no hidden fees.</p>
-          </div>
-        </div>
-        <div class="mt-3">
-          <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
-            <i class="fa-solid fa-phone"></i>
-          </a>
-          <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
-            <i class="fa-brands fa-telegram"></i>
-          </a>
-          <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
-            <i class="fa-solid fa-envelope"></i>
-          </a>
-        </div>
+    </div>
+  </div>
+  <div class="highlights-column">
+    <h5 class="mb-3">Why Book With Us</h5>
+    <div class="highlight-card">
+      <i class="fas fa-users"></i>
+      <div class="content">
+        <h6>Expert Guides</h6>
+        <p>Our tours are led by knowledgeable local guides.</p>
       </div>
-      <div class="contact-modal" id="contactModal">
-        <span class="close-btn" onclick="toggleContactModal()"><i class="fa-solid fa-xmark"></i></span>
-        <h6>Contact Us</h6>
-        <div class="contact-option">
-          <i class="fa-solid fa-phone"></i>
-          <a href="tel:+1234567890">015 769 953</a>
-        </div>
-        <div class="contact-option">
-          <i class="fa-brands fa-telegram"></i>
-          <a href="https://t.me/thany_oun" target="_blank">OUN THANY</a>
-        </div>
-        <div class="contact-option">
-          <i class="fa-solid fa-envelope"></i>
-          <a href="mailto:support@tours.com">ounthany@gmail.com</a>
-        </div>
+    </div>
+    <div class="highlight-card">
+      <i class="fas fa-undo-alt"></i>
+      <div class="content">
+        <h6>Flexible Cancellations</h6>
+        <p>Cancel or modify up to 24 hours before departure.</p>
       </div>
+    </div>
+    <div class="highlight-card">
+      <i class="fas fa-tag"></i>
+      <div class="content">
+        <h6>Best Price Guarantee</h6>
+        <p>Competitive prices with no hidden fees.</p>
+      </div>
+    </div>
+    <div class="mt-3">
+      <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
+        <i class="fa-solid fa-phone"></i>
+      </a>
+      <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
+        <i class="fa-brands fa-telegram"></i>
+      </a>
+      <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
+        <i class="fa-solid fa-envelope"></i>
+      </a>
+    </div>
+  </div>
+  <div class="contact-modal" id="contactModal">
+    <span class="close-btn" onclick="toggleContactModal()"><i class="fa-solid fa-xmark"></i></span>
+    <h6>Contact Us</h6>
+    <div class="contact-option">
+      <i class="fa-solid fa-phone"></i>
+      <a href="tel:+1234567890">015 769 953</a>
+    </div>
+    <div class="contact-option">
+      <i class="fa-brands fa-telegram"></i>
+      <a href="https://t.me/thany_oun" target="_blank">OUN THANY</a>
+    </div>
+    <div class="contact-option">
+      <i class="fa-solid fa-envelope"></i>
+      <a href="mailto:support@tours.com">ounthany@gmail.com</a>
     </div>
   </div>
 

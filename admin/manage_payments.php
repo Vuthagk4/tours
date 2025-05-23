@@ -94,56 +94,37 @@ $result = $conn->query($query);
     <!-- Chart.js for yearly report -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        body {
+            font-family: 'Work Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f8f9fa;
+        }
+
         .dashboard-content {
             margin-left: 250px;
             padding: 20px;
-            background: #f8f9fa;
             transition: margin-left 0.3s ease;
-            min-height: calc(100vh - 110px);
+            min-height: calc(100vh - 60px);
         }
 
         .dashboard-content.collapsed {
             margin-left: 60px;
         }
 
-        .main-content {
-            margin-left: 250px;
-            padding: 10px;
-            height: 60px;
-            position: sticky;
-            top: 0;
-            width: calc(100% - 250px);
-            z-index: 999;
-            background: #f8f9fa;
-            color: #333;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-        }
-
-        .main-content.collapsed {
-            margin-left: 60px;
-            width: calc(100% - 60px);
-        }
 
         .sidebar-toggle {
-            width: 40px;
-            height: 40px;
             color: #333;
-            font-size: 1.2rem;
-            padding: 8px;
+            font-size: 1.5rem;
+            padding: 10px;
             cursor: pointer;
             border-radius: 50%;
-            transition: background 0.2s ease, transform 0.2s ease;
+            transition: background 0.2s ease;
             margin-left: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .sidebar-toggle:hover {
             background: #e9ecef;
-            transform: scale(1.1);
         }
 
         .dashboard-card {

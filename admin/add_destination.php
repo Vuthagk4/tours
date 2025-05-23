@@ -17,29 +17,46 @@ if (isset($_GET['delete_id'])) {
 
 // Handle destination addition
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = htmlspecialchars(trim($_POST['name']));
-    $location = htmlspecialchars(trim($_POST['location']));
-    $category = htmlspecialchars(trim($_POST['category']));
+    $name = htmlspecialchars(trim($_POST['name'] ?? ''));
+    $location = htmlspecialchars(trim($_POST['location'] ?? ''));
+    $description = htmlspecialchars(trim($_POST['description'] ?? ''));
 
-    // Handle image upload
-    $image = $_FILES['image'];
-    $image_name = uniqid() . '_' . basename($image['name']);
-    $upload_dir = '../uploads/';
-    $upload_file = $upload_dir . $image_name;
-
-    if (move_uploaded_file($image['tmp_name'], $upload_file)) {
-        // Image uploaded successfully
-        $stmt = $conn->prepare("INSERT INTO destinations (name, location, image, isDelete) VALUES (?, ?, ?, ?, 0)");
-        $stmt->bind_param("ssss", $name, $location, $image_name);
-
-        if ($stmt->execute()) {
-            echo "<script>alert('Destination added successfully!'); window.location.href='add_destination.php';</script>";
-        } else {
-            echo "<script>alert('Error: " . addslashes($stmt->error) . "');</script>";
-        }
-        $stmt->close();
+    // Validate inputs
+    if (empty($name)) {
+        echo "<script>alert('Destination name is required.');</script>";
+    } elseif (!preg_match('/^-?\d+\.\d+,\s*-?\d+\.\d+$/', $location)) {
+        echo "<script>alert('Invalid location format. Use latitude, longitude (e.g., 11.5564, 104.9282).');</script>";
     } else {
-        echo "<script>alert('Error uploading image.');</script>";
+        // Handle image upload
+        $image = $_FILES['image'];
+        $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+        if (!in_array($image['type'], $allowed_types) || $image['size'] > 5 * 1024 * 1024) {
+            echo "<script>alert('Invalid image type or size. Please upload a JPEG, PNG, or GIF under 5MB.');</script>";
+        } else {
+            $image_name = uniqid() . '_' . basename($image['name']);
+            $upload_dir = '../Uploads/';
+            $upload_file = $upload_dir . $image_name;
+
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+
+            if (move_uploaded_file($image['tmp_name'], $upload_file)) {
+                // Image uploaded successfully
+                $stmt = $conn->prepare("INSERT INTO destinations (name, location, description, image, created_at, isDelete) VALUES (?, ?, ?, ?, NOW(), 0)");
+                $stmt->bind_param("ssss", $name, $location, $description, $image_name);
+
+                if ($stmt->execute()) {
+                    echo "<script>alert('Destination added successfully!'); window.location.href='add_destination.php';</script>";
+                } else {
+                    error_log($stmt->error);
+                    echo "<script>alert('Error adding destination: " . addslashes($stmt->error) . "');</script>";
+                }
+                $stmt->close();
+            } else {
+                echo "<script>alert('Error uploading image.');</script>";
+            }
+        }
     }
 }
 ?>
@@ -119,7 +136,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         .form-group input,
-        .form-group select {
+        .form-group select,
+        .form-group textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #ced4da;
@@ -129,7 +147,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         .form-group input:focus,
-        .form-group select:focus {
+        .form-group select:focus,
+        .form-group textarea:focus {
             border-color: #007bff;
             box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
             outline: none;
@@ -137,6 +156,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         .form-group input[type="file"] {
             padding: 5px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
         }
 
         .full-width {
@@ -278,10 +302,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="text" id="location" name="location" placeholder="Click on map to set location" required
                         readonly>
                 </div>
-                <div class="form-group">
-                    <label for="category">Category</label>
-                    <input type="text" name="category" id="category" placeholder="e.g., Beach, Mountain, City..."
-                        required>
+                <div class="form-group full-width">
+                    <label for="description">Description</label>
+                    <textarea name="description" id="description" placeholder="Enter description..."
+                        required></textarea>
                 </div>
                 <div class="form-group">
                     <label for="image">Image</label>
@@ -304,22 +328,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <th>#</th>
                         <th>Name</th>
                         <th>Location</th>
-                        <th>Type</th>
+                        <th>Description</th>
                         <th>Image</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
-                    $result = $conn->query("SELECT * FROM destinations WHERE isDelete = 0 ORDER BY destination_id DESC");
+                    $result = $conn->query("SELECT destination_id, name, location, description, image FROM destinations WHERE isDelete = 0 ORDER BY destination_id DESC");
                     if ($result->num_rows > 0) {
                         $i = 1;
                         while ($row = $result->fetch_assoc()) {
+                            $description_display = htmlspecialchars(substr($row['description'] ?? '', 0, 50)) . (strlen($row['description'] ?? '') > 50 ? '...' : '');
                             echo "<tr>
                                 <td>$i</td>
                                 <td>" . htmlspecialchars($row['name']) . "</td>
                                 <td>" . htmlspecialchars($row['location']) . "</td>
-                                <td><img src='../uploads/" . htmlspecialchars($row['image']) . "' width='100' height='70' alt='Destination Image'></td>
+                                <td>$description_display</td>
+                                <td><img src='../Uploads/" . htmlspecialchars($row['image']) . "' width='100' height='70' alt='Destination Image'></td>
                                 <td>
                                     <a href='update_destination.php?id={$row['destination_id']}' class='btn btn-warning btn-sm btn-action'>
                                         <i class='fa fa-edit me-1'></i>Update

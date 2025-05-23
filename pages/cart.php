@@ -52,7 +52,7 @@ if (isset($_SESSION['user_id'])) {
             border-radius: 15px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             margin-top: 30px;
-            padding: 30px;
+            padding: 20px;
         }
 
         .card-header {
@@ -80,7 +80,7 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .modal-body img {
-            max-width: 250px;
+            max-width: 200px;
             border: 1px solid #ccc;
             border-radius: 12px;
             padding: 5px;
@@ -133,6 +133,12 @@ if (isset($_SESSION['user_id'])) {
 
         .modal-title {
             font-size: 1.25rem;
+        }
+
+        .modal {
+            position: fixed;
+            z-index: 99999;
+            margin-bottom: -20px;
         }
     </style>
 </head>
@@ -194,7 +200,7 @@ if (isset($_SESSION['user_id'])) {
                                 }
                                 echo "</td>
                                     <td class='action-btns'>
-                                        <button class='btn btn-sm btn-danger' onclick='removeFromCart($index)'>
+                                        <button class='btn btn-sm btn-danger' onclick='removeFromCart({$item['item_id']})'>
                                             <i class='fas fa-trash-alt'></i>
                                         </button>
                                     </td>
@@ -245,24 +251,40 @@ if (isset($_SESSION['user_id'])) {
     </div>
 
     <script>
-        function removeFromCart(index) {
-            if (confirm("Are you sure you want to remove this item?")) {
-                const itemId = document.querySelector(`#cartTableBody tr:nth-child(${index + 1})`).dataset.itemId;
-                fetch(`remove_cart_item.php?id=${itemId}`, {
-                    method: 'GET',
+        function removeFromCart(itemId) {
+            if (confirm("Are you sure you want to remove this booking?")) {
+                fetch(`remove_cart_item.php`, {
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
-                    }
-                }).then(response => response.json())
+                    },
+                    body: JSON.stringify({ id: itemId })
+                })
+                    .then(response => {
+                        // Check if response is OK and JSON
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        // Attempt to parse JSON
+                        return response.text().then(text => {
+                            try {
+                                return JSON.parse(text);
+                            } catch (e) {
+                                throw new Error(`Invalid JSON response: ${text.substring(0, 50)}...`);
+                            }
+                        });
+                    })
                     .then(data => {
                         if (data.success) {
-                            alert("Item removed from cart!");
+                            alert("Booking removed successfully!");
                             location.reload();
                         } else {
-                            alert("Error removing item from cart.");
+                            alert("Error removing booking: " + (data.message || "Unknown error"));
                         }
-                    }).catch(error => {
-                        alert("Error: " + error);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert("Failed to remove booking: " + error.message);
                     });
             }
         }
@@ -439,7 +461,8 @@ if (isset($_SESSION['user_id'])) {
                         .total {
                             font-weight: bold;
                             font-size: 18px;
-                            text-align: right merci, margin-top: 20px;
+                            text-align: right;
+                            margin-top: 20px;
                         }
                         .footer {
                             text-align: center;
