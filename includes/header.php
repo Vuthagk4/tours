@@ -145,7 +145,7 @@ if (isset($_SESSION['user_id'])) {
         .navbar-custom .navbar-nav .nav-link {
             color: white;
             font-size: 1.1rem;
-            padding: 10px 15px;
+            padding: 10px 20px;
             transition: color 0.3s ease, background 0.3s ease;
         }
 

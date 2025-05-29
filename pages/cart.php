@@ -6,21 +6,21 @@ $cartItems = [];
 if (isset($_SESSION['user_id'])) {
     $userId = $_SESSION['user_id'];
     $stmt = mysqli_prepare($conn, "
-        SELECT 
-            b.booking_id AS item_id,
-            u.name AS username,
-            t.title,
-            b.duration,
-            b.people,
-            (b.people * b.price) AS total,
-            b.status,
-            b.qr_code_image
-        FROM bookings b
-        JOIN users u ON b.user_id = u.user_id
-        JOIN tours t ON b.tour_id = t.tour_id
-        WHERE b.user_id = ?
-        ORDER BY b.booking_id DESC
-    ");
+    SELECT 
+        b.booking_id AS item_id,
+        u.name AS username,
+        t.title,
+        b.duration,
+        b.people,
+        (b.people * b.price) AS total,
+        b.status,
+        b.qr_code_image
+    FROM bookings b
+    JOIN users u ON b.user_id = u.user_id
+    JOIN tours t ON b.tour_id = t.tour_id
+    WHERE b.user_id = ?
+    ORDER BY b.booking_id DESC
+");
     mysqli_stmt_bind_param($stmt, "i", $userId);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
@@ -225,12 +225,14 @@ if (isset($_SESSION['user_id'])) {
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p><strong>Net Salary:</strong></p>
+                    <p><strong>KHQR:</strong></p>
+                    <img id="" src="../assets/images/myqr.jpg" alt="QR Code" class="img-fluid center">
+                    <p><strong>Total:</strong></p>
                     <input id="salaryField" class="form-control mb-3 text-center" readonly>
-                    <p><strong>Upload QR Code:</strong></p>
+                    <p><strong>Upload Payment:</strong></p>
                     <input type="file" id="qrCodeInput" accept="image/*" class="form-control mb-3">
                     <p><strong>KHQR:</strong></p>
-                    <img id="qrCodePreview" src="" alt="QR Code" class="img-fluid mb-2" style="display: none;">
+                    <img id="qrCodePreview" src="" alt="QR Code" class="img-fluid center" style="display: none;">
                     <p class="fw-bold" id="username">USERNAME HERE</p>
                     <div class="form-check mt-3">
                         <input class="form-check-input" type="checkbox" id="transferConfirm">
@@ -261,11 +263,9 @@ if (isset($_SESSION['user_id'])) {
                     body: JSON.stringify({ id: itemId })
                 })
                     .then(response => {
-                        // Check if response is OK and JSON
                         if (!response.ok) {
                             throw new Error(`HTTP error! Status: ${response.status}`);
                         }
-                        // Attempt to parse JSON
                         return response.text().then(text => {
                             try {
                                 return JSON.parse(text);

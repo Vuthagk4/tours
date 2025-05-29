@@ -33,6 +33,13 @@ $result = $conn->query("SELECT tour_id, image_path, description FROM tour_images
 while ($row = $result->fetch_assoc()) {
   $tour_images[$row['tour_id']][] = $row;
 }
+
+// Optional: Optimize booking count query (uncomment to use)
+// $booking_counts = [];
+// $result = $conn->query("SELECT tour_id, SUM(people) AS total_people FROM bookings GROUP BY tour_id");
+// while ($row = $result->fetch_assoc()) {
+//   $booking_counts[$row['tour_id']] = $row['total_people'] ?? 0;
+// }
 ?>
 
 <!DOCTYPE html>
@@ -46,13 +53,23 @@ while ($row = $result->fetch_assoc()) {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <style>
+    /* Sticky Footer Styles */
+    html {
+      height: 100%;
+    }
+
     body {
+      display: flex;
+      flex-direction: column;
+      /* Ensure body takes full viewport height */
+      margin: 0;
       background: #f8f9fa;
       font-family: 'Work Sans', sans-serif;
-      min-height: 100vh;
-      margin: 0;
-      padding-bottom: 60px;
-      position: relative;
+    }
+
+    .container.mt-5 {
+      flex: 1 0 auto;
+      /* Grow to push footer down */
     }
 
     /* Tour Card Styling */
@@ -84,6 +101,8 @@ while ($row = $result->fetch_assoc()) {
     }
 
     .tour-info {
+      position: relative;
+      /* Positioning context for star-rating */
       padding: 20px;
       display: flex;
       flex-direction: column;
@@ -101,6 +120,7 @@ while ($row = $result->fetch_assoc()) {
       color: #666;
       margin: 4px 0;
     }
+
 
     .tour-info .description {
       font-size: 0.95rem;
@@ -122,6 +142,25 @@ while ($row = $result->fetch_assoc()) {
 
     .tour-info .see-more:hover {
       text-decoration: underline;
+    }
+
+    /* Star Rating Styling */
+    .tour-info .star-rating {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      display: flex;
+      align-items: center;
+      font-size: 0.9rem;
+      color: #333;
+    }
+
+    .tour-info .star-rating .booked-count {
+      margin-right: 5px;
+    }
+
+    .tour-info .star-rating i {
+      font-size: 0.9rem;
     }
 
     /* Booking Section Styling */
@@ -229,15 +268,16 @@ while ($row = $result->fetch_assoc()) {
       background-color: #0056b3;
     }
 
-    /* Highlights and Contact Styling */
+    /* Highlights Column */
     .highlights-column {
       position: fixed;
-      top: 14rem;
-      right: 1rem;
+      top: 11.9rem;
+      right: 7rem;
       max-width: 300px;
       display: flex;
       flex-direction: column;
       gap: 2rem;
+      margin-bottom: 30px;
     }
 
     .highlight-card {
@@ -247,7 +287,7 @@ while ($row = $result->fetch_assoc()) {
       padding: 15px;
       display: flex;
       align-items: center;
-      transition: transform 0.3s ease;
+      transition: transform .3s ease;
     }
 
     .highlight-card:hover {
@@ -260,27 +300,40 @@ while ($row = $result->fetch_assoc()) {
       margin-right: 10px;
     }
 
+    /* Fixed Emergency Contacts */
+    .emergency-contact-container {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+      z-index: 1000;
+    }
+
     .emergency_contact {
-      width: 40px;
-      height: 40px;
-      background-color: #007bff;
+      width: 48px;
+      height: 48px;
+      background: #007bff;
       border-radius: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
-      cursor: pointer;
-      transition: transform 0.3s ease;
-    }
-
-    .emergency_contact:hover {
-      transform: scale(1.1);
+      text-decoration: none;
+      transition: transform .2s ease, background .2s ease;
     }
 
     .emergency_contact i {
-      color: white;
-      font-size: 18px;
+      color: #fff;
+      font-size: 1.2rem;
     }
 
+    .emergency_contact:hover {
+      background: #0056b3;
+      transform: scale(1.1);
+    }
+
+    /* Contact Popup */
     .contact-modal {
       position: fixed;
       top: 14rem;
@@ -295,7 +348,60 @@ while ($row = $result->fetch_assoc()) {
     }
 
     .contact-modal.show {
-      right: 3rem;
+      right: 1.5rem;
+    }
+
+    .contact-modal .close-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      cursor: pointer;
+    }
+
+    .contact-option {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .contact-option i {
+      margin-right: 8px;
+    }
+
+    /* Fade-in Keyframes */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+
+    /* Responsive */
+    @media (max-width:768px) {
+      .tour-card {
+        grid-template-columns: 1fr;
+      }
+
+      .tour-image img {
+        height: 200px;
+      }
+
+      .tour-book {
+        border-left: none;
+        border-top: 1px solid #e0e0e0;
+      }
+
+      .highlights-column {
+        position: static;
+        flex-direction: row;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 20px;
+      }
     }
 
     /* Modal Styling */
@@ -393,11 +499,7 @@ while ($row = $result->fetch_assoc()) {
       <div class="tour-cards" id="tour-cards">
         <?php
         $index = 0;
-        while ($tour = $tours->fetch_assoc()):
-          // Simulate user booking count (replace with real data from a bookings table if available)
-          $userBookingCount = rand(0, 5); // Placeholder: Random number between 0 and 5
-          $yellowStars = min(floor($userBookingCount / 2), 5); // One yellow star per 2 bookings, max 5 stars
-          ?>
+        while ($tour = $tours->fetch_assoc()): ?>
           <div class="col-12 mb-4" data-original-index="<?= $index ?>">
             <div class="tour-card">
               <div class="tour-image">
@@ -406,22 +508,38 @@ while ($row = $result->fetch_assoc()) {
                   data-tour-id="<?= $tour['tour_id'] ?>">
               </div>
               <div class="tour-info">
-                <h5 class="title"><?= htmlspecialchars($tour['title']) ?>
-                  <?php for ($i = 0; $i < 5; $i++): ?>
-                    <i class="fas fa-star" style="color: <?= $i < $yellowStars ? '#ffc107' : '#ccc' ?>;"></i>
-                  <?php endfor; ?>
-                </h5>
-                <p class="tour-location"><?= htmlspecialchars($tour['destination']) ?> -
+                <h5 class="title"><?= htmlspecialchars($tour['title']) ?></h5>
+                <div class="star-rating">
                   <?php
-                  $coords = explode(",", $tour['location']);
-                  $mapLink = (count($coords) == 2)
-                    ? "https://www.google.com/maps?q=" . trim($coords[0]) . "," . trim($coords[1])
-                    : "javascript:void(0);";
+                  $tour_id = $tour['tour_id'];
+                  $stmt = $conn->prepare("SELECT SUM(people) AS total_people FROM bookings WHERE tour_id = ?");
+                  $stmt->bind_param("i", $tour_id);
+                  $stmt->execute();
+                  $result = $stmt->get_result();
+                  $totalPeople = $result->fetch_assoc()['total_people'] ?? 0;
+                  $stmt->close();
+                  // Uncomment to use optimized query: $totalPeople = $booking_counts[$tour['tour_id']] ?? 0;
+                  $starColor = $totalPeople >= 100 ? "gold" : "black";
+                  $stars = min(floor($totalPeople / 100), 5);
                   ?>
-                  <a href="<?= $mapLink ?>" target="_blank">Show on map</a> <?= rand(0, 2) ?>.<?= rand(0, 9) ?>km from
-                  centre
+                  <span class="booked-count"><?= $totalPeople ?></span>
+                  <?php for ($i = 0; $i < $stars; $i++): ?>
+                    <i style="color: <?= $starColor ?>;" class="fa-solid fa-star"></i>
+                  <?php endfor; ?>
+                  people booked
+                </div>
+                <p class="meta"><strong>Destination:</strong> <?= htmlspecialchars($tour['destination']) ?></p>
+                <?php
+                $coords = explode(",", $tour['location']);
+                $mapLink = (count($coords) == 2)
+                  ? "https://www.google.com/maps?q=" . trim($coords[0]) . "," . trim($coords[1])
+                  : "javascript:void(0);";
+                ?>
+                <p class="meta">
+                  <strong>Location:</strong>
+                  <a href="<?= $mapLink ?>" target="_blank">View on Map</a>
                 </p>
-
+                <p class="meta"><strong>Type:</strong> <?= htmlspecialchars($tour['type'] ?? '--') ?></p>
                 <?php
                 $fullDesc = htmlspecialchars($tour['description']);
                 $shortDesc = substr($fullDesc, 0, 100);
@@ -432,7 +550,6 @@ while ($row = $result->fetch_assoc()) {
                   <a href="javascript:void(0)" class="see-more" role="button" aria-label="Toggle description">Show
                     More</a>
                 </div>
-
               </div>
               <div class="tour-book">
                 <?php
@@ -454,57 +571,62 @@ while ($row = $result->fetch_assoc()) {
           </div>
           <?php $index++; endwhile; ?>
       </div>
-    </div>
-  </div>
-  <div class="highlights-column">
-    <h5 class="mb-3">Why Book With Us</h5>
-    <div class="highlight-card">
-      <i class="fas fa-users"></i>
-      <div class="content">
-        <h6>Expert Guides</h6>
-        <p>Our tours are led by knowledgeable local guides.</p>
+      <!-- Highlights Column -->
+      <div class="highlights-column">
+        <h5 class="mb-3">Why Book With Us</h5>
+        <div class="highlight-card">
+          <i class="fas fa-users"></i>
+          <div class="content">
+            <h6>Expert Guides</h6>
+            <p>Our tours are led by knowledgeable local guides.</p>
+          </div>
+        </div>
+        <div class="highlight-card">
+          <i class="fas fa-undo-alt"></i>
+          <div class="content">
+            <h6>Flexible Cancellations</h6>
+            <p>Cancel or modify up to 24 hours before departure.</p>
+          </div>
+        </div>
+        <div class="highlight-card">
+          <i class="fas fa-tag"></i>
+          <div class="content">
+            <h6>Best Price Guarantee</h6>
+            <p>Competitive prices with no hidden fees.</p>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="highlight-card">
-      <i class="fas fa-undo-alt"></i>
-      <div class="content">
-        <h6>Flexible Cancellations</h6>
-        <p>Cancel or modify up to 24 hours before departure.</p>
+
+      <!-- Emergency Contacts -->
+      <div class="emergency-contact-container">
+        <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
+          <i class="fa-solid fa-phone"></i>
+        </a>
+        <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
+          <i class="fa-brands fa-telegram"></i>
+        </a>
+        <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
+          <i class="fa-solid fa-envelope"></i>
+        </a>
       </div>
-    </div>
-    <div class="highlight-card">
-      <i class="fas fa-tag"></i>
-      <div class="content">
-        <h6>Best Price Guarantee</h6>
-        <p>Competitive prices with no hidden fees.</p>
+
+      <!-- Contact Popup -->
+      <div class="contact-modal" id="contactModal">
+        <span class="close-btn" onclick="toggleContactModal()"><i class="fa-solid fa-xmark"></i></span>
+        <h6>Contact Us</h6>
+        <div class="contact-option">
+          <i class="fa-solid fa-phone"></i>
+          <a href="tel:+1234567890">015 769 953</a>
+        </div>
+        <div class="contact-option">
+          <i class="fa-brands fa-telegram"></i>
+          <a href="https://t.me/thany_oun" target="_blank">OUN THANY</a>
+        </div>
+        <div class="contact-option">
+          <i class="fa-solid fa-envelope"></i>
+          <a href="mailto:support@tours.com">ounthany@gmail.com</a>
+        </div>
       </div>
-    </div>
-    <div class="mt-3">
-      <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
-        <i class="fa-solid fa-phone"></i>
-      </a>
-      <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
-        <i class="fa-brands fa-telegram"></i>
-      </a>
-      <a href="javascript:void(0)" class="emergency_contact" onclick="toggleContactModal()">
-        <i class="fa-solid fa-envelope"></i>
-      </a>
-    </div>
-  </div>
-  <div class="contact-modal" id="contactModal">
-    <span class="close-btn" onclick="toggleContactModal()"><i class="fa-solid fa-xmark"></i></span>
-    <h6>Contact Us</h6>
-    <div class="contact-option">
-      <i class="fa-solid fa-phone"></i>
-      <a href="tel:+1234567890">015 769 953</a>
-    </div>
-    <div class="contact-option">
-      <i class="fa-brands fa-telegram"></i>
-      <a href="https://t.me/thany_oun" target="_blank">OUN THANY</a>
-    </div>
-    <div class="contact-option">
-      <i class="fa-solid fa-envelope"></i>
-      <a href="mailto:support@tours.com">ounthany@gmail.com</a>
     </div>
   </div>
 
@@ -570,6 +692,7 @@ while ($row = $result->fetch_assoc()) {
         const durationInput = card.querySelector(".duration-input");
         const peopleInput = card.querySelector(".people-input");
         const priceSpan = card.querySelector(".dynamic-price");
+
 
         function updatePrice() {
           const defaultPrice = parseFloat(durationInput.dataset.defaultPrice) || 0;

@@ -44,6 +44,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Us - Wanderlust Travel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -83,6 +85,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             z-index: 2;
             text-transform: uppercase;
             letter-spacing: 2px;
+            animation: fadeInDown 1s ease;
         }
 
         .contact-info {
@@ -142,13 +145,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border-radius: 5px;
             font-size: 1em;
             background: rgba(255, 255, 255, 0.9);
-            transition: background 0.3s;
+            transition: background 0.3s, transform 0.3s;
         }
 
         .form-group input:focus,
         .form-group textarea:focus {
             background: #fff;
             outline: 2px solid #00d4ff;
+            transform: scale(1.02);
         }
 
         .form-group textarea {
@@ -166,30 +170,51 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: #fff;
             font-size: 1.1em;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: background 0.3s, transform 0.3s;
         }
 
         .form button:hover {
             background: #0098b3;
+            transform: scale(1.05);
         }
 
-        .message {
-            text-align: center;
-            margin-bottom: 20px;
-            padding: 10px;
-            border-radius: 5px;
-            position: relative;
-            z-index: 2;
+        /* Modal Styling */
+        .modal-content {
+            border-radius: 10px;
         }
 
-        .success {
-            background: #d4edda;
-            color: #155724;
+        .modal-header {
+            background: #00d4ff;
+            color: #fff;
         }
 
-        .error {
-            background: #f8d7da;
-            color: #721c24;
+        .modal-body {
+            font-size: 1.1em;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @media (max-width: 768px) {
@@ -211,31 +236,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <body>
     <section id="contact" class="contact">
-        <h3>Contact Wanderlust Travel</h3>
-        <?php if ($success_message): ?>
-            <div class="message success"><?php echo htmlspecialchars($success_message); ?></div>
-        <?php elseif ($error_message): ?>
-            <div class="message error"><?php echo htmlspecialchars($error_message); ?></div>
-        <?php endif; ?>
-        <div class="contact-info">
+        <h3 data-aos="fade-down">Contact Wanderlust Travel</h3>
+        <div class="contact-info" data-aos="fade-up">
             <p>
                 Ready to explore the world? Fill out the form below to plan your dream vacation or get in touch with our
                 travel experts!
             </p>
             <ul>
                 <li>
-                    <i class="fas fa-map-marker-alt"></i>123 Wanderlust Way, Adventure City, USA
+                    <i class="fas fa-map-marker-alt"></i>RUPP,Phnom Penh, Cambodia
                 </li>
                 <li>
-                    <i class="fas fa-envelope"></i><a
-                        href="mailto:info@wanderlusttravel.com">info@wanderlusttravel.com</a>
+                    <i class="fas fa-envelope"></i><a href="mailto:info@wanderlusttravel.com">ornvutha@gmail.com</a>
                 </li>
                 <li>
-                    <i class="fas fa-phone-alt"></i><a href="tel:555-987-6543">555-987-6543</a>
+                    <i class="fas fa-phone-alt"></i><a href="tel:555-987-6543">068-433-469</a>
                 </li>
             </ul>
         </div>
-        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST" class="form">
+        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST" class="form"
+            data-aos="fade-up">
             <div class="form-group">
                 <input type="text" name="name" id="name" placeholder="Your Name"
                     value="<?php echo htmlspecialchars($name); ?>" required />
@@ -251,6 +271,57 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <button type="submit">Send Message</button>
         </form>
     </section>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="successModalLabel">Success</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Your message has been sent successfully!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorModalLabel">Error</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <?php echo htmlspecialchars($error_message); ?>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script>
+        AOS.init();
+
+        // Show modals based on PHP messages
+        <?php if ($success_message): ?>
+            var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            successModal.show();
+        <?php elseif ($error_message): ?>
+            var errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+            errorModal.show();
+        <?php endif; ?>
+    </script>
 </body>
 
 </html>

@@ -1,59 +1,30 @@
 <?php
-// Suppress any unexpected output
-ob_start();
-session_start();
 include '../includes/config.php';
 
-// Set JSON header
 header('Content-Type: application/json');
 
-// Initialize response
-$response = ['success' => false, 'message' => ''];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    $itemId = $data['id'] ?? null;
+    $userId = $_SESSION['user_id'] ?? null;
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    $response['message'] = 'You must be logged in to remove a booking.';
-    echo json_encode($response);
-    ob_end_flush();
-    exit;
-}
-
-// Check if booking ID is provided and valid
-if (!isset($_POST['id']) || !is_numeric($_POST['id'])) {
-    $response['message'] = 'Invalid booking ID.';
-    echo json_encode($response);
-    ob_end_flush();
-    exit;
-}
-
-$userId = $_SESSION['user_id'];
-$bookingId = (int) $_POST['id'];
-
-try {
-    // Prepare and execute deletion query
-    $stmt = mysqli_prepare($conn, "DELETE FROM bookings WHERE booking_id = ? AND user_id = ?");
-    if (!$stmt) {
-        throw new Exception('Failed to prepare statement: ' . mysqli_error($conn));
-    }
-    mysqli_stmt_bind_param($stmt, "ii", $bookingId, $userId);
-    if (!mysqli_stmt_execute($stmt)) {
-        throw new Exception('Failed to execute statement: ' . mysqli_stmt_error($stmt));
+    if (!$itemId || !$userId) {
+        echo json_encode(['success' => false, 'message' => 'Invalid booking ID or user not logged in']);
+        exit;
     }
 
-    // Check if any rows were affected
-    if (mysqli_stmt_affected_rows($stmt) > 0) {
-        $response['success'] = true;
-        $response['message'] = 'Booking removed successfully.';
+    $stmt = $conn->prepare("DELETE FROM bookings WHERE booking_id = ? AND user_id = ?");
+    $stmt->bind_param("ii", $itemId, $userId);
+    $stmt->execute();
+
+    if ($stmt->affected_rows > 0) {
+        echo json_encode(['success' => true]);
     } else {
-        $response['message'] = 'Booking not found or you do not have permission to delete it.';
+        echo json_encode(['success' => false, 'message' => 'Booking not found or not authorized']);
     }
 
-    mysqli_stmt_close($stmt);
-} catch (Exception $e) {
-    $response['message'] = 'Server error: ' . $e->getMessage();
+    $stmt->close();
+} else {
+    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
 }
-
-mysqli_close($conn);
-echo json_encode($response);
-ob_end_flush();
 ?>

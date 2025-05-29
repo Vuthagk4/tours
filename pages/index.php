@@ -211,7 +211,7 @@ while ($row = $result->fetch_assoc()) {
         /* Tour Section */
         .tour-section {
             max-width: 1200px;
-            margin: 50px auto;
+            margin: 40px auto;
             padding: 20px;
         }
 
@@ -889,54 +889,142 @@ while ($row = $result->fetch_assoc()) {
         }
 
         /* Popular Destinations Section */
+        /* Popular Destinations Section */
         .destinations {
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
+            background-color: #f8f9fa;
+            padding: 40px 0;
         }
 
         .destinations h2 {
-            font-size: 20px;
-            margin-bottom: 10px;
-            color: #000;
-        }
-
-        .destination-list {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-
-        .destination-item {
-            background-color: #f9f9f9;
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        .destination-item img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 5px;
-        }
-
-        .destination-item h3 {
-            margin: 10px 0;
-            color: #000;
-        }
-
-        .destination-item p {
-            margin: 5px 0;
+            font-size: 2rem;
+            font-weight: 700;
             color: #333;
+            position: relative;
         }
 
-        .destination-item a {
-            color: #007bff;
-            text-decoration: none;
+        .destinations h2::after {
+            content: '';
+            width: 60px;
+            height: 4px;
+            background: #ff6f61;
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
         }
 
-        .destination-item a:hover {
-            text-decoration: underline;
+        /* Destination Card */
+        .destination-card {
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fff;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .destination-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Image Container */
+        .destination-image {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-img-top {
+            height: 200px;
+            object-fit: cover;
+            width: 100%;
+            transition: transform 0.3s ease;
+        }
+
+        .destination-card:hover .card-img-top {
+            transform: scale(1.05);
+        }
+
+        /* Card Body */
+        .card-body {
+            text-align: center;
+            flex-direction: column;
+
+            /* Space between elements */
+        }
+
+        /* Card Title */
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+            word-wrap: break-word;
+            /* Prevent overflow */
+            overflow-wrap: anywhere;
+            /* Modern alternative */
+            line-height: 1.3;
+            /* Improve readability */
+        }
+
+        /* Card Text */
+        .card-text {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.5;
+            margin: 0;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+            max-height: none;
+            /* Remove height restrictions */
+        }
+
+        /* Button Container */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            /* Push button to bottom */
+        }
+
+        /* Button */
+        .btn-primary {
+            background-color: #ff6f61;
+            border-color: #ff6f61;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 8px 16px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #e65b50;
+            border-color: #e65b50;
+            transform: translateY(-2px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 576px) {
+            .destinations h2 {
+                font-size: 1.5rem;
+            }
+
+            .card-img-top {
+                height: 180px;
+            }
+
+            .card-title {
+                font-size: 1.1rem;
+            }
+
+            .card-text {
+                font-size: 0.85rem;
+            }
+
+            .btn-primary {
+                font-size: 0.85rem;
+                padding: 6px 12px;
+            }
         }
 
         /* Featured Tours Section */
@@ -1187,8 +1275,8 @@ while ($row = $result->fetch_assoc()) {
                     if (!empty($searchTerm)) {
                         $seeAllLink .= '&search=' . urlencode($searchTerm);
                     }
-                    echo '<div style="text-align: center; margin-top: 20px;">';
-                    echo '<a href="' . $seeAllLink . '" class="btn btn-primary">See All (' . count($allTours) . ' Tours)</a>';
+                    echo '<div style=" margin-top: 20px;">';
+                    echo '<a href="' . $seeAllLink . '" class="btn btn-primary center">See All (' . count($allTours) . ' Tours)</a>';
                     echo '</div>';
                 }
             } else {
@@ -1222,14 +1310,12 @@ while ($row = $result->fetch_assoc()) {
                 <h3>PHNOM PENH</h3>
             </a>
             <a href="?destination=Siem Reap" class="trending-card">
-                <img src="https://images.unsplash.com/photo-1542221026-4d124b9e5e1a?q=80&w=1000&auto=format&fit=crop"
-                    alt="Siem Reap">
+                <img src="https://i.pinimg.com/736x/81/3f/d1/813fd158cca3d458369af3b6337a6ca5.jpg" alt="Siem Reap">
                 <img src="https://flagcdn.com/16x12/kh.png" class="flag" alt="Cambodia Flag">
                 <h3>SIEM REAP</h3>
             </a>
             <a href="?destination=Bangkok" class="trending-card">
-                <img src="https://images.unsplash.com/photo-1514195038038-6f2b6a4a9f5b?q=80&w=1000&auto=format&fit=crop"
-                    alt="Bangkok">
+                <img src="https://i.pinimg.com/736x/2a/0f/c5/2a0fc56c63ed836b7a4e2151179c2edf.jpg" alt="Bangkok">
                 <img src="https://flagcdn.com/16x12/th.png" class="flag" alt="Thailand Flag">
                 <h3>BANGKOK</h3>
             </a>
@@ -1239,13 +1325,11 @@ while ($row = $result->fetch_assoc()) {
                 <h3>KAMPOT</h3>
             </a>
             <a href="?destination=Sihanoukville" class="trending-card">
-                <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1000&auto=format&fit=crop"
-                    alt="Sihanoukville">
+                <img src="https://i.pinimg.com/736x/2d/65/b1/2d65b17408e7afcd69e88dfb62b5dfb6.jpg" alt="Sihanoukville">
                 <h3>SIHANOUKVILLE</h3>
             </a>
             <a href="?destination=Kep" class="trending-card">
-                <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1000&auto=format&fit=crop"
-                    alt="Kep">
+                <img src="https://i.pinimg.com/736x/cd/b3/67/cdb367bb6960d3155aa557b71dabf09d.jpg" alt="Kep">
                 <h3>KEP</h3>
             </a>
         </div>
@@ -1361,33 +1445,40 @@ while ($row = $result->fetch_assoc()) {
         <p>Sign in to unlock exclusive discounts on tours and destinations.</p>
     </div>
 
-    <!-- Popular Destinations Section -->
-    <div class="destinations">
-        <h2>Popular Destinations in Cambodia</h2>
-        <div class="destination-list">
+    <!-- Popular Destinations Section (Partial) -->
+    <div class="destinations container mt-5">
+        <h2 class="text-center mb-4">Popular Destinations in Cambodia</h2>
+        <div class="row g-4">
             <?php
             // Fetch active destinations from the database
             $sql = "SELECT destination_id, name, description, image 
-                    FROM destinations 
-                    WHERE isDelete = 0 
-                    LIMIT 6";
+                FROM destinations 
+                WHERE isDelete = 0 
+                LIMIT 6";
             $result = $conn->query($sql);
             if ($result->num_rows > 0) {
                 while ($row = $result->fetch_assoc()) {
-                    echo '<div class="destination-item">';
-                    echo '<img src="' . htmlspecialchars($row["image"]) . '" alt="' . htmlspecialchars($row["name"]) . '">';
-                    echo '<h3>' . htmlspecialchars($row["name"]) . '</h3>';
-                    echo '<p>' . htmlspecialchars(substr($row["description"], 0, 100)) . '...</p>';
-                    echo '<a href="destination.php?id=' . $row["destination_id"] . '">Explore Tours</a>';
+                    echo '<div class="col-sm-6 col-md-4 mb-4">';
+                    echo '<div class="card destination-card">';
+                    echo '<div class="destination-image">';
+                    echo '<img src="' . htmlspecialchars($row["image"]) . '" class="card-img-top" alt="' . htmlspecialchars($row["name"]) . '" loading="lazy">';
+                    echo '</div>';
+                    echo '<div class="card-body">';
+                    echo '<h5 class="card-title">' . htmlspecialchars($row["name"]) . '</h5>';
+                    echo '<p class="card-text">' . htmlspecialchars(substr($row["description"], 0, 150)) . (strlen($row["description"]) > 150 ? '...' : '') . '</p>';
+                    echo '<div class="button-container">';
+                    echo '<a href="destination.php?id=' . $row["destination_id"] . '" class="btn btn-primary stretched-link">Explore Tours</a>';
+                    echo '</div>';
+                    echo '</div>';
+                    echo '</div>';
                     echo '</div>';
                 }
             } else {
-                echo '<p>No destinations available at the moment.</p>';
+                echo '<p class="text-center col-12">No destinations available at the moment.</p>';
             }
             ?>
         </div>
     </div>
-
     <!-- Featured Tours Section -->
     <div class="tours">
         <h2>Featured Tours</h2>

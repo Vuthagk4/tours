@@ -172,6 +172,3 @@ include '../includes/header.php'; // Include Header
 <script src="../assets/js/about.js"></script>
 
 </html>
-<?php
-include "../admin/footer.php";
-?>
