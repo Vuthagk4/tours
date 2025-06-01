@@ -1,6 +1,5 @@
 <?php
 include "../includes/config.php";
-include "../includes/header.php";
 
 // Check if a search term or destination is provided via GET
 $searchTerm = isset($_GET['search']) ? trim($_GET['search']) : '';
@@ -18,7 +17,6 @@ if (!empty($selectedDestination)) {
     $stmt->execute();
     $tours = $stmt->get_result();
 } elseif (!empty($searchTerm)) {
-    // Fetch tours based on search term
     $searchTerm = '%' . $searchTerm . '%';
     $stmt = $conn->prepare("SELECT t.*, d.name AS destination, d.location 
                             FROM tours t 
@@ -28,7 +26,6 @@ if (!empty($selectedDestination)) {
     $stmt->execute();
     $tours = $stmt->get_result();
 } else {
-    // Fetch all tours if no search term or destination is specified
     $tours = $conn->query("SELECT t.*, d.name AS destination, d.location 
                            FROM tours t 
                            JOIN destinations d ON t.destination_id = d.destination_id 
@@ -45,6 +42,8 @@ $result = $conn->query("SELECT tour_id, image_path, description FROM tour_images
 while ($row = $result->fetch_assoc()) {
     $tour_images[$row['tour_id']][] = $row;
 }
+include "../includes/header.php";
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -53,17 +52,18 @@ while ($row = $result->fetch_assoc()) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Explore Tours - Discover Your Next Adventure</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64+BUTbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fa;
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+            list-style-type: none;
         }
 
-        /* Hero Banner (Replaces Header Section) */
         .hero-section {
             position: relative;
             height: 600px;
@@ -89,7 +89,6 @@ while ($row = $result->fetch_assoc()) {
             margin-bottom: 30px;
         }
 
-        /* Search Bar */
         .search-bar {
             background: white;
             border-radius: 10px;
@@ -148,7 +147,6 @@ while ($row = $result->fetch_assoc()) {
             background: #e65b50;
         }
 
-        /* Promo Section */
         .promo-section {
             max-width: 1200px;
             margin: 50px auto;
@@ -208,7 +206,6 @@ while ($row = $result->fetch_assoc()) {
             border-radius: 15px;
         }
 
-        /* Tour Section */
         .tour-section {
             max-width: 1200px;
             margin: 40px auto;
@@ -341,7 +338,6 @@ while ($row = $result->fetch_assoc()) {
             background: #e65b50;
         }
 
-        /* Modal Image Size */
         #imageModal {
             z-index: 9999;
         }
@@ -365,7 +361,6 @@ while ($row = $result->fetch_assoc()) {
             margin: auto;
         }
 
-        /* Responsive Design */
         @media (max-width: 768px) {
             .hero-section {
                 height: 400px;
@@ -404,7 +399,6 @@ while ($row = $result->fetch_assoc()) {
             }
         }
 
-        /* Testimonials Section */
         .testimonials-section {
             max-width: 1200px;
             margin: 50px auto;
@@ -445,7 +439,6 @@ while ($row = $result->fetch_assoc()) {
             color: #333;
         }
 
-        /* Featured Destinations Section */
         .featured-destinations {
             max-width: 1200px;
             margin: 50px auto;
@@ -496,7 +489,6 @@ while ($row = $result->fetch_assoc()) {
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         }
 
-        /* Why Choose Us Section */
         .why-choose-us {
             max-width: 1200px;
             margin: 50px auto;
@@ -539,7 +531,6 @@ while ($row = $result->fetch_assoc()) {
             color: #555;
         }
 
-        /* Responsive Design */
         @media (max-width: 768px) {
             .hero-section {
                 height: 400px;
@@ -600,7 +591,6 @@ while ($row = $result->fetch_assoc()) {
             }
         }
 
-        /* Trending Destinations Section */
         .trending-destinations {
             max-width: 1200px;
             margin: 50px auto;
@@ -663,7 +653,6 @@ while ($row = $result->fetch_assoc()) {
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         }
 
-        /* Quick Trip Planner Section */
         .trip-planner {
             max-width: 1200px;
             margin: 50px auto;
@@ -743,7 +732,6 @@ while ($row = $result->fetch_assoc()) {
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         }
 
-        /* Responsive Design for New Sections */
         @media (max-width: 768px) {
             .trending-grid {
                 grid-template-columns: 1fr;
@@ -754,7 +742,6 @@ while ($row = $result->fetch_assoc()) {
             }
         }
 
-        /* Header Section */
         .header {
             display: flex;
             justify-content: space-around;
@@ -787,7 +774,6 @@ while ($row = $result->fetch_assoc()) {
             color: #666;
         }
 
-        /* Main Banner Section */
         .banner {
             position: relative;
             background-color: #007bff;
@@ -855,7 +841,6 @@ while ($row = $result->fetch_assoc()) {
             z-index: 1;
         }
 
-        /* Promotional Area */
         .promo {
             padding: 20px;
             text-align: center;
@@ -888,8 +873,6 @@ while ($row = $result->fetch_assoc()) {
             background-color: #0056b3;
         }
 
-        /* Popular Destinations Section */
-        /* Popular Destinations Section */
         .destinations {
             background-color: #f8f9fa;
             padding: 40px 0;
@@ -914,7 +897,6 @@ while ($row = $result->fetch_assoc()) {
             border-radius: 2px;
         }
 
-        /* Destination Card */
         .destination-card {
             border: none;
             border-radius: 12px;
@@ -928,7 +910,6 @@ while ($row = $result->fetch_assoc()) {
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
-        /* Image Container */
         .destination-image {
             position: relative;
             overflow: hidden;
@@ -945,29 +926,21 @@ while ($row = $result->fetch_assoc()) {
             transform: scale(1.05);
         }
 
-        /* Card Body */
         .card-body {
             text-align: center;
             flex-direction: column;
-
-            /* Space between elements */
         }
 
-        /* Card Title */
         .card-title {
             font-size: 1.25rem;
             font-weight: 600;
             color: #333;
             margin: 0;
             word-wrap: break-word;
-            /* Prevent overflow */
             overflow-wrap: anywhere;
-            /* Modern alternative */
             line-height: 1.3;
-            /* Improve readability */
         }
 
-        /* Card Text */
         .card-text {
             font-size: 0.9rem;
             color: #666;
@@ -976,18 +949,14 @@ while ($row = $result->fetch_assoc()) {
             word-wrap: break-word;
             overflow-wrap: anywhere;
             max-height: none;
-            /* Remove height restrictions */
         }
 
-        /* Button Container */
         .button-container {
             display: flex;
             justify-content: center;
             margin-top: 10px;
-            /* Push button to bottom */
         }
 
-        /* Button */
         .btn-primary {
             background-color: #ff6f61;
             border-color: #ff6f61;
@@ -1003,7 +972,6 @@ while ($row = $result->fetch_assoc()) {
             transform: translateY(-2px);
         }
 
-        /* Responsive Design */
         @media (max-width: 576px) {
             .destinations h2 {
                 font-size: 1.5rem;
@@ -1027,7 +995,6 @@ while ($row = $result->fetch_assoc()) {
             }
         }
 
-        /* Featured Tours Section */
         .tours {
             padding: 20px;
             max-width: 1200px;
@@ -1069,7 +1036,6 @@ while ($row = $result->fetch_assoc()) {
             color: #333;
         }
 
-        /* Responsive Design */
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
@@ -1111,15 +1077,12 @@ while ($row = $result->fetch_assoc()) {
 </head>
 
 <body>
-    <!-- Hero Section -->
     <div class="hero-section">
         <div>
             <h1>Discover Your Next Adventure</h1>
             <p>Explore the world with our curated tours and exclusive offers.</p>
         </div>
     </div>
-
-    <!-- Search Bar -->
     <div class="search-bar">
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
@@ -1141,7 +1104,6 @@ while ($row = $result->fetch_assoc()) {
                 </button>
             </li>
         </ul>
-
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="tours" role="tabpanel" aria-labelledby="tours-tab">
                 <form method="get" action="" class="d-flex align-items-center gap-3">
@@ -1177,8 +1139,6 @@ while ($row = $result->fetch_assoc()) {
             </div>
         </div>
     </div>
-
-    <!-- Promo Section -->
     <div class="promo-section">
         <div class="promo-card">
             <span class="badge">Welcome Pack</span>
@@ -1193,28 +1153,22 @@ while ($row = $result->fetch_assoc()) {
             <button class="btn-claim">Claim Now</button>
         </div>
     </div>
-
-    <!-- Tour Section -->
-    <!-- Tour Section -->
-    <div class="tour-section" id="tours"> <!-- Added id="tours" for anchoring -->
+    <div class="tour-section" id="tours">
         <h2><?php echo !empty($selectedDestination) ? "Tours in " . htmlspecialchars($selectedDestination) : "Explore Our Top Tours"; ?>
         </h2>
         <div class="tour-cards">
             <?php
             $index = 0;
-            $limit = 6; // Default limit for initial display
-            $showAll = isset($_GET['show_all']) && $_GET['show_all'] === 'true'; // Check if "See All" is clicked
-            
+            $limit = 6;
+            $showAll = isset($_GET['show_all']) && $_GET['show_all'] === 'true';
             if ($tours->num_rows > 0) {
-                // Fetch all tours into an array to count total
                 $allTours = [];
                 while ($row = $tours->fetch_assoc()) {
                     $allTours[] = $row;
                 }
-                // Display tours (limited to 6 unless "See All" is clicked)
                 foreach ($allTours as $tour) {
                     if (!$showAll && $index >= $limit) {
-                        break; // Stop after 6 tours unless "See All" is clicked
+                        break;
                     }
                     ?>
                     <div class="tour-card">
@@ -1228,7 +1182,7 @@ while ($row = $result->fetch_assoc()) {
                             <h5><?= htmlspecialchars($tour['title']) ?></h5>
                             <div class="rating">
                                 <?php
-                                $rating = 4.5; // Example rating, replace with dynamic logic if available
+                                $rating = 4.5;
                                 for ($i = 1; $i <= 5; $i++) {
                                     if ($i <= floor($rating)) {
                                         echo '<i class="fas fa-star"></i>';
@@ -1265,8 +1219,6 @@ while ($row = $result->fetch_assoc()) {
                     <?php
                     $index++;
                 }
-
-                // Show "See All" link if there are more tours than the limit and "See All" hasn't been clicked
                 if (count($allTours) > $limit && !$showAll) {
                     $seeAllLink = '?show_all=true#tours';
                     if (!empty($selectedDestination)) {
@@ -1275,7 +1227,7 @@ while ($row = $result->fetch_assoc()) {
                     if (!empty($searchTerm)) {
                         $seeAllLink .= '&search=' . urlencode($searchTerm);
                     }
-                    echo '<div style=" margin-top: 20px;">';
+                    echo '<div style="margin-top: 20px;">';
                     echo '<a href="' . $seeAllLink . '" class="btn btn-primary center">See All (' . count($allTours) . ' Tours)</a>';
                     echo '</div>';
                 }
@@ -1285,10 +1237,8 @@ while ($row = $result->fetch_assoc()) {
             ?>
         </div>
     </div>
-    <!-- Add this JavaScript at the end of the body or in your existing script block -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            // Scroll to the tours section if the URL has a hash
             if (window.location.hash === '#tours') {
                 const tourSection = document.getElementById('tours');
                 if (tourSection) {
@@ -1297,8 +1247,6 @@ while ($row = $result->fetch_assoc()) {
             }
         });
     </script>
-
-    <!-- Trending Destinations Section -->
     <div class="trending-destinations">
         <h2>Trending Destinations</h2>
         <p>Most popular choices for travellers from Cambodia</p>
@@ -1334,8 +1282,6 @@ while ($row = $result->fetch_assoc()) {
             </a>
         </div>
     </div>
-
-    <!-- Quick and Easy Trip Planner Section -->
     <div class="trip-planner">
         <h2>Quick and Easy Trip Planner</h2>
         <p>Pick a vibe and explore the top destinations in Cambodia</p>
@@ -1366,11 +1312,9 @@ while ($row = $result->fetch_assoc()) {
                 </button>
             </li>
         </ul>
-
         <div class="tab-content">
             <?php
-            // Prepare statements for each type
-            $types = ['City', 'Beach', 'Relaxation', 'Romance', 'Food']; // Adjust based on your tours table
+            $types = ['City', 'Beach', 'Relaxation', 'Romance', 'Food'];
             foreach ($types as $type) {
                 $stmt = $conn->prepare("SELECT t.*, d.name AS destination, d.location 
                                    FROM tours t 
@@ -1403,8 +1347,6 @@ while ($row = $result->fetch_assoc()) {
             ?>
         </div>
     </div>
-
-    <!-- Header Section -->
     <div class="header">
         <div class="header-panel">
             <i class="fas fa-check-circle"></i>
@@ -1422,8 +1364,6 @@ while ($row = $result->fetch_assoc()) {
             <small>We’re here to assist you</small>
         </div>
     </div>
-
-    <!-- Main Banner Section -->
     <div class="banner">
         <div class="banner-content">
             <h1>Discover Cambodia’s Wonders</h1>
@@ -1438,19 +1378,14 @@ while ($row = $result->fetch_assoc()) {
         </div>
         <div class="illustration"></div>
     </div>
-
-    <!-- Promotional Area -->
     <div class="promo">
         <h2>Travel Cambodia, Save More</h2>
         <p>Sign in to unlock exclusive discounts on tours and destinations.</p>
     </div>
-
-    <!-- Popular Destinations Section (Partial) -->
     <div class="destinations container mt-5">
         <h2 class="text-center mb-4">Popular Destinations in Cambodia</h2>
         <div class="row g-4">
             <?php
-            // Fetch active destinations from the database
             $sql = "SELECT destination_id, name, description, image 
                 FROM destinations 
                 WHERE isDelete = 0 
@@ -1479,12 +1414,10 @@ while ($row = $result->fetch_assoc()) {
             ?>
         </div>
     </div>
-    <!-- Featured Tours Section -->
     <div class="tours">
         <h2>Featured Tours</h2>
         <div class="tour-list">
             <?php
-            // Fetch active tours with destination names
             $sql = "SELECT t.tour_id, t.title, t.description, t.price, t.image, d.name as destination 
                     FROM tours t 
                     JOIN destinations d ON t.destination_id = d.destination_id 
@@ -1508,8 +1441,6 @@ while ($row = $result->fetch_assoc()) {
             ?>
         </div>
     </div>
-
-    <!-- Testimonials Section -->
     <div class="testimonials-section">
         <h2>What Our Customers Say</h2>
         <div class="testimonials-container">
@@ -1525,8 +1456,6 @@ while ($row = $result->fetch_assoc()) {
             </div>
         </div>
     </div>
-
-    <!-- Featured Destinations Section -->
     <div class="featured-destinations">
         <h2>Popular Destinations</h2>
         <div class="destinations-grid">
@@ -1544,8 +1473,6 @@ while ($row = $result->fetch_assoc()) {
             </div>
         </div>
     </div>
-
-    <!-- Why Choose Us Section -->
     <div class="why-choose-us">
         <h2>Why Choose Us</h2>
         <div class="reasons">
@@ -1565,9 +1492,10 @@ while ($row = $result->fetch_assoc()) {
                 <p>Our support team is available around the clock to assist you.</p>
             </div>
         </div>
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="guides.php" class="btn btn-primary">Meet Our Guides</a>
+        </div>
     </div>
-
-    <!-- Image Slideshow Modal -->
     <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -1593,11 +1521,9 @@ while ($row = $result->fetch_assoc()) {
             </div>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            // Image Modal
             document.querySelectorAll(".tour-image img").forEach(img => {
                 img.addEventListener("click", () => {
                     const tour_id = img.dataset.tourId;
@@ -1616,7 +1542,6 @@ while ($row = $result->fetch_assoc()) {
                         `;
                         carousel.appendChild(div);
                     });
-                    // Initialize popovers
                     const popoverImages = carousel.querySelectorAll('img');
                     popoverImages.forEach(img => {
                         new bootstrap.Popover(img);

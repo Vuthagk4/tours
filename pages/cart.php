@@ -1,33 +1,42 @@
 <?php
 include "../includes/header.php";
 include '../includes/config.php';
+
 $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
 $cartItems = [];
+
 if (isset($_SESSION['user_id'])) {
     $userId = $_SESSION['user_id'];
-    $stmt = mysqli_prepare($conn, "
-    SELECT 
-        b.booking_id AS item_id,
-        u.name AS username,
-        t.title,
-        b.duration,
-        b.people,
-        (b.people * b.price) AS total,
-        b.status,
-        b.qr_code_image
-    FROM bookings b
-    JOIN users u ON b.user_id = u.user_id
-    JOIN tours t ON b.tour_id = t.tour_id
-    WHERE b.user_id = ?
-    ORDER BY b.booking_id DESC
-");
-    mysqli_stmt_bind_param($stmt, "i", $userId);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    while ($row = mysqli_fetch_assoc($result)) {
-        $cartItems[] = $row;
+    try {
+        $stmt = mysqli_prepare($conn, "
+            SELECT 
+                b.booking_id AS item_id,
+                u.name AS username,
+                t.title,
+                b.duration,
+                b.people,
+                b.price AS total,
+                b.status,
+                b.qr_code_image,
+                g.name AS guide_name
+            FROM bookings b
+            JOIN users u ON b.user_id = u.user_id
+            JOIN tours t ON b.tour_id = t.tour_id
+            LEFT JOIN guides g ON b.guide_id = g.guide_id
+            WHERE b.user_id = ?
+            ORDER BY b.booking_id DESC
+        ");
+        mysqli_stmt_bind_param($stmt, "i", $userId);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        while ($row = mysqli_fetch_assoc($result)) {
+            $cartItems[] = $row;
+        }
+        mysqli_stmt_close($stmt);
+    } catch (Exception $e) {
+        echo "<p class='text-danger text-center mt-5'>Error loading cart: " . htmlspecialchars($e->getMessage()) . "</p>";
+        exit;
     }
-    mysqli_stmt_close($stmt);
 } else {
     echo "<p class='text-danger text-center mt-5'>You must be logged in to view your cart.</p>";
     exit;
@@ -173,6 +182,7 @@ if (isset($_SESSION['user_id'])) {
                             <th>Tour Title</th>
                             <th>Duration</th>
                             <th>People</th>
+                            <th>Guide</th>
                             <th>Total Price</th>
                             <th>Status</th>
                             <th>QR Code</th>
@@ -190,7 +200,8 @@ if (isset($_SESSION['user_id'])) {
                                     <td>" . htmlspecialchars($item['title']) . "</td>
                                     <td>{$item['duration']} day(s)</td>
                                     <td>{$item['people']}</td>
-                                    <td>\${$item['total']}</td>
+                                    <td>" . htmlspecialchars($item['guide_name'] ?? 'No Guide') . "</td>
+                                    <td>\${" . number_format($item['total'], 2) . "}</td>
                                     <td>{$item['status']}</td>
                                     <td>";
                                 if ($item['qr_code_image'] && file_exists("../Uploads/qr_codes/{$item['qr_code_image']}")) {
@@ -199,12 +210,12 @@ if (isset($_SESSION['user_id'])) {
                                     echo "No QR Code";
                                 }
                                 echo "</td>
-                                    <td class='action-btns'>
-                                        <button class='btn btn-sm btn-danger' onclick='removeFromCart({$item['item_id']})'>
-                                            <i class='fas fa-trash-alt'></i>
-                                        </button>
-                                    </td>
-                                </tr>";
+                                <td class='action-btns'>
+                                    <button class='btn btn-sm btn-danger delete-btn' onclick='removeFromCart(" . htmlspecialchars($item['item_id'], ENT_QUOTES) . ")' data-id='" . htmlspecialchars($item['item_id'], ENT_QUOTES) . "'>
+                                        <i class='fas fa-trash-alt'></i>
+                                    </button>
+                                </td>
+                            </tr>";
                             }
                         } else {
                             echo "<tr><td colspan='10' class='text-center'>No items in the cart.</td></tr>";
@@ -226,14 +237,16 @@ if (isset($_SESSION['user_id'])) {
                 </div>
                 <div class="modal-body">
                     <p><strong>KHQR:</strong></p>
-                    <img id="" src="../assets/images/myqr.jpg" alt="QR Code" class="img-fluid center">
+                    <img src="../assets/images/myqr.jpg" alt="Payment QR Code" class="img-fluid center">
+                    <p><strong>Username:</strong> <span id="username">USERNAME HERE</span></p>
+                    <p><strong>Tour:</strong> <span id="modalTourTitle"></span></p>
+                    <p><strong>Guide:</strong> <span id="modalGuideName"></span></p>
                     <p><strong>Total:</strong></p>
                     <input id="salaryField" class="form-control mb-3 text-center" readonly>
-                    <p><strong>Upload Payment:</strong></p>
+                    <p><strong>Upload Payment Proof:</strong></p>
                     <input type="file" id="qrCodeInput" accept="image/*" class="form-control mb-3">
-                    <p><strong>KHQR:</strong></p>
-                    <img id="qrCodePreview" src="" alt="QR Code" class="img-fluid center" style="display: none;">
-                    <p class="fw-bold" id="username">USERNAME HERE</p>
+                    <p><strong>Uploaded Proof:</strong></p>
+                    <img id="qrCodePreview" src="" alt="Uploaded Proof" class="img-fluid center" style="display: none;">
                     <div class="form-check mt-3">
                         <input class="form-check-input" type="checkbox" id="transferConfirm">
                         <label class="form-check-label" for="transferConfirm">Money already transferred</label>
@@ -254,39 +267,60 @@ if (isset($_SESSION['user_id'])) {
 
     <script>
         function removeFromCart(itemId) {
-            if (confirm("Are you sure you want to remove this booking?")) {
-                fetch(`remove_cart_item.php`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ id: itemId })
+            if (!confirm("Are you sure you want to remove this booking?")) {
+                return;
+            }
+
+            const button = document.querySelector(`.delete-btn[data-id="${itemId}"]`);
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            fetch('remove_cart_item.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin', // Ensure session cookies are sent
+                body: JSON.stringify({ id: parseInt(itemId) })
+            })
+                .then(response => {
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fas fa-trash-alt"></i>';
+                    if (!response.ok) {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+                    return response.json();
                 })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! Status: ${response.status}`);
-                        }
-                        return response.text().then(text => {
-                            try {
-                                return JSON.parse(text);
-                            } catch (e) {
-                                throw new Error(`Invalid JSON response: ${text.substring(0, 50)}...`);
+                .then(data => {
+                    if (data.success) {
+                        alert("Booking removed successfully!");
+                        const row = document.querySelector(`#cartTableBody tr[data-item-id="${itemId}"]`);
+                        if (row) {
+                            row.remove();
+                            const rows = document.querySelectorAll("#cartTableBody tr");
+                            if (rows.length === 0) {
+                                document.querySelector("#cartTableBody").innerHTML = '<tr><td colspan="10" class="text-center">No items in the cart.</td></tr>';
+                            } else {
+                                rows.forEach((r, i) => {
+                                    r.cells[0].innerText = i + 1;
+                                });
                             }
-                        });
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            alert("Booking removed successfully!");
-                            location.reload();
+                        }
+                    } else {
+                        if (data.message === 'User not logged in') {
+                            alert("Session expired. Please log in again.");
+                            window.location.href = 'login.php'; // Redirect to login page
                         } else {
                             alert("Error removing booking: " + (data.message || "Unknown error"));
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert("Failed to remove booking: " + error.message);
-                    });
-            }
+                    }
+                })
+                .catch(error => {
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fas fa-trash-alt"></i>';
+                    console.error('Delete error:', error);
+                    alert("Failed to remove booking: " + error.message);
+                });
         }
 
         function searchTable() {
@@ -297,51 +331,170 @@ if (isset($_SESSION['user_id'])) {
             });
         }
 
+        function filterTable() {
+            const filterBy = prompt("Filter by status (e.g., Pending, Confirmed) or guide name:");
+            if (filterBy) {
+                const rows = document.querySelectorAll("#cartTableBody tr");
+                rows.forEach(row => {
+                    const status = row.cells[8].innerText.toLowerCase();
+                    const guide = row.cells[6].innerText.toLowerCase();
+                    row.style.display = (status.includes(filterBy.toLowerCase()) || guide.includes(filterBy.toLowerCase())) ? "" : "none";
+                });
+            }
+        }
+
         function exportExcel() {
             const table = document.getElementById("cartTableBody");
-            const username = "<?php echo $_SESSION['name'] ?? 'Customer'; ?>";
+            const username = "<?php echo htmlspecialchars($_SESSION['name'] ?? 'Customer'); ?>";
             const date = new Date().toLocaleString();
+
+            // Define data array for the worksheet
             const data = [
                 ["Tour Booking Receipt"],
                 ["Customer Name:", username],
                 ["Date:", date],
                 [],
-                ["No.", "Title", "Duration", "People", "Total (USD)"]
+                ["No.", "Title", "Duration", "People", "Guide", "Total (USD)"]
             ];
+
             let totalAmount = 0;
             let count = 1;
 
+            // Extract data from table rows
             table.querySelectorAll('tr').forEach(row => {
                 const cols = row.querySelectorAll('td');
-                if (cols.length >= 4) {
+                if (cols.length > 7) {
                     const title = cols[3].innerText.trim();
                     const duration = cols[4].innerText.trim();
                     const people = cols[5].innerText.trim();
-                    const total = parseFloat(cols[6].innerText.trim().replace('$', '')) || 0;
+                    const guide = cols[6].innerText.trim();
+                    const total = parseFloat(cols[7].innerText.replace('$', '')) || 0;
                     totalAmount += total;
 
-                    data.push([count, title, duration, people, total.toFixed(2)]);
+                    data.push([count, title, duration, parseInt(people), guide, total]);
                     count++;
                 }
             });
 
-            data.push([], ["", "Total Amount", "", "", totalAmount.toFixed(2)]);
+            // Add total and footer
+            data.push([], ["", "", "", "", "Total Amount", totalAmount]);
             data.push([], ["", "Thank you for your booking!"]);
 
+            // Create worksheet
             const ws = XLSX.utils.aoa_to_sheet(data);
+
+            // Apply formatting
+            const range = XLSX.utils.decode_range(ws['!ref']);
+            for (let row = range.s.r; row <= range.e.r; row++) {
+                for (let col = range.s.c; col <= range.e.c; col++) {
+                    const cellAddress = { r: row, c: col };
+                    const cellRef = XLSX.utils.encode_cell(cellAddress);
+                    if (!ws[cellRef]) continue;
+
+                    // Default cell style
+                    ws[cellRef].s = {
+                        font: { name: 'Arial', sz: 12 },
+                        alignment: { vertical: 'center', horizontal: 'left' },
+                        border: {
+                            top: { style: 'thin', color: { rgb: '000000' } },
+                            bottom: { style: 'thin', color: { rgb: '000000' } },
+                            left: { style: 'thin', color: { rgb: '000000' } },
+                            right: { style: 'thin', color: { rgb: '000000' } }
+                        }
+                    };
+
+                    // Specific formatting
+                    if (row === 0) {
+                        // Title row
+                        ws[cellRef].s = {
+                            font: { name: 'Arial', sz: 16, bold: true },
+                            alignment: { vertical: 'center', horizontal: 'center' },
+                            fill: { fgColor: { rgb: 'E6F3FF' } },
+                            border: ws[cellRef].s.border
+                        };
+                    } else if (row === 1 || row === 2) {
+                        // Customer Name and Date
+                        ws[cellRef].s = {
+                            font: { name: 'Arial', sz: 12, bold: col === 0 },
+                            alignment: { vertical: 'center', horizontal: col === 0 ? 'right' : 'left' },
+                            border: ws[cellRef].s.border
+                        };
+                    } else if (row === 4) {
+                        // Header row
+                        ws[cellRef].s = {
+                            font: { name: 'Arial', sz: 12, bold: true },
+                            alignment: { vertical: 'center', horizontal: 'center' },
+                            fill: { fgColor: { rgb: 'D3D3D3' } },
+                            border: ws[cellRef].s.border
+                        };
+                    } else if (row >= 5 && row < data.length - 2) {
+                        // Data rows
+                        if (col === 0 || col === 3) {
+                            // No. and People: center, numeric
+                            ws[cellRef].s.alignment.horizontal = 'center';
+                        } else if (col === 5) {
+                            // Total: right, currency format
+                            ws[cellRef].s.alignment.horizontal = 'right';
+                            ws[cellRef].z = '$#,##0.00';
+                        }
+                    } else if (row === data.length - 2) {
+                        // Total Amount row
+                        if (col === 4 || col === 5) {
+                            ws[cellRef].s = {
+                                font: { name: 'Arial', sz: 12, bold: true },
+                                alignment: { vertical: 'center', horizontal: col === 4 ? 'right' : 'right' },
+                                border: ws[cellRef].s.border
+                            };
+                            if (col === 5) ws[cellRef].z = '$#,##0.00';
+                        }
+                    } else if (row === data.length - 1) {
+                        // Footer row
+                        ws[cellRef].s = {
+                            font: { name: 'Arial', sz: 10, italic: true },
+                            alignment: { vertical: 'center', horizontal: 'center' },
+                            border: ws[cellRef].s.border
+                        };
+                    }
+                }
+            }
+
+            // Merge cells for title and footer
+            ws['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }, // Merge title row
+                { s: { r: data.length - 1, c: 0 }, e: { r: data.length - 1, c: 5 } } // Merge footer row
+            ];
+
+            // Set column widths
+            ws['!cols'] = [
+                { wch: 5 },  // No.
+                { wch: 30 }, // Title
+                { wch: 15 }, // Duration
+                { wch: 10 }, // People
+                { wch: 20 }, // Guide
+                { wch: 15 }  // Total (USD)
+            ];
+
+            // Create workbook and append sheet
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Booking Receipt");
-            XLSX.writeFile(wb, "tour_booking_receipt.xlsx");
+
+            // Export file
+            XLSX.writeFile(wb, "tour_booking_receipt.xlsx", { bookType: 'xlsx', type: 'binary' });
         }
 
         function showTransferModal(index) {
             const modal = new bootstrap.Modal(document.getElementById('transferModal'));
-            const username = document.querySelector(`#cartTableBody tr:nth-child(${index + 1}) td:nth-child(3)`).innerText;
-            const total = document.querySelector(`#cartTableBody tr:nth-child(${index + 1}) td:nth-child(7)`).innerText.replace('$', '');
-            const itemId = document.querySelector(`#cartTableBody tr:nth-child(${index + 1})`).dataset.itemId;
+            const row = document.querySelector(`#cartTableBody tr:nth-child(${index + 1})`);
+            const username = row.querySelector('td:nth-child(3)').innerText;
+            const tourTitle = row.querySelector('td:nth-child(4)').innerText;
+            const guideName = row.querySelector('td:nth-child(7)').innerText;
+            const total = row.querySelector('td:nth-child(8)').innerText.replace('$', '');
+            const itemId = row.dataset.itemId;
 
-            document.getElementById('salaryField').value = `$${total}`;
             document.getElementById('username').innerText = username;
+            document.getElementById('modalTourTitle').innerText = tourTitle;
+            document.getElementById('modalGuideName').innerText = guideName;
+            document.getElementById('salaryField').value = `$${total}`;
             document.getElementById('transferConfirm').checked = false;
             document.getElementById('qrCodeInput').value = '';
             document.getElementById('qrCodePreview').src = '';
@@ -378,7 +531,7 @@ if (isset($_SESSION['user_id'])) {
             }
 
             if (!qrCodeInput.files.length) {
-                alert("Please upload a QR code image.");
+                alert("Please upload a payment proof image.");
                 return;
             }
 
@@ -393,12 +546,12 @@ if (isset($_SESSION['user_id'])) {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert("QR code uploaded successfully! Booking is now pending admin confirmation.");
+                        alert("Payment proof uploaded successfully! Booking is now pending admin confirmation.");
                         const modal = bootstrap.Modal.getInstance(document.getElementById('transferModal'));
                         modal.hide();
                         location.reload();
                     } else {
-                        alert("Error uploading QR code: " + data.message);
+                        alert("Error uploading payment proof: " + data.message);
                     }
                 })
                 .catch(error => {
@@ -414,125 +567,175 @@ if (isset($_SESSION['user_id'])) {
 
         function printTableOnly() {
             const table = document.getElementById("cartTableBody");
-            const username = "<?php echo $_SESSION['name'] ?? 'Customer'; ?>";
-            const date = new Date().toLocaleString();
+            const username = "<?php echo htmlspecialchars($_SESSION['name'] ?? 'Customer'); ?>";
+            const date = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
 
             let printWindow = window.open('', '', 'width=800,height=600');
 
             printWindow.document.write(`
-                <html>
-                <head>
-                    <title>Tour Booking Receipt</title>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            padding: 20px;
-                            margin: 0;
-                            color: #333;
-                        }
-                        h2 {
-                            text-align: center;
-                            font-size: 24px;
-                            margin-bottom: 20px;
-                        }
-                        .info {
-                            margin-top: 10px;
-                            font-size: 16px;
-                            margin-bottom: 20px;
-                        }
-                        table {
-                            width: 100%;
-                            border-collapse: collapse;
-                            margin-top: 20px;
-                        }
-                        th, td {
-                            border: 1px solid #333;
-                            padding: 10px;
-                            text-align: center;
-                            font-size: 14px;
-                        }
-                        th {
-                            background-color: #f2f2f2;
-                            font-weight: bold;
-                        }
-                        td {
-                            background-color: #fafafa;
-                        }
-                        .total {
-                            font-weight: bold;
-                            font-size: 18px;
-                            text-align: right;
-                            margin-top: 20px;
-                        }
-                        .footer {
-                            text-align: center;
-                            margin-top: 40px;
-                            font-size: 14px;
-                            color: #777;
-                        }
-                        .footer p {
-                            margin: 5px 0;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h2>Tour Booking Receipt</h2>
-                    <div class="info">Customer Name: <strong>${username}</strong></div>
-                    <div class="info">Date: <strong>${date}</strong></div>
-                    <h3>Booking Cart</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>No.</th>
-                                <th>Username</th>
-                                <th>Tour Title</th>
-                                <th>Duration</th>
-                                <th>People</th>
-                                <th>Total (USD)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `);
+        <html>
+        <head>
+            <title>Tour Booking Receipt</title>
+            <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+            <style>
+                body {
+                    font-family: 'Open Sans', Arial, sans-serif;
+                    margin: 20px;
+                    color: #2d3748;
+                    background-color: #f7fafc;
+                    line-height: 1.6;
+                }
+                .container {
+                    max-width: 800px;
+                    margin: 0 auto;
+                    background: #ffffff;
+                    padding: 30px;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                }
+                .header {
+                    text-align: center;
+                    padding-bottom: 20px;
+                    border-bottom: 2px solid #e2e8f0;
+                }
+                .header h1 {
+                    font-size: 28px;
+                    font-weight: 600;
+                    color: #1a202c;
+                    margin: 0;
+                }
+                .header .logo {
+                    width: 80px;
+                    height: auto;
+                    margin-bottom: 10px;
+                }
+                .info {
+                    display: flex;
+                    justify-content: space-between;
+                    font-size: 14px;
+                    color: #4a5568;
+                    margin: 20px 0;
+                }
+                .info span {
+                    font-weight: 600;
+                }
+                h3 {
+                    font-size: 18px;
+                    font-weight: 600;
+                    color: #2d3748;
+                    margin: 20px 0 10px;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 14px;
+                }
+                th, td {
+                    padding: 12px;
+                    text-align: center;
+                    border: 1px solid #e2e8f0;
+                }
+                th {
+                    background-color: #4299e1;
+                    color: #ffffff;
+                    font-weight: 600;
+                }
+                td {
+                    background-color: #ffffff;
+                }
+                tr:nth-child(even) td {
+                    background-color: #edf2f7;
+                }
+                tr:hover td {
+                    background-color: #bee3f8;
+                }
+                .currency {
+                    text-align: right;
+                }
+                .total {
+                    font-size: 16px;
+                    font-weight: 600;
+                    text-align: right;
+                    margin-top: 20px;
+                    color: #1a202c;
+                }
+                .footer {
+                    text-align: center;
+                    margin-top: 30px;
+                    font-size: 12px;
+                    color: #718096;
+                    border-top: 1px solid #e2e8f0;
+                    padding-top: 15px;
+                }
+                .footer p {
+                    margin: 5px 0;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <img src="https://via.placeholder.com/80" alt="Logo" class="logo">
+                    <h1>Tour Booking Receipt</h1>
+                </div>
+                <div class="info">
+                    <div>Customer Name: <span>${username}</span></div>
+                    <div>Date: <span>${date}</span></div>
+                </div>
+                <h3>Booking Details</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Tour Title</th>
+                            <th>Duration</th>
+                            <th>People</th>
+                            <th>Guide</th>
+                            <th>Total (USD)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+    `);
 
             let totalAmount = 0;
             let index = 1;
 
-            table.querySelectorAll("tr").forEach(row => {
-                const cols = row.querySelectorAll("td");
-                if (cols.length >= 4) {
-                    const username = cols[2].innerText.trim();
+            table.querySelectorAll('tr').forEach(row => {
+                const cols = row.querySelectorAll('td');
+                if (cols.length > 7) {
                     const title = cols[3].innerText.trim();
                     const duration = cols[4].innerText.trim();
                     const people = cols[5].innerText.trim();
-                    const total = parseFloat(cols[6].innerText.trim().replace('$', '').trim()) || 0;
+                    const guide = cols[6].innerText.trim();
+                    const total = parseFloat(cols[7].innerText.replace('$', '')) || 0;
 
                     totalAmount += total;
 
                     printWindow.document.write(`
-                        <tr>
-                            <td>${index++}</td>
-                            <td>${username}</td>
-                            <td>${title}</td>
-                            <td>${duration}</td>
-                            <td>${people}</td>
-                            <td>$${total.toFixed(2)}</td>
-                        </tr>
-                    `);
+                <tr>
+                    <td>${index++}</td>
+                    <td>${title}</td>
+                    <td>${duration}</td>
+                    <td>${people}</td>
+                    <td>${guide}</td>
+                    <td class="currency">$${total.toFixed(2)}</td>
+                </tr>
+            `);
                 }
             });
 
             printWindow.document.write(`
-                        </tbody>
-                    </table>
-                    <div class="total">Grand Total: $${totalAmount.toFixed(2)}</div>
-                    <br>
-                    <div class="footer">
-                        <p>Thank you for your booking!</p>
-                        <p>If you have any questions, please contact support@example.com</p>
-                    </div>
-                </body>
-                </html>
-            `);
+                    </tbody>
+                </table>
+                <div class="total">Grand Total: $${totalAmount.toFixed(2)}</div>
+                <div class="footer">
+                    <p>Thank you for choosing our tours!</p>
+                    <p>Contact us at support@tours.com | +1-800-123-4567</p>
+                </div>
+            </div>
+        </body>
+        </html>
+    `);
 
             printWindow.document.close();
             printWindow.print();

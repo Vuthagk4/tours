@@ -2,7 +2,7 @@
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "tour_travel";
+$dbname = "tour";
 $port = 3307;  // Specify the port number
 
 // Create connection

@@ -33,11 +33,19 @@ if (!$tour) {
     exit();
 }
 
+// Fetch available guides
+$guides = $conn->query("SELECT guide_id, name, language FROM guides WHERE is_deleted = 0");
+$guide_options = [];
+while ($guide = $guides->fetch_assoc()) {
+    $guide_options[] = $guide;
+}
+
 // Prefill form
 $checkin = $_GET['travel_date'] ?? date('Y-m-d');
 $default_duration = is_numeric($tour['duration']) ? (int) $tour['duration'] : 1; // Handle varchar duration
 $checkout = date('Y-m-d', strtotime("$checkin + $default_duration days"));
 $guests = max(1, (int) ($_GET['people'] ?? 1)); // Ensure at least 1 guest
+$selected_guide = $_GET['guide_id'] ?? ''; // Prefill guide if provided
 
 // Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -45,10 +53,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $checkout = $_POST['checkout'];
     $guests = (int) $_POST['guests'];
     $special_request = htmlspecialchars(trim($_POST['special_request'] ?? ''));
+    $guide_id = (int) ($_POST['guide_id'] ?? 0);
 
     // Validate inputs
     if ($guests < 1) {
         $error_message = "Number of guests must be at least 1.";
+    } elseif ($guide_id === 0) {
+        $error_message = "Please select a guide.";
     } else {
         $checkin_date = new DateTime($checkin);
         $checkout_date = new DateTime($checkout);
@@ -60,9 +71,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $discounted_price = (float) $tour['price'] * 0.9 * $guests * $duration;
 
             // Insert into bookings
-            $stmt = $conn->prepare("INSERT INTO bookings (user_id, tour_id, travel_date, duration, people, price, special_request, status, payment_status) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending', 'Pending')");
-            $stmt->bind_param("iisidds", $user_id, $tour_id, $checkin, $duration, $guests, $discounted_price, $special_request);
+            $stmt = $conn->prepare("INSERT INTO bookings (user_id, tour_id, travel_date, duration, people, price, special_request, status, payment_status, guide_id) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', ?)");
+            $stmt->bind_param("iisiddsi", $user_id, $tour_id, $checkin, $duration, $guests, $discounted_price, $special_request, $guide_id);
             if ($stmt->execute()) {
                 $booking_id = $conn->insert_id;
 
@@ -310,9 +321,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </select>
                 </div>
                 <div class="form-group">
+                    <label for="guide_id">Select Guide</label>
+                    <select class="form-control" id="guide_id" name="guide_id" required>
+                        <option value="" disabled <?= empty($selected_guide) ? 'selected' : '' ?>>Choose a guide</option>
+                        <?php foreach ($guide_options as $guide): ?>
+                            <option value="<?= $guide['guide_id'] ?>" <?= $selected_guide == $guide['guide_id'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($guide['name']) ?> (Speaks:
+                                <?= htmlspecialchars($guide['language']) ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label for="special_request">Special Requests (Optional)</label>
                     <textarea class="form-control" id="special_request" name="special_request" rows="3"
-                        placeholder="E.g., dietary needs, accessibility"></textarea>
+                        placeholder="E.g., dietary needs, accessibility"><?= htmlspecialchars($special_request ?? '') ?></textarea>
                 </div>
                 <p id="price-display"></p>
                 <button type="submit" class="btn-book">Confirm Booking</button>

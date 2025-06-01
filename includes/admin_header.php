@@ -1,5 +1,6 @@
 <?php
 session_start();
+
 include 'config.php';
 ?>
 <!DOCTYPE html>
@@ -268,11 +269,10 @@ include 'config.php';
         <!-- Section 2: Menu -->
         <ul>
             <li><a href="index.php"><i class="fa fa-home"></i> <span>Dashboard</span></a></li>
-            <li><a href="../admin/add_destination.php"><i class="fa fa-map"></i> <span>Add Destination</span></a></li>
-            <li><a href="../admin/addTour.php"><i class="fa fa-plane"></i> <span>Add Tour</span></a></li>
-            <li><a href="../admin/manage_bookings.php"><i class="fa fa-book"></i> <span>View Booking</span></a></li>
-            <li><a href="../admin/manage_payments.php"><i class="fa fa-credit-card"></i> <span>Check Payment</span></a>
-            </li>
+            <li><a href="add_destination.php"><i class="fa fa-map"></i> <span>Add Destination</span></a></li>
+            <li><a href="addTour.php"><i class="fa fa-plane"></i> <span>Add Tour</span></a></li>
+            <li><a href="manage_bookings.php"><i class="fa fa-book"></i> <span>View Booking</span></a></li>
+            <li><a href="manage_payments.php"><i class="fa fa-credit-card"></i> <span>Check Payment</span></a></li>
         </ul>
     </div>
 
