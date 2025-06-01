@@ -1,5 +1,10 @@
 <?php
-session_start();
+include '../includes/config.php';
+
+// Set a flag to indicate this is the user profile page
+define('IS_PROFILE_PAGE', true);
+
+include '../includes/header.php';
 
 // Redirect to login if not authenticated
 if (!isset($_SESSION['user_id'])) {
@@ -7,10 +12,16 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-include '../includes/config.php';
 $userId = $_SESSION['user_id'];
 $errors = [];
 $success = [];
+
+// Set time zone for +07 (as per your provided date/time)
+date_default_timezone_set('Asia/Bangkok');
+$currentHour = (int) date('H');
+$greeting = $currentHour >= 5 && $currentHour < 12 ? "Good Morning" :
+    ($currentHour >= 12 && $currentHour < 17 ? "Good Afternoon" :
+        ($currentHour >= 17 && $currentHour < 22 ? "Good Evening" : "Good Night"));
 
 // Fetch user data
 $stmt = mysqli_prepare($conn, "SELECT name, email, role, profile_image FROM users WHERE user_id = ?");
@@ -25,6 +36,17 @@ $profileImage = $user['profile_image'] && file_exists('../Uploads/users/' . $use
     ? '../Uploads/users/' . htmlspecialchars($user['profile_image'])
     : '../assets/images/default_profile.jpg';
 
+// Calculate profile completion percentage
+$profileCompletion = 20; // Start with a base percentage
+if (!empty($user['name']))
+    $profileCompletion += 20;
+if (!empty($user['email']))
+    $profileCompletion += 20;
+if (!empty($user['profile_image']))
+    $profileCompletion += 20;
+if (!empty($user['role']))
+    $profileCompletion += 20;
+
 // Handle avatar upload
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_FILES['avatar_file'])) {
     $uploadDir = '../Uploads/users/';
@@ -35,7 +57,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_FILES['avatar_file'])) {
         $fileType = $_FILES['avatar_file']['type'];
         $fileSize = $_FILES['avatar_file']['size'];
 
-        // Validate file type and size
         if (!in_array($fileType, $allowedTypes)) {
             $errors[] = "Invalid file type. Only JPEG, PNG, and GIF are allowed.";
         } elseif ($fileSize > $maxFileSize) {
@@ -44,15 +65,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_FILES['avatar_file'])) {
             $fileName = $userId . '_' . time() . '_' . basename($_FILES['avatar_file']['name']);
             $destination = $uploadDir . $fileName;
 
-            // Move uploaded file
             if (move_uploaded_file($_FILES['avatar_file']['tmp_name'], $destination)) {
-                // Update database
                 $stmt = mysqli_prepare($conn, "UPDATE users SET profile_image = ? WHERE user_id = ?");
                 mysqli_stmt_bind_param($stmt, "si", $fileName, $userId);
                 if (mysqli_stmt_execute($stmt)) {
                     $success[] = "Avatar updated successfully!";
-                    $user['profile_image'] = $fileName; // Update local user data
-                    $profileImage = '../Uploads/users/' . htmlspecialchars($fileName); // Update profile image
+                    $user['profile_image'] = $fileName;
+                    $profileImage = '../Uploads/users/' . htmlspecialchars($fileName);
+                    $profileCompletion = min(100, $profileCompletion + 20); // Update completion
                 } else {
                     $errors[] = "Error updating avatar: " . mysqli_error($conn);
                 }
@@ -72,7 +92,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_password'])) {
     $newPassword = $_POST['new_password'] ?? '';
     $confirmPassword = $_POST['confirm_password'] ?? '';
 
-    // Validate inputs
     if (empty($currentPassword)) {
         $errors[] = "Current password is required!";
     }
@@ -86,7 +105,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_password'])) {
     }
 
     if (empty($errors)) {
-        // Verify current password
         $stmt = mysqli_prepare($conn, "SELECT password FROM users WHERE user_id = ?");
         mysqli_stmt_bind_param($stmt, "i", $userId);
         mysqli_stmt_execute($stmt);
@@ -95,7 +113,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_password'])) {
         mysqli_stmt_close($stmt);
 
         if ($row && password_verify($currentPassword, $row['password'])) {
-            // Update password
             $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
             $stmt = mysqli_prepare($conn, "UPDATE users SET password = ? WHERE user_id = ?");
             mysqli_stmt_bind_param($stmt, "si", $hashedPassword, $userId);
@@ -111,21 +128,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_password'])) {
     }
 }
 
-// Cart count
-$cartCount = 0;
-if (isset($_SESSION['user_id'])) {
-    $stmt = mysqli_prepare($conn, "SELECT COUNT(*) as count FROM bookings WHERE user_id = ?");
-    mysqli_stmt_bind_param($stmt, "i", $userId);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    $row = mysqli_fetch_assoc($result);
-    $cartCount = $row['count'];
-    mysqli_stmt_close($stmt);
-}
+
 
 mysqli_close($conn);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -146,521 +152,443 @@ mysqli_close($conn);
         rel="stylesheet">
     <!-- Custom Styles -->
     <style>
-        /* Top Bar */
-        .top-bar {
-            background: #223140;
-            color: white;
-            padding: 10px 0;
-            font-size: 0.9rem;
-            font-family: 'Work Sans', sans-serif;
-        }
-
-        .top-bar a {
-            color: white;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .top-bar a:hover {
-            color: #49B11E;
-        }
-
-        .top-bar .home-link {
-            display: flex;
-            align-items: center;
-        }
-
-        .top-bar .home-link i {
-            font-size: 1.2rem;
-            margin-right: 8px;
-        }
-
-        .top-bar .auth-links {
-            display: flex !important;
-            align-items: center;
-            gap: 10px;
-            opacity: 1 !important;
-            visibility: visible !important;
-        }
-
-        .top-bar .auth-links a {
-            font-weight: 500;
-        }
-
-        .top-bar .auth-links span {
-            color: #ccc;
-        }
-
-        /* Logo Section */
-        .logo-section {
-            background: white;
-            padding: 20px 0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            font-family: 'Work Sans', sans-serif;
-        }
-
-        .logo-section h1 {
-            font-size: 2rem;
-            font-weight: 700;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+            list-style-type: none;
         }
 
-        .logo-section .tour {
-            color: #49B11E;
-        }
-
-        .logo-section .and {
-            color: #ff7f50;
-        }
-
-        .logo-section .management {
-            color: #223140;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-info .btn-logout {
-            background: red;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            font-size: 0.9rem;
-            border-radius: 5px;
-            transition: background 0.3s ease;
-        }
-
-        .user-info .btn-logout:hover {
-            background: #3a8f16;
-        }
-
-        .user-info .btn-login {
-            color: #49B11E;
-            font-weight: 500;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .user-info .btn-login:hover {
-            color: #3a8f16;
-            text-decoration: underline;
-        }
-
-        /* Navigation Menu */
-        .navbar-custom {
-            background: #223140;
-            font-family: 'Work Sans', sans-serif;
-        }
-
-        .navbar-custom .navbar-nav .nav-link {
-            color: white;
-            font-size: 1.1rem;
-            padding: 10px 20px;
-            transition: color 0.3s ease, background 0.3s ease;
-        }
-
-        .navbar-custom .navbar-nav .nav-link:hover {
-            color: #49B11E;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-        }
-
-        .navbar-custom .navbar-toggler {
-            border-color: white;
-        }
-
-        .navbar-custom .navbar-toggler-icon {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 1%29' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-        }
-
-        /* Language Selector Styles */
-        .navbar-custom .navbar-nav .icon-link i {
-            font-size: 1.2rem;
-            color: white;
-        }
-
-        .navbar-custom .navbar-nav .icon-link:hover i {
-            color: #49B11E;
-        }
-
-        .navbar-custom .dropdown-menu {
-            background-color: #223140;
-            border: none;
-            border-radius: 5px;
-        }
-
-        .navbar-custom .dropdown-menu .dropdown-item {
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 15px;
-        }
-
-        .navbar-custom .dropdown-menu .dropdown-item:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: #49B11E;
-        }
-
-        .flag-icon {
-            width: 20px;
-            height: 15px;
-            background-size: cover;
-        }
-
-        /* Dark Mode Toggle Styles */
-        .navbar-custom .navbar-nav .dark-mode-toggle {
-            cursor: pointer;
-        }
-
-        .navbar-custom .navbar-nav .dark-mode-toggle i {
-            font-size: 1.2rem;
-            color: white;
-        }
-
-        .navbar-custom .navbar-nav .dark-mode-toggle:hover i {
-            color: #49B11E;
-        }
-
-        /* Dark Mode Styles */
-        body.dark-mode {
-            background-color: #121212;
-            color: #ffffff;
-        }
-
-        body.dark-mode .top-bar {
-            background: #333;
-        }
-
-        body.dark-mode .logo-section {
-            background: #222;
-        }
-
-        body.dark-mode .navbar-custom {
-            background: #333;
-        }
-
-        body.dark-mode .user-info .btn-login {
-            color: #49B11E;
-        }
-
-        body.dark-mode .user-info .btn-logout {
-            background: #3a8f16;
-        }
-
-        body.dark-mode .card {
-            background-color: #222;
-            color: #fff;
-        }
-
-        /* Profile Section */
         .profile-section {
-            font-family: 'Work Sans', sans-serif;
-            padding: 40px 0;
+            padding: 60px 0;
+            min-height: calc(100vh - 200px);
+        }
+
+        .container {
+            max-width: 1200px;
+        }
+
+        .greeting-card {
+            background: linear-gradient(135deg, #49B11E 0%, #3a8f16 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .greeting-card h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .greeting-card p {
+            font-size: 1.2rem;
+            opacity: 0.9;
         }
 
         .profile-card {
-            max-width: 600px;
-            margin: 0 auto;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease;
+        }
+
+        .profile-card:hover {
+            transform: translateY(-5px);
         }
 
         .profile-avatar {
-            width: 120px;
-            height: 120px;
+            width: 150px;
+            height: 150px;
             object-fit: cover;
             border-radius: 50%;
-            border: 3px solid #49B11E;
+            border: 4px solid #49B11E;
+            transition: transform 0.3s ease;
         }
 
-        .profile-info {
-            margin-top: 20px;
+        .profile-avatar:hover {
+            transform: scale(1.05);
         }
 
         .profile-info h3 {
             color: #223140;
             font-weight: 600;
+            margin-top: 20px;
         }
 
         .profile-info p {
             margin: 5px 0;
             color: #555;
+            font-size: 1rem;
         }
 
+        .progress-bar {
+            background-color: #49B11E;
+        }
+
+        .avatar-form,
         .password-form,
-        .avatar-form {
-            margin-top: 30px;
+        .preferences-form,
+        .booking-history,
+        .recent-activity,
+        .quick-links {
+            margin-top: 40px;
         }
 
-        .password-form .btn-update,
-        .avatar-form .btn-upload {
+        .avatar-form h4,
+        .password-form h4,
+        .preferences-form h4,
+        .booking-history h4,
+        .recent-activity h4,
+        .quick-links h4 {
+            color: #223140;
+            font-weight: 600;
+            margin-bottom: 20px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .avatar-form h4::after,
+        .password-form h4::after,
+        .preferences-form h4::after,
+        .booking-history h4::after,
+        .recent-activity h4::after,
+        .quick-links h4::after {
+            content: '';
+            width: 50%;
+            height: 3px;
+            background: #ff6f61;
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            border-radius: 2px;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #49B11E;
+            box-shadow: 0 0 8px rgba(73, 177, 30, 0.3);
+        }
+
+        .btn-custom {
             background: #49B11E;
             border: none;
             padding: 10px 20px;
             color: white;
-            border-radius: 5px;
-            transition: background 0.3s ease;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background 0.3s ease, transform 0.2s ease;
         }
 
-        .password-form .btn-update:hover,
-        .avatar-form .btn-upload:hover {
+        .btn-custom:hover {
             background: #3a8f16;
+            transform: translateY(-2px);
         }
 
-        .error-messages,
-        .success-message {
+        .alert-dismissible {
+            border-radius: 8px;
+            padding: 15px;
             margin-bottom: 20px;
         }
 
-        .error-messages p {
-            color: red;
-            font-size: 0.9rem;
+        .alert-success {
+            background-color: #e6f4e1;
+            color: #49B11E;
+            border: none;
         }
 
-        .success-message p {
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #dc3545;
+            border: none;
+        }
+
+        /* Booking History Styles */
+        .booking-card {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .booking-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .booking-card p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .status-pending {
+            color: #ff6f61;
+            font-weight: 500;
+        }
+
+        .status-confirmed {
             color: #49B11E;
-            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status-cancelled {
+            color: #dc3545;
+            font-weight: 500;
+        }
+
+        .btn-details {
+            color: #49B11E;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .btn-details:hover {
+            color: #3a8f16;
+            text-decoration: underline;
+        }
+
+        /* Preferences Form */
+        .preferences-form .form-select {
+            border-radius: 8px;
+        }
+
+        /* Recent Activity */
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .activity-item i {
+            font-size: 1.5rem;
+            color: #ff6f61;
+            margin-right: 15px;
+        }
+
+        .activity-item p {
+            margin: 0;
+            color: #555;
+        }
+
+        /* Quick Links */
+        .quick-links .btn-link {
+            display: block;
+            background: #f1f1f1;
+            color: #223140;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 10px;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .quick-links .btn-link:hover {
+            background: #49B11E;
+            color: white;
+            transform: translateY(-2px);
+            text-decoration: none;
         }
 
         /* Responsive Adjustments */
         @media (max-width: 768px) {
-            .top-bar .auth-links {
-                flex-direction: column;
-                align-items: flex-end;
-                gap: 5px;
+            .greeting-card {
+                padding: 20px;
             }
 
-            .logo-section h1 {
-                font-size: 1.5rem;
+            .greeting-card h1 {
+                font-size: 2rem;
             }
 
-            .user-info {
-                flex-direction: column;
-                align-items: flex-end;
-                gap: 10px;
-            }
-
-            .navbar-custom .navbar-nav .nav-link {
+            .greeting-card p {
                 font-size: 1rem;
-                padding: 8px 10px;
             }
 
             .profile-card {
-                margin: 0 20px;
+                margin: 0 15px;
+                padding: 20px;
+            }
+
+            .profile-avatar {
+                width: 120px;
+                height: 120px;
             }
         }
 
         @media (max-width: 576px) {
-            .top-bar .container {
-                flex-direction: column;
-                align-items: center;
-                gap: 10px;
+            .greeting-card h1 {
+                font-size: 1.5rem;
             }
 
-            .top-bar .home-link {
-                margin-bottom: 10px;
+            .greeting-card p {
+                font-size: 0.9rem;
             }
 
-            .top-bar .auth-links {
-                flex-direction: row;
-                justify-content: center;
+            .profile-avatar {
+                width: 100px;
+                height: 100px;
+            }
+
+            .profile-info h3 {
+                font-size: 1.5rem;
+            }
+
+            .booking-card p {
+                font-size: 0.9rem;
+            }
+
+            .quick-links .btn-link {
+                font-size: 0.9rem;
+                padding: 10px;
             }
         }
     </style>
 </head>
 
 <body>
-    <!-- Top Bar -->
-    <div class="top-bar">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div class="home-link">
-                <a href="index.php"><i class="fa-solid fa-house"></i> Home</a>
-            </div>
-            <div class="auth-links">
-                <span class="login_as">Logged in as <?php echo htmlspecialchars($_SESSION['name'] ?? 'User'); ?></span>
-            </div>
-        </div>
-    </div>
-    <!-- Logo Section -->
-    <div class="logo-section">
-        <div class="container d-flex justify-content-between align-items-center">
-            <h1>
-                <span class="tour">Tour</span><span class="and">&</span><span class="management">Travel
-                    Management</span>
-            </h1>
-            <div class="user-info">
-                <span
-                    class="fw-medium"><?php echo htmlspecialchars($_SESSION['name']) . " (" . htmlspecialchars($_SESSION['role']) . ")"; ?></span>
-                <form action="../pages/logout.php" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-logout">Logout <i
-                            class="fa-solid fa-right-from-bracket"></i></button>
-                </form>
-            </div>
-        </div>
-    </div>
-    <!-- Navigation Menu -->
-    <nav class="navbar navbar-expand-lg navbar-custom" style="position:sticky;top:0px;z-index:9999;">
-        <div class="container">
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="about.php">About</a></li>
-                    <li class="nav-item"><a class="nav-link" href="packages.php">Tour Package</a></li>
-                    <li class="nav-item"><a class="nav-link" href="termofuse.php">Term of Use</a></li>
-                    <li class="nav-item"><a class="nav-link" href="contact.php">Contact Us</a></li>
-                    <li class="nav-item"><a class="nav-link" href="user_profile.php">Profile</a></li>
-                    <li class="nav-item position-relative">
-                        <a class="nav-link" href="cart.php">
-                            <i class="fas fa-shopping-cart"></i> Cart
-                            <span id="cart-count"
-                                class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill"><?php echo $cartCount; ?></span>
-                        </a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link icon-link dropdown-toggle" href="#" id="languageDropdown" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false" title="Select Language">
-                            <i class="fas fa-globe"></i>
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="languageDropdown">
-                            <li><a class="dropdown-item" href="?lang=en"><span class="flag-icon"
-                                        style="background-image: url('https://flagcdn.com/w20/gb.png');"></span>
-                                    English</a></li>
-                            <li><a class="dropdown-item" href="?lang=es"><span class="flag-icon"
-                                        style="background-image: url('https://flagcdn.com/w20/es.png');"></span>
-                                    Español</a></li>
-                            <li><a class="dropdown-item" href="?lang=fr"><span class="flag-icon"
-                                        style="background-image: url('https://flagcdn.com/w20/fr.png');"></span>
-                                    Français</a></li>
-                            <li><a class="dropdown-item" href="?lang=de"><span class="flag-icon"
-                                        style="background-image: url('https://flagcdn.com/w20/de.png');"></span>
-                                    Deutsch</a></li>
-                            <li><a class="dropdown-item" href="?lang=it"><span class="flag-icon"
-                                        style="background-image: url('https://flagcdn.com/w20/it.png');"></span>
-                                    Italiano</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link icon-link dark-mode-toggle" href="#" onclick="toggleDarkMode()"
-                            title="Toggle Dark Mode">
-                            <i class="fas fa-moon"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
     <!-- Profile Section -->
     <section class="profile-section">
         <div class="container">
-            <div class="card profile-card">
-                <div class="card-body text-center">
-                    <img src="<?php echo $profileImage; ?>" alt="Profile Avatar" class="profile-avatar">
-                    <div class="profile-info">
-                        <h3><?php echo htmlspecialchars($user['name']); ?></h3>
-                        <p><strong>Email:</strong> <?php echo htmlspecialchars($user['email']); ?></p>
-                        <p><strong>Role:</strong> <?php echo htmlspecialchars($user['role']); ?></p>
+            <!-- Greeting Card -->
+            <div class="greeting-card">
+                <h1><?php echo $greeting . ", " . htmlspecialchars($user['name']) . "!"; ?></h1>
+                <p>Welcome back to your travel dashboard.</p>
+            </div>
+
+            <div class="row">
+                <!-- Main Profile Card -->
+                <div class="col-lg-8">
+                    <div class="card profile-card">
+                        <div class="card-body text-center">
+                            <img src="<?php echo htmlspecialchars($profileImage); ?>" alt="Profile Avatar"
+                                class="profile-avatar">
+                            <div class="profile-info">
+                                <h3><?php echo htmlspecialchars($user['name']); ?></h3>
+                                <p><i class="fas fa-envelope me-2"></i> <strong>Email:</strong>
+                                    <?php echo htmlspecialchars($user['email']); ?></p>
+                                <p><i class="fas fa-user-tag me-2"></i> <strong>Role:</strong>
+                                    <?php echo htmlspecialchars($user['role']); ?></p>
+                                <div class="progress mt-3" style="height: 8px;">
+                                    <div class="progress-bar" role="progressbar"
+                                        style="width: <?php echo $profileCompletion; ?>%;"
+                                        aria-valuenow="<?php echo $profileCompletion; ?>" aria-valuemin="0"
+                                        aria-valuemax="100"></div>
+                                </div>
+                                <small class="text-muted">Profile <?php echo $profileCompletion; ?>% Complete</small>
+                            </div>
+
+                            <!-- Avatar Form -->
+                            <div class="avatar-form">
+                                <h4>Update Avatar</h4>
+                                <?php if (!empty($errors)): ?>
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        <?php foreach ($errors as $error): ?>
+                                            <p class="mb-0"><?php echo htmlspecialchars($error); ?></p>
+                                        <?php endforeach; ?>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                            aria-label="Close"></button>
+                                    </div>
+                                <?php endif; ?>
+                                <?php if (!empty($success)): ?>
+                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                        <?php foreach ($success as $msg): ?>
+                                            <p class="mb-0"><?php echo htmlspecialchars($msg); ?></p>
+                                        <?php endforeach; ?>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                            aria-label="Close"></button>
+                                    </div>
+                                <?php endif; ?>
+                                <form action="user_profile.php" method="POST" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <input type="file" name="avatar_file" class="form-control"
+                                            accept="image/jpeg,image/png,image/gif" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-custom">Upload Avatar</button>
+                                </form>
+                            </div>
+
+                            <!-- Password Form -->
+                            <div class="password-form">
+                                <h4>Update Password</h4>
+                                <form action="user_profile.php" method="POST">
+                                    <div class="mb-3">
+                                        <input type="password" name="current_password" class="form-control"
+                                            placeholder="Current Password" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <input type="password" name="new_password" class="form-control"
+                                            placeholder="New Password" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <input type="password" name="confirm_password" class="form-control"
+                                            placeholder="Confirm New Password" required>
+                                    </div>
+                                    <button type="submit" name="update_password" class="btn btn-custom">Update
+                                        Password</button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-                    <div class="avatar-form">
-                        <h4 class="mt-4">Update Avatar</h4>
-                        <?php if (!empty($errors)): ?>
-                            <div class="error-messages">
-                                <?php foreach ($errors as $error): ?>
-                                    <p><?php echo htmlspecialchars($error); ?></p>
-                                <?php endforeach; ?>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <!-- Recent Activity -->
+                    <div class="card profile-card">
+                        <div class="card-body">
+                            <div class="recent-activity">
+                                <h4>Recent Activity</h4>
+                                <div class="activity-item">
+                                    <i class="fas fa-history"></i>
+                                    <p><strong>:</strong>
+                                    </p>
+                                </div>
                             </div>
-                        <?php endif; ?>
-                        <?php if (!empty($success)): ?>
-                            <div class="success-message">
-                                <?php foreach ($success as $msg): ?>
-                                    <p><?php echo htmlspecialchars($msg); ?></p>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-                        <form action="user_profile.php" method="POST" enctype="multipart/form-data">
-                            <div class="mb-3">
-                                <input type="file" name="avatar_file" class="form-control"
-                                    accept="image/jpeg,image/png,image/gif" required>
-                            </div>
-                            <button type="submit" class="btn btn-upload">Upload Avatar</button>
-                        </form>
+                        </div>
                     </div>
-                    <div class="password-form">
-                        <h4 class="mt-4">Update Password</h4>
-                        <?php if (!empty($errors)): ?>
-                            <div class="error-messages">
-                                <?php foreach ($errors as $error): ?>
-                                    <p><?php echo htmlspecialchars($error); ?></p>
-                                <?php endforeach; ?>
+
+                    <!-- Quick Links -->
+                    <div class="card profile-card">
+                        <div class="card-body">
+                            <div class="quick-links">
+                                <h4>Quick Links</h4>
+                                <a href="bookings.php" class="btn-link"><i class="fas fa-ticket-alt me-2"></i> My
+                                    Bookings</a>
+                                <a href="packages.php" class="btn-link"><i class="fas fa-suitcase me-2"></i> Explore
+                                    Tours</a>
+                                <a href="contact.php" class="btn-link"><i class="fas fa-envelope me-2"></i> Contact
+                                    Support</a>
+                                <a href="logout.php" class="btn-link"><i class="fas fa-sign-out-alt me-2"></i>
+                                    Logout</a>
                             </div>
-                        <?php endif; ?>
-                        <?php if (!empty($success)): ?>
-                            <div class="success-message">
-                                <?php foreach ($success as $msg): ?>
-                                    <p><?php echo htmlspecialchars($msg); ?></p>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-                        <form action="user_profile.php" method="POST">
-                            <div class="mb-3">
-                                <input type="password" name="current_password" class="form-control"
-                                    placeholder="Current Password" required>
-                            </div>
-                            <div class="mb-3">
-                                <input type="password" name="new_password" class="form-control"
-                                    placeholder="New Password" required>
-                            </div>
-                            <div class="mb-3">
-                                <input type="password" name="confirm_password" class="form-control"
-                                    placeholder="Confirm New Password" required>
-                            </div>
-                            <button type="submit" name="update_password" class="btn btn-update">Update Password</button>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
         crossorigin="anonymous"></script>
-    <script>
-        // Dark Mode Toggle
-        function toggleDarkMode() {
-            const body = document.body;
-            body.classList.toggle('dark-mode');
-            const isDarkMode = body.classList.contains('dark-mode');
-            localStorage.setItem('darkMode', isDarkMode);
-            updateDarkModeIcon(isDarkMode);
-        }
-        function updateDarkModeIcon(isDarkMode) {
-            const icon = document.querySelector('.dark-mode-toggle i');
-            icon.className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
-        }
-        // Check local storage for dark mode preference on page load
-        const darkModePreference = localStorage.getItem('darkMode');
-        if (darkModePreference === 'true') {
-            document.body.classList.add('dark-mode');
-            updateDarkModeIcon(true);
-        }
-        // Cart Functionality
-        const userCartKey = 'userCart';
-        let cart = JSON.parse(localStorage.getItem(userCartKey)) || [];
-        function updateCartCount() {
-            let cart = JSON.parse(localStorage.getItem(userCartKey)) || [];
-            document.getElementById('cart-count').textContent = cart.length || '<?php echo $cartCount; ?>';
-        }
-        updateCartCount();
-        window.addEventListener('storage', updateCartCount);
-    </script>
 </body>
 
 </html>

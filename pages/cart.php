@@ -52,9 +52,12 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            background-color: #f4f6f9;
-            font-family: 'Roboto', sans-serif;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+            list-style-type: none;
         }
 
         .card {
@@ -421,13 +424,17 @@ if (isset($_SESSION['user_id'])) {
                     const duration = cols[4].innerText.trim();
                     const people = cols[5].innerText.trim();
                     const guide = cols[6].innerText.trim();
-                    const total = parseFloat(cols[7].innerText.replace('$', '')) || 0;
+                    const totalText = cols[7].innerText.trim();
+                    console.log("Total Price Text (Excel):", totalText); // Debugging log
+                    const total = parseFloat(totalText.replace(/[^0-9.]/g, '')) || 0; // Robust parsing
                     totalAmount += total;
 
                     data.push([count, title, duration, parseInt(people), guide, total]);
                     count++;
                 }
             });
+
+            console.log("Total Amount (Excel):", totalAmount); // Debugging log
 
             // Add total and footer
             data.push([], ["", "", "", "", "Total Amount", totalAmount]);
@@ -444,7 +451,6 @@ if (isset($_SESSION['user_id'])) {
                     const cellRef = XLSX.utils.encode_cell(cellAddress);
                     if (!ws[cellRef]) continue;
 
-                    // Default cell style
                     ws[cellRef].s = {
                         font: { name: 'Arial', sz: 12 },
                         alignment: { vertical: 'center', horizontal: 'left' },
@@ -456,9 +462,7 @@ if (isset($_SESSION['user_id'])) {
                         }
                     };
 
-                    // Specific formatting
                     if (row === 0) {
-                        // Title row
                         ws[cellRef].s = {
                             font: { name: 'Arial', sz: 16, bold: true },
                             alignment: { vertical: 'center', horizontal: 'center' },
@@ -466,14 +470,12 @@ if (isset($_SESSION['user_id'])) {
                             border: ws[cellRef].s.border
                         };
                     } else if (row === 1 || row === 2) {
-                        // Customer Name and Date
                         ws[cellRef].s = {
                             font: { name: 'Arial', sz: 12, bold: col === 0 },
                             alignment: { vertical: 'center', horizontal: col === 0 ? 'right' : 'left' },
                             border: ws[cellRef].s.border
                         };
                     } else if (row === 4) {
-                        // Header row
                         ws[cellRef].s = {
                             font: { name: 'Arial', sz: 12, bold: true },
                             alignment: { vertical: 'center', horizontal: 'center' },
@@ -481,17 +483,13 @@ if (isset($_SESSION['user_id'])) {
                             border: ws[cellRef].s.border
                         };
                     } else if (row >= 5 && row < data.length - 2) {
-                        // Data rows
                         if (col === 0 || col === 3) {
-                            // No. and People: center, numeric
                             ws[cellRef].s.alignment.horizontal = 'center';
                         } else if (col === 5) {
-                            // Total: right, currency format
                             ws[cellRef].s.alignment.horizontal = 'right';
                             ws[cellRef].z = '$#,##0.00';
                         }
                     } else if (row === data.length - 2) {
-                        // Total Amount row
                         if (col === 4 || col === 5) {
                             ws[cellRef].s = {
                                 font: { name: 'Arial', sz: 12, bold: true },
@@ -501,7 +499,6 @@ if (isset($_SESSION['user_id'])) {
                             if (col === 5) ws[cellRef].z = '$#,##0.00';
                         }
                     } else if (row === data.length - 1) {
-                        // Footer row
                         ws[cellRef].s = {
                             font: { name: 'Arial', sz: 10, italic: true },
                             alignment: { vertical: 'center', horizontal: 'center' },
@@ -511,50 +508,26 @@ if (isset($_SESSION['user_id'])) {
                 }
             }
 
-            // Merge cells for title and footer
             ws['!merges'] = [
-                { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }, // Merge title row
-                { s: { r: data.length - 1, c: 0 }, e: { r: data.length - 1, c: 5 } } // Merge footer row
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
+                { s: { r: data.length - 1, c: 0 }, e: { r: data.length - 1, c: 5 } }
             ];
 
-            // Set column widths
             ws['!cols'] = [
-                { wch: 5 },  // No.
-                { wch: 30 }, // Title
-                { wch: 15 }, // Duration
-                { wch: 10 }, // People
-                { wch: 20 }, // Guide
-                { wch: 15 }  // Total (USD)
+                { wch: 5 },
+                { wch: 30 },
+                { wch: 15 },
+                { wch: 10 },
+                { wch: 20 },
+                { wch: 15 }
             ];
 
-            // Create workbook and append sheet
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Booking Receipt");
-
-            // Export file
             XLSX.writeFile(wb, "tour_booking_receipt.xlsx", { bookType: 'xlsx', type: 'binary' });
         }
 
-        function showTransferModal(index) {
-            const modal = new bootstrap.Modal(document.getElementById('transferModal'));
-            const row = document.querySelector(`#cartTableBody tr:nth-child(${index + 1})`);
-            const username = row.querySelector('td:nth-child(3)').innerText;
-            const tourTitle = row.querySelector('td:nth-child(4)').innerText;
-            const guideName = row.querySelector('td:nth-child(7)').innerText;
-            const total = row.querySelector('td:nth-child(8)').innerText.replace('$', '');
-            const itemId = row.dataset.itemId;
 
-            document.getElementById('username').innerText = username;
-            document.getElementById('modalTourTitle').innerText = tourTitle;
-            document.getElementById('modalGuideName').innerText = guideName;
-            document.getElementById('salaryField').value = `$${total}`;
-            document.getElementById('transferConfirm').checked = false;
-            document.getElementById('qrCodeInput').value = '';
-            document.getElementById('qrCodePreview').src = '';
-            document.getElementById('qrCodePreview').style.display = 'none';
-            document.getElementById('transferModal').dataset.itemId = itemId;
-            modal.show();
-        }
 
         document.getElementById('qrCodeInput').addEventListener('change', function (event) {
             const file = event.target.files[0];
@@ -572,6 +545,29 @@ if (isset($_SESSION['user_id'])) {
                 qrCodePreview.style.display = 'none';
             }
         });
+
+        function showTransferModal(index) {
+            const modal = new bootstrap.Modal(document.getElementById('transferModal'));
+            const row = document.querySelector(`#cartTableBody tr:nth-child(${index + 1})`);
+            const username = row.querySelector('td:nth-child(3)').innerText;
+            const tourTitle = row.querySelector('td:nth-child(4)').innerText;
+            const guideName = row.querySelector('td:nth-child(7)').innerText; // Guide is in column 7
+            const totalText = row.querySelector('td:nth-child(8)').innerText; // Total Price is in column 8
+            console.log("Total Price Text (Transfer):", totalText); // Debugging log
+            const total = parseFloat(totalText.replace(/[^0-9.]/g, '')) || 0; // Remove all non-numeric characters except decimal
+            const itemId = row.dataset.itemId;
+
+            document.getElementById('username').innerText = username;
+            document.getElementById('modalTourTitle').innerText = tourTitle;
+            document.getElementById('modalGuideName').innerText = guideName;
+            document.getElementById('salaryField').value = `$${total.toFixed(2)}`;
+            document.getElementById('transferConfirm').checked = false;
+            document.getElementById('qrCodeInput').value = '';
+            document.getElementById('qrCodePreview').src = '';
+            document.getElementById('qrCodePreview').style.display = 'none';
+            document.getElementById('transferModal').dataset.itemId = itemId;
+            modal.show();
+        }
 
         function confirmTransfer() {
             const checkbox = document.getElementById('transferConfirm');
@@ -612,11 +608,14 @@ if (isset($_SESSION['user_id'])) {
                 });
         }
 
+
         function clearCart() {
             if (confirm("Are you sure you want to clear your entire cart?")) {
                 window.location.href = "clear_cart.php";
             }
         }
+
+
 
         function printTableOnly() {
             const table = document.getElementById("cartTableBody");
@@ -629,12 +628,12 @@ if (isset($_SESSION['user_id'])) {
         <html>
         <head>
             <title>Tour Booking Receipt</title>
-            <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+            <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;600&display=swap" rel="stylesheet">
             <style>
                 body {
-                    font-family: 'Open Sans', Arial, sans-serif;
+                    font-family: 'Work Sans', Arial, sans-serif;
                     margin: 20px;
-                    color: #2d3748;
+                    color: #223140;
                     background-color: #f7fafc;
                     line-height: 1.6;
                 }
@@ -654,7 +653,7 @@ if (isset($_SESSION['user_id'])) {
                 .header h1 {
                     font-size: 28px;
                     font-weight: 600;
-                    color: #1a202c;
+                    color: #223140;
                     margin: 0;
                 }
                 .header .logo {
@@ -675,7 +674,7 @@ if (isset($_SESSION['user_id'])) {
                 h3 {
                     font-size: 18px;
                     font-weight: 600;
-                    color: #2d3748;
+                    color: #223140;
                     margin: 20px 0 10px;
                 }
                 table {
@@ -689,7 +688,7 @@ if (isset($_SESSION['user_id'])) {
                     border: 1px solid #e2e8f0;
                 }
                 th {
-                    background-color: #4299e1;
+                    background-color: #49B11E;
                     color: #ffffff;
                     font-weight: 600;
                 }
@@ -699,9 +698,6 @@ if (isset($_SESSION['user_id'])) {
                 tr:nth-child(even) td {
                     background-color: #edf2f7;
                 }
-                tr:hover td {
-                    background-color: #bee3f8;
-                }
                 .currency {
                     text-align: right;
                 }
@@ -710,7 +706,7 @@ if (isset($_SESSION['user_id'])) {
                     font-weight: 600;
                     text-align: right;
                     margin-top: 20px;
-                    color: #1a202c;
+                    color: #223140;
                 }
                 .footer {
                     text-align: center;
@@ -720,15 +716,12 @@ if (isset($_SESSION['user_id'])) {
                     border-top: 1px solid #e2e8f0;
                     padding-top: 15px;
                 }
-                .footer p {
-                    margin: 5px 0;
-                }
             </style>
         </head>
         <body>
             <div class="container">
                 <div class="header">
-                    <img src="https://via.placeholder.com/80" alt="Logo" class="logo">
+                    <img src="https://i.pinimg.com/736x/f8/9b/1c/f89b1c7d38d8fc67d7199a11a10234cd.jpg" alt="Logo" class="logo">
                     <h1>Tour Booking Receipt</h1>
                 </div>
                 <div class="info">
@@ -760,8 +753,9 @@ if (isset($_SESSION['user_id'])) {
                     const duration = cols[4].innerText.trim();
                     const people = cols[5].innerText.trim();
                     const guide = cols[6].innerText.trim();
-                    const total = parseFloat(cols[7].innerText.replace('$', '')) || 0;
-
+                    const totalText = cols[7].innerText.trim();
+                    console.log("Total Price Text (Print):", totalText); // Debugging log
+                    const total = parseFloat(totalText.replace(/[^0-9.]/g, '')) || 0; // Robust parsing
                     totalAmount += total;
 
                     printWindow.document.write(`
@@ -776,6 +770,8 @@ if (isset($_SESSION['user_id'])) {
             `);
                 }
             });
+
+            console.log("Total Amount (Print):", totalAmount); // Debugging log
 
             printWindow.document.write(`
                     </tbody>
@@ -793,6 +789,8 @@ if (isset($_SESSION['user_id'])) {
             printWindow.document.close();
             printWindow.print();
         }
+
+
         let currentScale = 1;
         const scaleStep = 0.2; // Adjust zoom increment
         const minScale = 0.5; // Minimum zoom level

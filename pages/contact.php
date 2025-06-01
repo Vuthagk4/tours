@@ -2,6 +2,7 @@
 include '../includes/header.php'; // Include Header
 include '../includes/config.php'; // Include Database Config
 
+
 // Initialize variables
 $name = $email = $message = "";
 $success_message = $error_message = "";
@@ -47,11 +48,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
+        * {
             margin: 0;
             padding: 0;
-            background-color: #f4f4f9;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+            list-style-type: none;
         }
 
         .contact {

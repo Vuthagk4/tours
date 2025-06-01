@@ -64,29 +64,10 @@ include "../includes/header.php";
             list-style-type: none;
         }
 
-        .hero-section {
+        #heroCarousel {
             position: relative;
             height: 600px;
-            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
-            background-size: cover;
-            background-position: center;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-
-        .hero-section h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
-        }
-
-        .hero-section p {
-            font-size: 1.2rem;
-            margin-bottom: 30px;
+            overflow: hidden;
         }
 
         .search-bar {
@@ -1077,11 +1058,50 @@ include "../includes/header.php";
 </head>
 
 <body>
-    <div class="hero-section">
-        <div>
-            <h1>Discover Your Next Adventure</h1>
-            <p>Explore the world with our curated tours and exclusive offers.</p>
+    <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"
+                aria-label="Slide 1" aria-current="true"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
         </div>
+        <div class="carousel-inner">
+            <div class="carousel-item active"
+                style="background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'); background-size: cover; background-position: center; height: 600px;">
+                <div class=" carousel-caption d-flex flex-column align-items-center justify-content-center h-100">
+                    <h1 class="display-4 fw-bold" style="text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);">Discover Your
+                        Next Adventure</h1>
+                    <p class="lead" style="text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);">Explore the world with our
+                        curated tours and exclusive offers.</p>
+                </div>
+            </div>
+            <div class="carousel-item"
+                style="background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1472214103451-9374bd1c798e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'); background-size: cover; background-position: center; height: 600px;">
+                <div class="carousel-caption d-flex flex-column align-items-center justify-content-center h-100">
+                    <h1 class="display-4 fw-bold" style="text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);">Unforgettable
+                        Journeys</h1>
+                    <p class="lead" style="text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);">Experience the best
+                        destinations with us.</p>
+                </div>
+            </div>
+            <div class="carousel-item"
+                style="background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'); background-size: cover; background-position: center; height: 600px;">
+                <div class="carousel-caption d-flex flex-column align-items-center justify-content-center h-100">
+                    <h1 class="display-4 fw-bold" style="text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);">Travel with Ease
+                    </h1>
+                    <p class="lead" style="text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);">Book your dream vacation today!
+                    </p>
+                </div>
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
     </div>
     <div class="search-bar">
         <ul class="nav nav-tabs" id="myTab" role="tablist">

@@ -271,6 +271,134 @@ if (isset($_SESSION['user_id'])) {
             color: #49B11E;
         }
 
+        /* Cart Icon Styles */
+        .cart-icon {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            /* Space between icon, text, and badge */
+            padding: 8px 15px;
+            /* Consistent padding with other nav items */
+            transition: all 0.3s ease;
+            /* Smooth transition for hover effects */
+        }
+
+        .cart-icon i {
+            font-size: 1.2rem;
+            /* Slightly larger icon */
+            color: white;
+            transition: color 0.3s ease;
+        }
+
+        .cart-text {
+            font-size: 1.1rem;
+            /* Match the nav-link font size */
+            color: white;
+            font-family: 'Work Sans', sans-serif;
+            transition: color 0.3s ease;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            /* Position above the icon */
+            right: 5px;
+            /* Adjust to align with the cart icon */
+            background-color: #dc3545;
+            /* Red badge background */
+            color: white;
+            font-size: 0.75rem;
+            /* Smaller font for the badge */
+            font-weight: 600;
+            padding: 3px 7px;
+            /* Slightly larger padding for better readability */
+            border-radius: 50%;
+            /* Circular badge */
+            border: 2px solid #223140;
+            /* Border to match navbar background */
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            /* Animation for updates */
+        }
+
+        /* Hover Effects */
+        .cart-icon:hover {
+            background: rgba(255, 255, 255, 0.1);
+            /* Same hover background as other nav items */
+            border-radius: 5px;
+        }
+
+        .cart-icon:hover i,
+        .cart-icon:hover .cart-text {
+            color: #49B11E;
+            /* Green accent on hover */
+        }
+
+        .cart-icon:hover .cart-badge {
+            background-color: #c82333;
+            /* Darker red on hover */
+            transform: scale(1.1);
+            /* Slight scale-up effect on hover */
+        }
+
+        /* Dark Mode Adjustments */
+        body.dark-mode .cart-badge {
+            border-color: #333;
+            /* Match dark mode navbar background */
+        }
+
+        /* Animation for Cart Count Update */
+        .cart-badge.updated {
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        /* Pulse Animation for Badge Update */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .cart-icon {
+                padding: 8px 10px;
+            }
+
+            .cart-text {
+                font-size: 1rem;
+            }
+
+            .cart-badge {
+                font-size: 0.7rem;
+                padding: 2px 6px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .cart-text {
+                font-size: 0.9rem;
+            }
+
+            .cart-icon i {
+                font-size: 1.1rem;
+            }
+
+            .cart-badge {
+                top: -6px;
+                right: 0px;
+                padding: 2px 5px;
+            }
+        }
+
         /* Dark Mode Styles */
         body.dark-mode {
             background-color: #121212;
@@ -415,17 +543,26 @@ if (isset($_SESSION['user_id'])) {
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="about.php">About</a></li>
-                    <li class="nav-item"><a class="nav-link" href="packages.php">Tour Package</a></li>
-                    <li class="nav-item"><a class="nav-link" href="termofuse.php">Term of Use</a></li>
-                    <li class="nav-item"><a class="nav-link" href="contact.php">Contact Us</a></li>
-
-                    <li class="nav-item position-relative">
-                        <a class="nav-link" href="cart.php">
-                            <i class="fas fa-shopping-cart"></i> Cart
-                            <span id="cart-count"
-                                class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill"><?php echo $cartCount; ?></span>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.php"><i class="fas fa-home"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.php"><i class="fas fa-info-circle"></i> About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="packages.php"><i class="fas fa-suitcase"></i> Tour Package</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="termofuse.php"><i class="fas fa-file-alt"></i> Term of Use</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.php"><i class="fas fa-envelope"></i> Contact Us</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link cart-icon" href="cart.php" title="View Cart">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-text">Cart</span>
+                            <span class="cart-badge"><?php echo $cartCount; ?></span>
                         </a>
                     </li>
                     <li class="nav-item dropdown">

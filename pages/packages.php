@@ -53,23 +53,12 @@ while ($row = $result->fetch_assoc()) {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <style>
-    /* Sticky Footer Styles */
-    html {
-      height: 100%;
-    }
-
-    body {
-      display: flex;
-      flex-direction: column;
-      /* Ensure body takes full viewport height */
+    * {
       margin: 0;
-      background: #f8f9fa;
-      font-family: 'Work Sans', sans-serif;
-    }
-
-    .container.mt-5 {
-      flex: 1 0 auto;
-      /* Grow to push footer down */
+      padding: 0;
+      box-sizing: border-box;
+      scroll-behavior: smooth;
+      list-style-type: none;
     }
 
     /* Tour Card Styling */
