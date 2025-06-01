@@ -205,7 +205,9 @@ if (isset($_SESSION['user_id'])) {
                                     <td>{$item['status']}</td>
                                     <td>";
                                 if ($item['qr_code_image'] && file_exists("../Uploads/qr_codes/{$item['qr_code_image']}")) {
-                                    echo "<img src='../Uploads/qr_codes/{$item['qr_code_image']}' alt='QR Code' style='max-width: 50px;'>";
+                                    echo "<a href='#' onclick='showQRModal(\"../Uploads/qr_codes/{$item['qr_code_image']}\")'>";
+                                    echo "<img src='../Uploads/qr_codes/{$item['qr_code_image']}' alt='QR Code' style='max-width: 50px; cursor: pointer;'>";
+                                    echo "</a>";
                                 } else {
                                     echo "No QR Code";
                                 }
@@ -259,6 +261,57 @@ if (isset($_SESSION['user_id'])) {
             </div>
         </div>
     </div>
+
+    <!-- QR Code Zoom Modal -->
+    <div class="modal fade" id="qrCodeZoomModal" tabindex="-1" aria-labelledby="qrCodeZoomModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="qrCodeZoomModalLabel">QR Code</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="qr-code-container" style="position: relative; display: inline-block;">
+                        <img id="qrCodeZoomImage" src="" alt="QR Code" class="img-fluid"
+                            style="max-width: 300px; border-radius: 10px; transition: transform 0.3s ease;">
+                    </div>
+                    <div class="zoom-controls mt-3">
+                        <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="zoomIn()">
+                            <i class="fas fa-search-plus"></i> Zoom In
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="zoomOut()">
+                            <i class="fas fa-search-minus"></i> Zoom Out
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resetZoom()">
+                            <i class="fas fa-sync-alt"></i> Reset
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .qr-code-container {
+            overflow: hidden;
+        }
+
+        #qrCodeZoomImage {
+            transform-origin: center center;
+            will-change: transform;
+            /* Improves performance for animations */
+        }
+
+        .zoom-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+    </style>
 
     <div class="footer">
         <p>Thank you for booking with us!</p>
@@ -739,6 +792,43 @@ if (isset($_SESSION['user_id'])) {
 
             printWindow.document.close();
             printWindow.print();
+        }
+        let currentScale = 1;
+        const scaleStep = 0.2; // Adjust zoom increment
+        const minScale = 0.5; // Minimum zoom level
+        const maxScale = 3; // Maximum zoom level
+
+        function zoomIn() {
+            if (currentScale < maxScale) {
+                currentScale += scaleStep;
+                updateImageScale();
+            }
+        }
+
+        function zoomOut() {
+            if (currentScale > minScale) {
+                currentScale -= scaleStep;
+                updateImageScale();
+            }
+        }
+
+        function resetZoom() {
+            currentScale = 1;
+            updateImageScale();
+        }
+
+        function updateImageScale() {
+            const qrImage = document.getElementById('qrCodeZoomImage');
+            qrImage.style.transform = `scale(${currentScale})`;
+        }
+
+        function showQRModal(imageSrc) {
+            const modal = new bootstrap.Modal(document.getElementById('qrCodeZoomModal'));
+            const qrImage = document.getElementById('qrCodeZoomImage');
+            qrImage.src = imageSrc;
+            currentScale = 1; // Reset zoom when opening modal
+            qrImage.style.transform = `scale(${currentScale})`;
+            modal.show();
         }
     </script>
 
