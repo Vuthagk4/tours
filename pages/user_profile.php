@@ -1,27 +1,119 @@
 <?php
-// session_name('UserSession')
 session_start();
-include 'config.php';
 
-// Fetch profile image for logged-in user
-$profileImage = '../assets/images/default_profile.jpg'; // Default avatar
-if (isset($_SESSION['user_id'])) {
-    $userId = $_SESSION['user_id'];
-    $stmt = mysqli_prepare($conn, "SELECT profile_image FROM users WHERE user_id = ?");
-    mysqli_stmt_bind_param($stmt, "i", $userId);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    if ($row = mysqli_fetch_assoc($result)) {
-        if ($row['profile_image'] && file_exists('../Uploads/users/' . $row['profile_image'])) {
-            $profileImage = '../Uploads/users/' . $row['profile_image'];
-        }
-    }
-    mysqli_stmt_close($stmt);
+// Redirect to login if not authenticated
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
 }
 
+include '../includes/config.php';
+$userId = $_SESSION['user_id'];
+$errors = [];
+$success = [];
+
+// Fetch user data
+$stmt = mysqli_prepare($conn, "SELECT name, email, role, profile_image FROM users WHERE user_id = ?");
+mysqli_stmt_bind_param($stmt, "i", $userId);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$user = mysqli_fetch_assoc($result) ?: ['name' => 'Unknown', 'email' => 'N/A', 'role' => 'N/A', 'profile_image' => null];
+mysqli_stmt_close($stmt);
+
+// Determine profile image
+$profileImage = $user['profile_image'] && file_exists('../Uploads/users/' . $user['profile_image'])
+    ? '../Uploads/users/' . htmlspecialchars($user['profile_image'])
+    : '../assets/images/default_profile.jpg';
+
+// Handle avatar upload
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_FILES['avatar_file'])) {
+    $uploadDir = '../Uploads/users/';
+    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    $maxFileSize = 5 * 1024 * 1024; // 5MB
+
+    if ($_FILES['avatar_file']['error'] === UPLOAD_ERR_OK) {
+        $fileType = $_FILES['avatar_file']['type'];
+        $fileSize = $_FILES['avatar_file']['size'];
+
+        // Validate file type and size
+        if (!in_array($fileType, $allowedTypes)) {
+            $errors[] = "Invalid file type. Only JPEG, PNG, and GIF are allowed.";
+        } elseif ($fileSize > $maxFileSize) {
+            $errors[] = "File size exceeds 5MB limit.";
+        } else {
+            $fileName = $userId . '_' . time() . '_' . basename($_FILES['avatar_file']['name']);
+            $destination = $uploadDir . $fileName;
+
+            // Move uploaded file
+            if (move_uploaded_file($_FILES['avatar_file']['tmp_name'], $destination)) {
+                // Update database
+                $stmt = mysqli_prepare($conn, "UPDATE users SET profile_image = ? WHERE user_id = ?");
+                mysqli_stmt_bind_param($stmt, "si", $fileName, $userId);
+                if (mysqli_stmt_execute($stmt)) {
+                    $success[] = "Avatar updated successfully!";
+                    $user['profile_image'] = $fileName; // Update local user data
+                    $profileImage = '../Uploads/users/' . htmlspecialchars($fileName); // Update profile image
+                } else {
+                    $errors[] = "Error updating avatar: " . mysqli_error($conn);
+                }
+                mysqli_stmt_close($stmt);
+            } else {
+                $errors[] = "Error uploading file.";
+            }
+        }
+    } else {
+        $errors[] = "No file uploaded or upload error.";
+    }
+}
+
+// Handle password update
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_password'])) {
+    $currentPassword = $_POST['current_password'] ?? '';
+    $newPassword = $_POST['new_password'] ?? '';
+    $confirmPassword = $_POST['confirm_password'] ?? '';
+
+    // Validate inputs
+    if (empty($currentPassword)) {
+        $errors[] = "Current password is required!";
+    }
+    if (empty($newPassword)) {
+        $errors[] = "New password is required!";
+    } elseif (strlen($newPassword) < 8) {
+        $errors[] = "New password must be at least 8 characters!";
+    }
+    if ($newPassword !== $confirmPassword) {
+        $errors[] = "New password and confirmation do not match!";
+    }
+
+    if (empty($errors)) {
+        // Verify current password
+        $stmt = mysqli_prepare($conn, "SELECT password FROM users WHERE user_id = ?");
+        mysqli_stmt_bind_param($stmt, "i", $userId);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $row = mysqli_fetch_assoc($result);
+        mysqli_stmt_close($stmt);
+
+        if ($row && password_verify($currentPassword, $row['password'])) {
+            // Update password
+            $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+            $stmt = mysqli_prepare($conn, "UPDATE users SET password = ? WHERE user_id = ?");
+            mysqli_stmt_bind_param($stmt, "si", $hashedPassword, $userId);
+            if (mysqli_stmt_execute($stmt)) {
+                $success[] = "Password updated successfully!";
+            } else {
+                $errors[] = "Error updating password: " . mysqli_error($conn);
+            }
+            mysqli_stmt_close($stmt);
+        } else {
+            $errors[] = "Current password is incorrect!";
+        }
+    }
+}
+
+// Cart count
 $cartCount = 0;
 if (isset($_SESSION['user_id'])) {
-    $userId = $_SESSION['user_id'];
     $stmt = mysqli_prepare($conn, "SELECT COUNT(*) as count FROM bookings WHERE user_id = ?");
     mysqli_stmt_bind_param($stmt, "i", $userId);
     mysqli_stmt_execute($stmt);
@@ -30,6 +122,8 @@ if (isset($_SESSION['user_id'])) {
     $cartCount = $row['count'];
     mysqli_stmt_close($stmt);
 }
+
+mysqli_close($conn);
 ?>
 
 <!DOCTYPE html>
@@ -38,7 +132,7 @@ if (isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tour & Travel Management</title>
+    <title>User Profile - Tour & Travel Management</title>
     <!-- Bootstrap CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
@@ -155,26 +249,6 @@ if (isset($_SESSION['user_id'])) {
             text-decoration: underline;
         }
 
-        /* User Info Avatar */
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 2px solid #fff;
-            transition: border-color 0.3s ease;
-        }
-
-        .user-avatar:hover {
-            border-color: #49B11E;
-        }
-
-        .user-info .login-link {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
         /* Navigation Menu */
         .navbar-custom {
             background: #223140;
@@ -200,26 +274,6 @@ if (isset($_SESSION['user_id'])) {
 
         .navbar-custom .navbar-toggler-icon {
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 1%29' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-        }
-
-        /* Avatar in Navbar */
-        .nav-avatar {
-            width: 30px;
-            height: 30px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 2px solid #fff;
-            transition: border-color 0.3s ease;
-        }
-
-        .nav-avatar:hover {
-            border-color: #49B11E;
-        }
-
-        .nav-item .nav-link.avatar-link {
-            padding: 5px;
-            display: flex;
-            align-items: center;
         }
 
         /* Language Selector Styles */
@@ -297,14 +351,79 @@ if (isset($_SESSION['user_id'])) {
             background: #3a8f16;
         }
 
-        body.dark-mode .nav-avatar,
-        body.dark-mode .user-avatar {
-            border-color: #fff;
+        body.dark-mode .card {
+            background-color: #222;
+            color: #fff;
         }
 
-        body.dark-mode .nav-avatar:hover,
-        body.dark-mode .user-avatar:hover {
-            border-color: #49B11E;
+        /* Profile Section */
+        .profile-section {
+            font-family: 'Work Sans', sans-serif;
+            padding: 40px 0;
+        }
+
+        .profile-card {
+            max-width: 600px;
+            margin: 0 auto;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #49B11E;
+        }
+
+        .profile-info {
+            margin-top: 20px;
+        }
+
+        .profile-info h3 {
+            color: #223140;
+            font-weight: 600;
+        }
+
+        .profile-info p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .password-form,
+        .avatar-form {
+            margin-top: 30px;
+        }
+
+        .password-form .btn-update,
+        .avatar-form .btn-upload {
+            background: #49B11E;
+            border: none;
+            padding: 10px 20px;
+            color: white;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .password-form .btn-update:hover,
+        .avatar-form .btn-upload:hover {
+            background: #3a8f16;
+        }
+
+        .error-messages,
+        .success-message {
+            margin-bottom: 20px;
+        }
+
+        .error-messages p {
+            color: red;
+            font-size: 0.9rem;
+        }
+
+        .success-message p {
+            color: #49B11E;
+            font-size: 0.9rem;
         }
 
         /* Responsive Adjustments */
@@ -330,10 +449,8 @@ if (isset($_SESSION['user_id'])) {
                 padding: 8px 10px;
             }
 
-            .nav-avatar,
-            .user-avatar {
-                width: 30px;
-                height: 30px;
+            .profile-card {
+                margin: 0 20px;
             }
         }
 
@@ -364,13 +481,7 @@ if (isset($_SESSION['user_id'])) {
                 <a href="index.php"><i class="fa-solid fa-house"></i> Home</a>
             </div>
             <div class="auth-links">
-                <?php if (!isset($_SESSION['user_id'])): ?>
-                    <a href="register.php">Register</a>
-                    <span>|</span>
-                    <a href="login.php">Login</a>
-                <?php else: ?>
-                    <span class="login_as">Logged in as <?php echo htmlspecialchars($_SESSION['name'] ?? 'User'); ?></span>
-                <?php endif; ?>
+                <span class="login_as">Logged in as <?php echo htmlspecialchars($_SESSION['name'] ?? 'User'); ?></span>
             </div>
         </div>
     </div>
@@ -382,27 +493,12 @@ if (isset($_SESSION['user_id'])) {
                     Management</span>
             </h1>
             <div class="user-info">
-                <?php if (isset($_SESSION['user_id']) && isset($_SESSION['role'])): ?>
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <li class="nav-item">
-                            <a class="nav-link avatar-link" href="user_profile.php" title="Profile">
-                                <img src="<?php echo htmlspecialchars($profileImage); ?>" alt="Profile Avatar"
-                                    class="nav-avatar">
-                            </a>
-                        </li>
-                    <?php endif; ?>
-                    <span
-                        class="fw-medium"><?php echo htmlspecialchars($_SESSION['name']) . " (" . htmlspecialchars($_SESSION['role']) . ")"; ?></span>
-                    <form action="../pages/logout.php" method="POST" style="display:inline;">
-                        <button type="submit" class="btn btn-logout">Logout <i
-                                class="fa-solid fa-right-from-bracket"></i></button>
-                    </form>
-                <?php else: ?>
-                    <a href="login.php" class="btn-login login-link">
-                        <img src="../assets/images/default_profile.jpg" alt="Login Avatar" class="user-avatar">
-                        Login
-                    </a>
-                <?php endif; ?>
+                <span
+                    class="fw-medium"><?php echo htmlspecialchars($_SESSION['name']) . " (" . htmlspecialchars($_SESSION['role']) . ")"; ?></span>
+                <form action="../pages/logout.php" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-logout">Logout <i
+                            class="fa-solid fa-right-from-bracket"></i></button>
+                </form>
             </div>
         </div>
     </div>
@@ -420,7 +516,7 @@ if (isset($_SESSION['user_id'])) {
                     <li class="nav-item"><a class="nav-link" href="packages.php">Tour Package</a></li>
                     <li class="nav-item"><a class="nav-link" href="termofuse.php">Term of Use</a></li>
                     <li class="nav-item"><a class="nav-link" href="contact.php">Contact Us</a></li>
-
+                    <li class="nav-item"><a class="nav-link" href="user_profile.php">Profile</a></li>
                     <li class="nav-item position-relative">
                         <a class="nav-link" href="cart.php">
                             <i class="fas fa-shopping-cart"></i> Cart
@@ -461,6 +557,77 @@ if (isset($_SESSION['user_id'])) {
             </div>
         </div>
     </nav>
+    <!-- Profile Section -->
+    <section class="profile-section">
+        <div class="container">
+            <div class="card profile-card">
+                <div class="card-body text-center">
+                    <img src="<?php echo $profileImage; ?>" alt="Profile Avatar" class="profile-avatar">
+                    <div class="profile-info">
+                        <h3><?php echo htmlspecialchars($user['name']); ?></h3>
+                        <p><strong>Email:</strong> <?php echo htmlspecialchars($user['email']); ?></p>
+                        <p><strong>Role:</strong> <?php echo htmlspecialchars($user['role']); ?></p>
+                    </div>
+                    <div class="avatar-form">
+                        <h4 class="mt-4">Update Avatar</h4>
+                        <?php if (!empty($errors)): ?>
+                            <div class="error-messages">
+                                <?php foreach ($errors as $error): ?>
+                                    <p><?php echo htmlspecialchars($error); ?></p>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if (!empty($success)): ?>
+                            <div class="success-message">
+                                <?php foreach ($success as $msg): ?>
+                                    <p><?php echo htmlspecialchars($msg); ?></p>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                        <form action="user_profile.php" method="POST" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <input type="file" name="avatar_file" class="form-control"
+                                    accept="image/jpeg,image/png,image/gif" required>
+                            </div>
+                            <button type="submit" class="btn btn-upload">Upload Avatar</button>
+                        </form>
+                    </div>
+                    <div class="password-form">
+                        <h4 class="mt-4">Update Password</h4>
+                        <?php if (!empty($errors)): ?>
+                            <div class="error-messages">
+                                <?php foreach ($errors as $error): ?>
+                                    <p><?php echo htmlspecialchars($error); ?></p>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if (!empty($success)): ?>
+                            <div class="success-message">
+                                <?php foreach ($success as $msg): ?>
+                                    <p><?php echo htmlspecialchars($msg); ?></p>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                        <form action="user_profile.php" method="POST">
+                            <div class="mb-3">
+                                <input type="password" name="current_password" class="form-control"
+                                    placeholder="Current Password" required>
+                            </div>
+                            <div class="mb-3">
+                                <input type="password" name="new_password" class="form-control"
+                                    placeholder="New Password" required>
+                            </div>
+                            <div class="mb-3">
+                                <input type="password" name="confirm_password" class="form-control"
+                                    placeholder="Confirm New Password" required>
+                            </div>
+                            <button type="submit" name="update_password" class="btn btn-update">Update Password</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"

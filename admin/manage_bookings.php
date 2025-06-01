@@ -21,9 +21,7 @@ if (isset($_POST['action']) && isset($_POST['booking_id'])) {
     $stmt->execute();
     $stmt->close();
 
-    // Redirect to avoid form resubmission
-    header("Location: manage_bookings.php");
-    exit;
+
 }
 
 // Fetch all bookings with user and tour details

@@ -134,6 +134,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['sign_in'])) {
       padding: 12px 15px;
       margin: 8px 0;
       width: 100%;
+      font-size: 14px;
+    }
+
+    input[type="file"] {
+      padding: 8px;
+      background-color: transparent;
+      font-size: 12px;
     }
 
     .container {
@@ -307,7 +314,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['sign_in'])) {
   <h2>Welcome</h2>
   <div class="container" id="container">
     <div class="form-container sign-up-container">
-      <form action="register.php" method="POST">
+      <form action="register.php" method="POST" enctype="multipart/form-data">
         <h1>Create Account</h1>
         <div class="social-container">
           <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
@@ -318,6 +325,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['sign_in'])) {
         <input type="text" name="name" placeholder="Name" required />
         <input type="email" name="email" placeholder="Email" required />
         <input type="password" name="password" placeholder="Password" required />
+        <input type="file" name="profile_image" accept="image/jpeg,image/png,image/gif" />
         <button type="submit">Sign Up</button>
       </form>
     </div>
@@ -363,11 +371,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['sign_in'])) {
     const signUpButton = document.getElementById('signUp');
     const signInButton = document.getElementById('signIn');
     const container = document.getElementById('container');
-
     signUpButton.addEventListener('click', () => {
       container.classList.add("right-panel-active");
     });
-
     signInButton.addEventListener('click', () => {
       container.classList.remove("right-panel-active");
     });
