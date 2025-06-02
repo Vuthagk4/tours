@@ -52,13 +52,21 @@ if (isset($_SESSION['user_id'])) {
         rel="stylesheet">
     <!-- Custom Styles -->
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+              font-family: "Roboto", sans-serif;
+        }
         /* Top Bar */
         .top-bar {
-            background: #223140;
+            /* background: #223140; */
+            background-color: rgb(26, 130, 171);
             color: white;
-            padding: 10px 0;
+            padding: 16px 0;
             font-size: 0.9rem;
-            font-family: 'Work Sans', sans-serif;
         }
 
         .top-bar a {
@@ -68,7 +76,8 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .top-bar a:hover {
-            color: #49B11E;
+            /* color: #49B11E; */
+            color: rgb(255, 255, 35);
         }
 
         .top-bar .home-link {
@@ -100,9 +109,8 @@ if (isset($_SESSION['user_id'])) {
         /* Logo Section */
         .logo-section {
             background: white;
-            padding: 20px 0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            font-family: 'Work Sans', sans-serif;
+            /* padding: 20px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
         }
 
         .logo-section h1 {
@@ -126,7 +134,7 @@ if (isset($_SESSION['user_id'])) {
         .user-info {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
         }
 
         .user-info .btn-logout {
@@ -177,21 +185,22 @@ if (isset($_SESSION['user_id'])) {
 
         /* Navigation Menu */
         .navbar-custom {
-            background: #223140;
-            font-family: 'Work Sans', sans-serif;
+            background-color: #49B11E;
+            /* background: #223140; */
         }
 
         .navbar-custom .navbar-nav .nav-link {
             color: white;
             font-size: 1.1rem;
-            padding: 10px 20px;
+            padding: 10px 15px;
             transition: color 0.3s ease, background 0.3s ease;
         }
 
         .navbar-custom .navbar-nav .nav-link:hover {
-            color: #49B11E;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
+            color: rgb(236, 236, 11);
+            /* color: #ff7f50; */
+            /* background: rgba(255, 255, 255, 0.1); */
+            /* border-radius: 5px; */
         }
 
         .navbar-custom .navbar-toggler {
@@ -213,7 +222,8 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .nav-avatar:hover {
-            border-color: #49B11E;
+            color: rgb(236, 236, 11);
+            /* border-color: #49B11E; */
         }
 
         .nav-item .nav-link.avatar-link {
@@ -229,7 +239,7 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .navbar-custom .navbar-nav .icon-link:hover i {
-            color: #49B11E;
+            color: rgb(236, 236, 11);
         }
 
         .navbar-custom .dropdown-menu {
@@ -247,8 +257,8 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .navbar-custom .dropdown-menu .dropdown-item:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: #49B11E;
+            /* background-color: rgba(255, 255, 255, 0.1); */
+            color: rgb(236, 236, 11);
         }
 
         .flag-icon {
@@ -256,6 +266,9 @@ if (isset($_SESSION['user_id'])) {
             height: 15px;
             background-size: cover;
         }
+
+
+
 
         /* Dark Mode Toggle Styles */
         .navbar-custom .navbar-nav .dark-mode-toggle {
@@ -268,7 +281,7 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .navbar-custom .navbar-nav .dark-mode-toggle:hover i {
-            color: #49B11E;
+            color: rgb(236, 236, 11);
         }
 
         /* Cart Icon Styles */
@@ -276,9 +289,9 @@ if (isset($_SESSION['user_id'])) {
             position: relative;
             display: flex;
             align-items: center;
-            gap: 8px;
+            /* gap: 8px; */
             /* Space between icon, text, and badge */
-            padding: 8px 15px;
+            padding: 8px 12px;
             /* Consistent padding with other nav items */
             transition: all 0.3s ease;
             /* Smooth transition for hover effects */
@@ -289,13 +302,13 @@ if (isset($_SESSION['user_id'])) {
             /* Slightly larger icon */
             color: white;
             transition: color 0.3s ease;
+            padding-right: 3px;
         }
 
         .cart-text {
             font-size: 1.1rem;
             /* Match the nav-link font size */
             color: white;
-            font-family: 'Work Sans', sans-serif;
             transition: color 0.3s ease;
         }
 
@@ -322,15 +335,14 @@ if (isset($_SESSION['user_id'])) {
         }
 
         /* Hover Effects */
-        .cart-icon:hover {
+        /* .cart-icon:hover {
             background: rgba(255, 255, 255, 0.1);
-            /* Same hover background as other nav items */
             border-radius: 5px;
-        }
+        } */
 
         .cart-icon:hover i,
         .cart-icon:hover .cart-text {
-            color: #49B11E;
+            color: rgb(236, 236, 11);
             /* Green accent on hover */
         }
 
@@ -505,7 +517,7 @@ if (isset($_SESSION['user_id'])) {
     <!-- Logo Section -->
     <div class="logo-section">
         <div class="container d-flex justify-content-between align-items-center">
-            <h1>
+            <h1><img style="height: 70px; margin-left: -1rem" src="../uploads/logo.jpg" alt="">
                 <span class="tour">Tour</span><span class="and">&</span><span class="management">Travel
                     Management</span>
             </h1>
@@ -543,7 +555,7 @@ if (isset($_SESSION['user_id'])) {
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto">
-                    <li class="nav-item">
+                    <li class="nav-item"  style="margin-left: -1rem;" >
                         <a class="nav-link" href="index.php"><i class="fas fa-home"></i> Home</a>
                     </li>
                     <li class="nav-item">
@@ -558,7 +570,11 @@ if (isset($_SESSION['user_id'])) {
                     <li class="nav-item">
                         <a class="nav-link" href="contact.php"><i class="fas fa-envelope"></i> Contact Us</a>
                     </li>
-                    <li class="nav-item">
+                <!-- </ul>
+
+
+                <ul> -->
+                    <li class="nav-item" style="margin-left: 27rem;">
                         <a class="nav-link cart-icon" href="cart.php" title="View Cart">
                             <i class="fas fa-shopping-cart"></i>
                             <span class="cart-text">Cart</span>
@@ -588,6 +604,7 @@ if (isset($_SESSION['user_id'])) {
                                     Italiano</a></li>
                         </ul>
                     </li>
+
                     <li class="nav-item">
                         <a class="nav-link icon-link dark-mode-toggle" href="#" onclick="toggleDarkMode()"
                             title="Toggle Dark Mode">
@@ -596,6 +613,8 @@ if (isset($_SESSION['user_id'])) {
                     </li>
                 </ul>
             </div>
+
+
         </div>
     </nav>
     <!-- Bootstrap JS -->

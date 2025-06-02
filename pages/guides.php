@@ -16,9 +16,9 @@ $guides = $conn->query("SELECT * FROM guides WHERE is_deleted = 0");
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <style>
         body {
-            font-family: 'Poppins', sans-serif;
+              font-family: "Roboto", sans-serif;
             background-color: #f8f9fa;
-            padding: 20px;
+           
         }
 
         .guides-section {

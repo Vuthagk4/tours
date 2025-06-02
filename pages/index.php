@@ -205,7 +205,7 @@ include "../includes/header.php";
 
 
         .tour-section {
-            max-width: 1200px;
+            max-width: 95%;
             margin: 40px auto;
             padding: 20px;
         }
@@ -232,7 +232,7 @@ include "../includes/header.php";
 
         .tour-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 25px;
         }
 
@@ -486,6 +486,12 @@ include "../includes/header.php";
             font-size: 0.9rem;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         }
+
+
+
+
+
+
 
         .why-choose-us {
             max-width: 1200px;
@@ -955,6 +961,9 @@ include "../includes/header.php";
             margin-top: 10px;
         }
 
+.btn-primarys {
+    margin: auto;
+}
         .btn-primary {
             background-color: #ff6f61;
             border-color: #ff6f61;
@@ -969,6 +978,16 @@ include "../includes/header.php";
             border-color: #e65b50;
             transform: translateY(-2px);
         }
+
+
+
+
+
+
+
+
+
+
 
         @media (max-width: 576px) {
             .destinations h2 {
@@ -1071,6 +1090,260 @@ include "../includes/header.php";
                 grid-template-columns: 1fr;
             }
         }
+
+
+
+
+
+
+        .destinations {
+            max-width: 95%;
+        }
+
+
+
+
+
+
+
+
+
+
+
+/* start section customers say */
+    h2 {
+      font-size: 2rem;
+      color: #333;
+      /* margin-bottom: 30px; */
+      position: relative;
+      text-align: center;
+    }
+
+    h2::after {
+      content: '';
+      width: 60px;
+      height: 4px;
+      background: #ff6f61;
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 2px;
+    }
+
+    .feedback-section {
+      width: 100%;
+      margin-top: 30px;
+      background-color: #eeee;
+    }
+
+    .feedback-section .sub-feedback-section {
+      width: 80%;
+      margin: auto;
+    }
+
+    .sub-feedback-section .sub-feedback-content-header {
+      display: flex;
+      gap: 5%;
+    }
+
+    .feedback-section .sub-feedback-section .sub-feedback-content-header .sub-feedback-content-header-left {
+      width: 45%;
+      margin-top: 60px;
+    }
+
+    /* .feedback-section .sub-feedback-section .sub-feedback-content-header .sub-feedback-content-header-left h1 {
+    font-family: "Playwrite AU SA", cursive;
+} */
+    .feedback-section .sub-feedback-section .sub-feedback-content-header .sub-feedback-content-header-right {
+      width: 50%;
+      margin-top: 60px;
+    }
+
+    .feedback-section .sub-feedback-section .sub-feedback-content-header .sub-feedback-content-header-right p {
+      font-size: 1.1rem;
+    }
+
+    .feedback-section .sub-feedback-content-buttom .sub-feedback-content-buttom-grid {
+      display: flex;
+      margin-top: 50px;
+      gap: 2%;
+
+    }
+
+    .feedback-section .sub-feedback-content-buttom .sub-feedback-content-buttom-grid .sub-feedback-content-buttom-grid1 {
+      width: 32%;
+      background-color: #ffff;
+      border-radius: 20px;
+      margin-bottom: 50px;
+    }
+
+    .feedback-section .sub-feedback-content-buttom .sub-feedback-content-buttom-grid .sub-feedback-content-buttom-grid1 .sub-feedback-contents {
+      padding: 30px 40px;
+      text-align: center;
+      border-radius: 20px;
+      /* padding: 20px;
+    margin: 10px; */
+      /* flex: 1 1 30%; */
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      /*Note about shadow*/
+      height: 520px;
+    }
+
+    .feedback-section .sub-feedback-content-buttom .sub-feedback-content-buttom-grid .sub-feedback-content-buttom-grid1 .sub-feedback-contents .images {
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+    }
+
+    .feedback-section .sub-feedback-content-buttom .sub-feedback-content-buttom-grid .sub-feedback-content-buttom-grid1 .sub-feedback-contents h1 {
+      font-size: 1.8rem;
+      margin-top: 10px;
+    }
+
+    .feedback-section .sub-feedback-content-buttom .sub-feedback-content-buttom-grid .sub-feedback-content-buttom-grid1 .sub-feedback-contents p {
+      font-size: 1.1rem;
+      color: #777;
+      /* margin-top: 20px; */
+      line-height: 1.5;
+    }
+
+    .feedback-section .sub-feedback-content-buttom .sub-feedback-content-buttom-grid .sub-feedback-content-buttom-grid1 .sub-feedback-contents .socail {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+      font-size: 1.5rem;
+    }
+
+    .feedback-section .sub-feedback-content-buttom .sub-feedback-content-buttom-grid .sub-feedback-content-buttom-grid1 .sub-feedback-contents .socail .sub-social {
+      background-color: #ff6f61;
+      color: white;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      text-align: center;
+      justify-content: center;
+      border-radius: 10px;
+    }
+
+    .feedback-section .sub-feedback-content-buttom .sub-feedback-content-buttom-grid .sub-feedback-content-buttom-grid1 .sub-feedback-contents .socail .sub-social:hover:nth-child(1) {
+      background-color: #3b5998;
+      transition: all 0.1s ease;
+    }
+
+    .feedback-section .sub-feedback-content-buttom .sub-feedback-content-buttom-grid .sub-feedback-content-buttom-grid1 .sub-feedback-contents .socail .sub-social:hover:nth-child(2) {
+      background-color: #ed0e37;
+      transition: all 0.1s ease;
+    }
+
+    .feedback-section .sub-feedback-content-buttom .sub-feedback-content-buttom-grid .sub-feedback-content-buttom-grid1 .sub-feedback-contents .socail .sub-social:hover:nth-child(3) {
+      background-color: #ff3b30;
+      transition: all 0.1s ease;
+    }
+
+    /* end section customers say */
+
+
+
+
+
+    /* start section why choose us */
+    .adventure-section {
+      width: 100%;
+      margin: auto;
+    }
+
+    .adventure-section .sub-adventure-section {
+      width: 80%;
+      margin: auto;
+      padding: 40px 0;
+    }
+
+    .adventure-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 60px;
+    }
+
+    .header-left {
+      flex: 1;
+      min-width: 300px;
+    }
+
+    .header-left h1 {
+      font-size: 36px;
+      font-weight: bold;
+      color: #222;
+    }
+
+    .dot {
+      color: red;
+    }
+
+    .subtitle {
+      font-style: italic;
+      color: #777;
+      margin-top: 10px;
+    }
+
+    .header-right {
+      flex: 1;
+      min-width: 300px;
+      font-size: 16px;
+      line-height: 1.6;
+      color: #555;
+    }
+
+    .header-right p {
+      font-size: 1.1rem;
+    }
+
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 30px;
+    }
+
+    .feature-item {
+      flex: 1;
+      min-width: 360px;
+      text-align: center;
+    }
+
+    .feature-item img {
+      width: 80px;
+      height: 80px;
+      color: #ff6f61;
+      padding: 15px;
+    }
+
+    .feature-item h3 {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .feature-item p {
+      font-size: 1.1rem;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    /* end section choose us */
+
+
+
+
+
+
+
+
     </style>
 </head>
 
@@ -1298,6 +1571,17 @@ include "../includes/header.php";
             }
         });
     </script>
+
+
+
+
+
+
+
+
+
+
+
     <div class="trending-destinations">
         <h2>Trending Destinations</h2>
         <p>Most popular choices for travellers from Cambodia</p>
@@ -1398,6 +1682,9 @@ include "../includes/header.php";
             ?>
         </div>
     </div>
+
+
+
     <div class="header">
         <div class="header-panel">
             <i class="fas fa-check-circle"></i>
@@ -1415,6 +1702,12 @@ include "../includes/header.php";
             <small>We’re here to assist you</small>
         </div>
     </div>
+
+
+
+
+
+
     <div class="banner">
         <div class="banner-content">
             <h1>Discover Cambodia’s Wonders</h1>
@@ -1433,6 +1726,13 @@ include "../includes/header.php";
         <h2>Travel Cambodia, Save More</h2>
         <p>Sign in to unlock exclusive discounts on tours and destinations.</p>
     </div>
+
+
+
+
+
+
+
     <div class="destinations container mt-5">
         <h2 class="text-center mb-4">Popular Destinations in Cambodia</h2>
         <div class="row g-4">
@@ -1465,6 +1765,12 @@ include "../includes/header.php";
             ?>
         </div>
     </div>
+
+
+
+
+
+    
     <div class="tours">
         <h2>Featured Tours</h2>
         <div class="tour-list">
@@ -1492,7 +1798,13 @@ include "../includes/header.php";
             ?>
         </div>
     </div>
-    <div class="testimonials-section">
+
+
+
+
+
+
+    <!-- <div class="testimonials-section">
         <h2>What Our Customers Say</h2>
         <div class="testimonials-container">
             <div class="testimonial-card">
@@ -1506,7 +1818,15 @@ include "../includes/header.php";
                 <span class="customer-name">Jane Smith</span>
             </div>
         </div>
-    </div>
+    </div> -->
+
+
+
+
+
+
+
+
     <div class="featured-destinations">
         <h2>Popular Destinations</h2>
         <div class="destinations-grid">
@@ -1524,29 +1844,178 @@ include "../includes/header.php";
             </div>
         </div>
     </div>
-    <div class="why-choose-us">
-        <h2>Why Choose Us</h2>
-        <div class="reasons">
-            <div class="reason">
-                <i class="fas fa-user-tie"></i>
-                <h3>Expert Guides</h3>
-                <p>Our guides are knowledgeable and passionate about travel.</p>
-            </div>
-            <div class="reason">
-                <i class="fas fa-tags"></i>
-                <h3>Best Price Guarantee</h3>
-                <p>We offer competitive prices with no hidden fees.</p>
-            </div>
-            <div class="reason">
-                <i class="fas fa-headset"></i>
-                <h3>24/7 Support</h3>
-                <p>Our support team is available around the clock to assist you.</p>
-            </div>
+
+
+
+
+
+
+
+
+
+  <!-- section customer say  -->
+  <h2 style="margin-top: 6rem;">What Our Customers Say</h2>
+  <section class="feedback-section">
+    <div class="sub-feedback-section">
+      <div class="sub-feedback-content-header">
+        <div class="sub-feedback-content-header-left">
+          <h1>Impressions About <br> Our Trips.</h1>
+          <p>- what client say</p>
         </div>
-        <div style="text-align: center; margin-top: 20px;">
+        <div class="sub-feedback-content-header-right">
+          <p>We do our best to provide you with maximum comfort. Each client is dear to us, and we try to organize
+            each trip so that it is as interesting, bright, and rich as possible. We give the possibility to see the
+            wonders of the Earth just the way you've seen them on Instagram. Check out our reviews! People who have
+            already traveled with us will tell about us!</p>
+        </div>
+      </div>
+      <div class="sub-feedback-content-buttom">
+        <div class="sub-feedback-content-buttom-grid">
+          <div class="sub-feedback-content-buttom-grid1">
+            <div class="sub-feedback-contents">
+              <img src="../uploads/say1.jpg" alt="" class="images">
+              <h1>Dave Peterson</h1>
+              <p>October 28,2018</p>
+              <p>“I love to travel to beautiful places around the world. I've gone on tours with this company three
+                times already! Everything was amazing! During the entire trip, I have never had any problems, and
+                their photographers are really professionals.”</p>
+              <div class="socail">
+                <div class="sub-social"><i class="fa-brands fa-facebook"></i></div>
+                <div class="sub-social"><i class="fa-brands fa-square-instagram"></i></div>
+                <div class="sub-social"><i class="fa-brands fa-youtube"></i></div>
+              </div>
+            </div>
+          </div>
+          <div class="sub-feedback-content-buttom-grid1">
+            <div class="sub-feedback-contents">
+              <img src="../uploads/say2.jpg" alt="" class="images">
+              <h1>Amanda Olson</h1>
+              <p>December 20,2020</p>
+              <p>“Let's be honest. When traveling, we always try to take beautiful photos for our Instagram and it
+                doesn't always work out well. But with this agency, you don't have to think about it! You just enjoy
+                the trip and pose, and then get your stunning photos!”</p>
+              <div class="socail">
+                <div class="sub-social"><i class="fa-brands fa-facebook"></i></div>
+                <div class="sub-social"><i class="fa-brands fa-square-instagram"></i></div>
+                <div class="sub-social"><i class="fa-brands fa-youtube"></i></div>
+              </div>
+            </div>
+          </div>
+          <div class="sub-feedback-content-buttom-grid1">
+            <div class="sub-feedback-contents">
+              <img src="../uploads/say3.jpg" alt="" class="images">
+              <h1>Erica Jameson</h1>
+              <p>May 08, 2020</p>
+              <p>“My Instagram is everything for me! I love to post vivid photos and delight my followers! With this
+                company, it has become much easier. These guys organize great tours to really cool places that look
+                stunning in real life, too, not just on Instagram.”</p>
+              <div class="socail">
+                <div class="sub-social"><i class="fa-brands fa-facebook"></i></div>
+                <div class="sub-social"><i class="fa-brands fa-square-instagram"></i></div>
+                <div class="sub-social"><i class="fa-brands fa-youtube"></i></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- end section customer say -->
+
+
+
+
+<!-- section why choose us -->
+  <h2 style="margin-top: 6rem;">Why Choose Use</h2>
+  <section class="adventure-section">
+    <div class="sub-adventure-section">
+      <div class="adventure-header">
+        <div class="header-left">
+          <h1>Adventures You'll <br> Definitely Love<span class="dot">.</span></h1>
+          <p class="subtitle">- why we are so popular</p>
+        </div>
+        <div class="header-right">
+          <p>Travel is our life and our passion. We do what we love - we give pleasant emotions to our clients. Our
+            experts know exactly how to organize a trip so that it will bring maximum pleasure. Want to see those
+            places you've seen on Instagram with your own eyes and get more followers? Travel with us! We promise you
+            won't be disappointed.</p>
+        </div>
+      </div>
+
+      <div class="features">
+        <div class="feature-item">
+          <div class="reason">
+            <img src="../uploads/icons8-travel-diary-50 (1).png" alt="">
+            <h3>The most beautiful places</h3>
+            <p>You will visit the most popular places on our planet. Enjoy stunning landscapes, touch the history and
+              make brilliant photos!</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="reason">
+            <img src="../uploads/icons8-professional-photographer-50 (1).png" alt="">
+            <h3>Professional photographers</h3>
+            <p>During the trip, you will be accompanied by our professional photographers who will take the best photos
+              of you.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="reason">
+            <img src="../uploads/icons8-trophy-64 (1).png" alt="">
+            <h3>Full support</h3>
+            <p>By ordering a tour in our company, you can choose the best outfits for photos because nothing else is
+              required from you! We will fully organize your trip.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="reason">
+            <i class="fas fa-user-tie"></i>
+            <h3>Expert Guides</h3>
+            <p>Our guides are knowledgeable and passionate about travel.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="reason">
+            <i class="fas fa-tags"></i>
+            <h3>Best Price Guarantee</h3>
+            <p>We offer competitive prices with no hidden fees.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="reason">
+            <i class="fas fa-headset"></i>
+            <h3>24/7 Support</h3>
+            <p>Our support team is available around the clock to assist you.</p>
+          </div>
+        </div>
+            <div style="text-align: center;" class="btn-primarys">
             <a href="guides.php" class="btn btn-primary">Meet Our Guides</a>
         </div>
-    </div>
+        </section> 
+        <!-- Why Choose Us Section -->
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -1572,6 +2041,21 @@ include "../includes/header.php";
             </div>
         </div>
     </div>
+<!-- end class why choose us -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
