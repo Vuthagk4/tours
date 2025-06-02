@@ -128,6 +128,13 @@ include "../includes/header.php";
             background: #e65b50;
         }
 
+
+
+
+
+
+
+
         .promo-section {
             max-width: 1200px;
             margin: 50px auto;
@@ -155,6 +162,8 @@ include "../includes/header.php";
         .promo-card h3 {
             font-size: 1.6rem;
             margin-bottom: 10px;
+            margin-top: 18px;
+            
         }
 
         .promo-card p {
@@ -186,6 +195,14 @@ include "../includes/header.php";
             padding: 5px 12px;
             border-radius: 15px;
         }
+
+
+
+
+
+
+
+
 
         .tour-section {
             max-width: 1200px;
@@ -1159,6 +1176,11 @@ include "../includes/header.php";
             </div>
         </div>
     </div>
+
+
+
+
+
     <div class="promo-section">
         <div class="promo-card">
             <span class="badge">Welcome Pack</span>
@@ -1173,6 +1195,15 @@ include "../includes/header.php";
             <button class="btn-claim">Claim Now</button>
         </div>
     </div>
+
+
+
+
+
+
+
+
+
     <div class="tour-section" id="tours">
         <h2><?php echo !empty($selectedDestination) ? "Tours in " . htmlspecialchars($selectedDestination) : "Explore Our Top Tours"; ?>
         </h2>
