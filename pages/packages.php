@@ -33,13 +33,6 @@ $result = $conn->query("SELECT tour_id, image_path, description FROM tour_images
 while ($row = $result->fetch_assoc()) {
   $tour_images[$row['tour_id']][] = $row;
 }
-
-// Optional: Optimize booking count query (uncomment to use)
-// $booking_counts = [];
-// $result = $conn->query("SELECT tour_id, SUM(people) AS total_people FROM bookings GROUP BY tour_id");
-// while ($row = $result->fetch_assoc()) {
-//   $booking_counts[$row['tour_id']] = $row['total_people'] ?? 0;
-// }
 ?>
 
 <!DOCTYPE html>
@@ -91,7 +84,6 @@ while ($row = $result->fetch_assoc()) {
 
     .tour-info {
       position: relative;
-      /* Positioning context for star-rating */
       padding: 20px;
       display: flex;
       flex-direction: column;
@@ -109,7 +101,6 @@ while ($row = $result->fetch_assoc()) {
       color: #666;
       margin: 4px 0;
     }
-
 
     .tour-info .description {
       font-size: 0.95rem;
@@ -154,7 +145,7 @@ while ($row = $result->fetch_assoc()) {
 
     /* Booking Section Styling */
     .tour-book {
-      padding: 20px;
+      padding: 15px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -196,20 +187,29 @@ while ($row = $result->fetch_assoc()) {
       outline: none;
     }
 
-    .tour-book .travel_date {
+    .tour-book .travel-date,
+    .tour-book .end-date {
       padding-right: 40px;
-      background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23666" viewBox="0 0 16 16"><path d="M11 6V4h-1v2H6V4H5v2H4v7h8V6h-1zM3 3h10v1H3V3zm0 0V2h1v1h8V2h1v1h1v11H2V3h1z"/></svg>') no-repeat 95% center;
+      background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23666" viewBox="0 0 16 16"><path d="M11 6V4h-1v2H6V4H5v2H4v7h8V6h-1zM3 3h10v1H3V3zm0 0V2h1v1h8V2h1v1h1v11H2V3z"/></svg>') no-repeat 95% center;
       background-size: 18px;
       cursor: pointer;
     }
 
-    .tour-book .travel_date::-webkit-calendar-picker-indicator {
+    .tour-book .travel-date::-webkit-calendar-picker-indicator,
+    .tour-book .end-date::-webkit-calendar-picker-indicator {
       opacity: 0;
       width: 40px;
       height: 100%;
       position: absolute;
       right: 0;
       cursor: pointer;
+    }
+
+    .tour-book .note {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 8px;
+      text-align: center;
     }
 
     .btn-book {
@@ -357,68 +357,7 @@ while ($row = $result->fetch_assoc()) {
       margin-right: 8px;
     }
 
-    /* Fade-in Keyframes */
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-      }
-
-      to {
-        opacity: 1;
-      }
-    }
-
-
     /* Responsive */
-    @media (max-width:768px) {
-      .tour-card {
-        grid-template-columns: 1fr;
-      }
-
-      .tour-image img {
-        height: 200px;
-      }
-
-      .tour-book {
-        border-left: none;
-        border-top: 1px solid #e0e0e0;
-      }
-
-      .highlights-column {
-        position: static;
-        flex-direction: row;
-        justify-content: center;
-        gap: 1rem;
-        margin-bottom: 20px;
-      }
-    }
-
-    /* Modal Styling */
-    #imageModal .modal-dialog {
-      max-width: 600px;
-    }
-
-    #imageModal .carousel-inner img {
-      border-radius: 8px;
-      object-fit: cover;
-    }
-
-    /* Animations */
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-      }
-
-      to {
-        opacity: 1;
-      }
-    }
-
-    .tour-card {
-      animation: fadeIn 0.5s ease;
-    }
-
-    /* Responsive Design */
     @media (max-width: 768px) {
       .tour-card {
         grid-template-columns: 1fr;
@@ -453,6 +392,31 @@ while ($row = $result->fetch_assoc()) {
         right: 0;
       }
     }
+
+    /* Modal Styling */
+    #imageModal .modal-dialog {
+      max-width: 600px;
+    }
+
+    #imageModal .carousel-inner img {
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .tour-card {
+      animation: fadeIn 0.5s ease;
+    }
   </style>
 </head>
 
@@ -473,7 +437,7 @@ while ($row = $result->fetch_assoc()) {
             <div class="input-group" style="max-width: 350px;">
               <span class="input-group-text"><i class="fas fa-search"></i></span>
               <input type="text" name="search" class="form-control" placeholder="Search by title or destination"
-                value="<?php echo htmlspecialchars($searchTerm); ?>">
+                value="<?php echo htmlspecialchars(str_replace('%', '', $searchTerm)); ?>">
               <input type="hidden" name="sort" value="<?php echo htmlspecialchars($sortOption); ?>">
               <button type="submit" class="btn btn-primary">Search</button>
             </div>
@@ -507,7 +471,6 @@ while ($row = $result->fetch_assoc()) {
                   $result = $stmt->get_result();
                   $totalPeople = $result->fetch_assoc()['total_people'] ?? 0;
                   $stmt->close();
-                  // Uncomment to use optimized query: $totalPeople = $booking_counts[$tour['tour_id']] ?? 0;
                   $starColor = $totalPeople >= 100 ? "gold" : "black";
                   $stars = min(floor($totalPeople / 100), 5);
                   ?>
@@ -542,19 +505,18 @@ while ($row = $result->fetch_assoc()) {
               </div>
               <div class="tour-book">
                 <?php
-                $defaultDuration = (int) $tour['duration'];
                 $defaultPrice = (float) $tour['price'];
+                $discountedPrice = $defaultPrice * 0.9;
                 ?>
-                <p class="price-label">Price from</p>
-                <p class="price-amount">$<?= number_format($defaultPrice, 2) ?></p>
-                <label>Duration (days): <input type="number" class="duration-input" min="1"
-                    value="<?= $defaultDuration ?>" data-default-price="<?= $defaultPrice ?>"></label>
+                <p class="price-label">Price per day (10% off)</p>
+                <p class="price-amount">$<?= number_format($discountedPrice, 2) ?></p>
                 <label>People: <input type="number" class="people-input" min="1" value="1"></label>
-                <label>Travel Date: <input type="date" name="travel_date" class="travel_date" required></label>
-                <p class="total-price">Total: $<span
-                    class="dynamic-price"><?= number_format($defaultPrice * $defaultDuration, 2) ?></span></p>
+                <label>Start Date: <input type="date" name="travel_date" class="travel-date" required></label>
+                <label>End Date: <input type="date" name="end_travel_date" class="end-date" required></label>
+                <p class="total-price">Total: $<span class="dynamic-price">0.00</span></p>
                 <a href="tour_details.php?id=<?= $tour['tour_id'] ?>" onclick="return customizeBooking(this)"
                   class="btn-book">Book Now</a>
+                <p class="note">Guide selection available on next step</p>
               </div>
             </div>
           </div>
@@ -678,21 +640,49 @@ while ($row = $result->fetch_assoc()) {
       }
 
       document.querySelectorAll(".tour-card").forEach(card => {
-        const durationInput = card.querySelector(".duration-input");
         const peopleInput = card.querySelector(".people-input");
+        const travelDateInput = card.querySelector(".travel-date");
+        const endDateInput = card.querySelector(".end-date");
         const priceSpan = card.querySelector(".dynamic-price");
+        const defaultPrice = parseFloat(card.querySelector(".price-amount").textContent.replace('$', '')) || 0;
 
-
-        function updatePrice() {
-          const defaultPrice = parseFloat(durationInput.dataset.defaultPrice) || 0;
-          const days = parseInt(durationInput.value) || 1;
-          const people = parseInt(peopleInput.value) || 1;
-          priceSpan.textContent = (defaultPrice * days * people).toFixed(2);
+        function calculateDuration(startDate, endDate) {
+          if (!startDate || !endDate) return 1;
+          const start = new Date(startDate);
+          const end = new Date(endDate);
+          const diffTime = end - start;
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+          return diffDays >= 1 ? diffDays : 1;
         }
 
+        function updatePrice() {
+          const people = parseInt(peopleInput.value) || 1;
+          const travelDate = travelDateInput.value;
+          const endDate = endDateInput.value;
+          const duration = calculateDuration(travelDate, endDate);
+          const totalPrice = defaultPrice * duration * people;
+          priceSpan.textContent = totalPrice.toFixed(2);
+        }
+
+        // Set minimum date for travel_date to tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const minDate = tomorrow.toISOString().split('T')[0];
+        travelDateInput.setAttribute('min', minDate);
+
+        // Update end_date min attribute when travel_date changes
+        travelDateInput.addEventListener("change", () => {
+          endDateInput.setAttribute('min', travelDateInput.value);
+          if (endDateInput.value && endDateInput.value < travelDateInput.value) {
+            endDateInput.value = travelDateInput.value;
+          }
+          updatePrice();
+        });
+
         const debouncedUpdatePrice = debounce(updatePrice, 300);
-        durationInput.addEventListener("input", debouncedUpdatePrice);
         peopleInput.addEventListener("input", debouncedUpdatePrice);
+        travelDateInput.addEventListener("input", debouncedUpdatePrice);
+        endDateInput.addEventListener("input", debouncedUpdatePrice);
       });
 
       // Image Modal
@@ -714,17 +704,21 @@ while ($row = $result->fetch_assoc()) {
       // Customize Booking
       window.customizeBooking = function (link) {
         const card = link.closest(".tour-card");
-        const duration = card.querySelector(".duration-input").value;
         const people = card.querySelector(".people-input").value;
-        const travelDate = card.querySelector(".travel_date").value;
-        if (!travelDate) {
-          alert("Please select a travel date.");
+        const travelDate = card.querySelector(".travel-date").value;
+        const endDate = card.querySelector(".end-date").value;
+        if (!travelDate || !endDate) {
+          alert("Please select both start and end travel dates.");
+          return false;
+        }
+        if (new Date(endDate) < new Date(travelDate)) {
+          alert("End date cannot be earlier than start date.");
           return false;
         }
         const url = new URL(link.href);
-        url.searchParams.set("duration", duration);
         url.searchParams.set("people", people);
         url.searchParams.set("travel_date", travelDate);
+        url.searchParams.set("end_travel_date", endDate);
         window.location.href = url.toString();
         return false;
       };

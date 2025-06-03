@@ -42,15 +42,16 @@ while ($guide = $guides->fetch_assoc()) {
 
 // Prefill form
 $checkin = $_GET['travel_date'] ?? date('Y-m-d');
-$default_duration = is_numeric($tour['duration']) ? (int) $tour['duration'] : 1; // Handle varchar duration
-$checkout = date('Y-m-d', strtotime("$checkin + $default_duration days"));
-$guests = max(1, (int) ($_GET['people'] ?? 1)); // Ensure at least 1 guest
-$selected_guide = $_GET['guide_id'] ?? ''; // Prefill guide if provided
+$default_end_date = date('Y-m-d', strtotime("$checkin + " . (is_numeric($tour['duration']) ? (int) $tour['duration'] - 1 : 0) . " days"));
+$end_travel_date = $_GET['end_travel_date'] ?? $default_end_date;
+$guests = max(1, (int) ($_GET['people'] ?? 1));
+$selected_guide = $_GET['guide_id'] ?? '';
+$special_request = $_POST['special_request'] ?? '';
 
 // Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $checkin = $_POST['checkin'];
-    $checkout = $_POST['checkout'];
+    $end_travel_date = $_POST['end_travel_date'];
     $guests = (int) $_POST['guests'];
     $special_request = htmlspecialchars(trim($_POST['special_request'] ?? ''));
     $guide_id = (int) ($_POST['guide_id'] ?? 0);
@@ -60,38 +61,59 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error_message = "Number of guests must be at least 1.";
     } elseif ($guide_id === 0) {
         $error_message = "Please select a guide.";
+    } elseif (empty($checkin) || empty($end_travel_date)) {
+        $error_message = "Please provide both travel start and end dates.";
     } else {
         $checkin_date = new DateTime($checkin);
-        $checkout_date = new DateTime($checkout);
-        if ($checkout_date <= $checkin_date) {
-            $error_message = "Return date must be after travel date.";
+        $end_travel_date_obj = new DateTime($end_travel_date);
+        if ($end_travel_date_obj < $checkin_date) {
+            $error_message = "End travel date must be on or after travel start date.";
         } else {
-            $duration = (int) $checkin_date->diff($checkout_date)->days;
-            // Calculate discounted price including duration (10% off, multiplied by guests and days)
-            $discounted_price = (float) $tour['price'] * 0.9 * $guests * $duration;
-
-            // Insert into bookings
-            $stmt = $conn->prepare("INSERT INTO bookings (user_id, tour_id, travel_date, duration, people, price, special_request, status, payment_status, guide_id) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', ?)");
-            $stmt->bind_param("iisiddsi", $user_id, $tour_id, $checkin, $duration, $guests, $discounted_price, $special_request, $guide_id);
-            if ($stmt->execute()) {
-                $booking_id = $conn->insert_id;
-
-                // Insert into payments
-                $stmt_payment = $conn->prepare("INSERT INTO payments (booking_id, user_id, tour_id, amount, payment_status) 
-                                               VALUES (?, ?, ?, ?, ?)");
-                $payment_status = 'Pending';
-                $stmt_payment->bind_param("iiids", $booking_id, $user_id, $tour_id, $discounted_price, $payment_status);
-                if ($stmt_payment->execute()) {
-                    $success_message = "Booking successful! We'll contact you soon.";
-                } else {
-                    $error_message = "Payment recording error: " . $conn->error;
-                }
-                $stmt_payment->close();
-            } else {
-                $error_message = "Booking error: " . $conn->error;
-            }
+            // Check guide availability
+            $stmt = $conn->prepare("SELECT COUNT(*) AS count 
+                                    FROM bookings 
+                                    WHERE guide_id = ? 
+                                    AND status != 'cancelled'
+                                    AND (
+                                        (travel_date <= ? AND end_travel_date >= ?) 
+                                        OR (travel_date <= ? AND end_travel_date >= ?)
+                                        OR (? <= end_travel_date AND ? >= travel_date)
+                                    )");
+            $stmt->bind_param("issssss", $guide_id, $end_travel_date, $checkin, $checkin, $checkin, $checkin, $end_travel_date);
+            $stmt->execute();
+            $result = $stmt->get_result()->fetch_assoc();
             $stmt->close();
+
+            if ($result['count'] > 0) {
+                $error_message = "Selected guide is unavailable for the chosen dates. Please choose another guide or adjust your travel dates.";
+            } else {
+                // Calculate duration for price (inclusive of start and end dates)
+                $duration = (int) $checkin_date->diff($end_travel_date_obj)->days + 1;
+                $discounted_price = (float) $tour['price'] * 0.9 * $guests * $duration;
+
+                // Insert into bookings
+                $stmt = $conn->prepare("INSERT INTO bookings (user_id, tour_id, travel_date, end_travel_date, people, price, special_request, status, payment_status, guide_id) 
+                                        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', ?)");
+                $stmt->bind_param("iissidsi", $user_id, $tour_id, $checkin, $end_travel_date, $guests, $discounted_price, $special_request, $guide_id);
+                if ($stmt->execute()) {
+                    $booking_id = $conn->insert_id;
+
+                    // Insert into payments
+                    $stmt_payment = $conn->prepare("INSERT INTO payments (booking_id, user_id, tour_id, amount, payment_status) 
+                                                   VALUES (?, ?, ?, ?, ?)");
+                    $payment_status = 'Pending';
+                    $stmt_payment->bind_param("iiids", $booking_id, $user_id, $tour_id, $discounted_price, $payment_status);
+                    if ($stmt_payment->execute()) {
+                        $success_message = "Booking successful! We'll contact you soon.";
+                    } else {
+                        $error_message = "Payment recording error: " . $conn->error;
+                    }
+                    $stmt_payment->close();
+                } else {
+                    $error_message = "Booking error: " . $conn->error;
+                }
+                $stmt->close();
+            }
         }
     }
 }
@@ -302,14 +324,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <?php endif; ?>
             <form method="post" action="">
                 <div class="form-group">
-                    <label for="checkin">Travel Date</label>
+                    <label for="checkin">Travel Start Date</label>
                     <input type="date" class="form-control" id="checkin" name="checkin" value="<?= $checkin ?>"
                         required>
                 </div>
                 <div class="form-group">
-                    <label for="checkout">Return Date</label>
-                    <input type="date" class="form-control" id="checkout" name="checkout" value="<?= $checkout ?>"
-                        required>
+                    <label for="end_travel_date">Travel End Date</label>
+                    <input type="date" class="form-control" id="end_travel_date" name="end_travel_date"
+                        value="<?= $end_travel_date ?>" required>
                 </div>
                 <div class="form-group">
                     <label for="guests">Number of Guests</label>
@@ -335,7 +357,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div class="form-group">
                     <label for="special_request">Special Requests (Optional)</label>
                     <textarea class="form-control" id="special_request" name="special_request" rows="3"
-                        placeholder="E.g., dietary needs, accessibility"><?= htmlspecialchars($special_request ?? '') ?></textarea>
+                        placeholder="E.g., dietary needs, accessibility"><?= htmlspecialchars($special_request) ?></textarea>
                 </div>
                 <p id="price-display"></p>
                 <button type="submit" class="btn-book">Confirm Booking</button>
@@ -347,22 +369,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const checkin = document.getElementById("checkin");
-            const checkout = document.getElementById("checkout");
+            const endTravelDate = document.getElementById("end_travel_date");
             const guests = document.getElementById("guests");
             const priceDisplay = document.getElementById("price-display");
             const tourPrice = <?= json_encode((float) $tour['price']) ?>;
 
             function updatePrice() {
                 const start = new Date(checkin.value);
-                const end = new Date(checkout.value);
-                const days = Math.max(1, (end - start) / (1000 * 60 * 60 * 24));
+                const end = new Date(endTravelDate.value);
+                const days = Math.max(1, (end - start) / (1000 * 60 * 60 * 24) + 1);
                 const guestCount = parseInt(guests.value) || 1;
                 const price = tourPrice * 0.9 * guestCount * days;
                 priceDisplay.textContent = days >= 1 ? `Total: $${price.toFixed(2)} for ${days} day${days > 1 ? 's' : ''}` : "Please select valid dates";
             }
 
             checkin.addEventListener("change", updatePrice);
-            checkout.addEventListener("change", updatePrice);
+            endTravelDate.addEventListener("change", updatePrice);
             guests.addEventListener("change", updatePrice);
             updatePrice();
         });

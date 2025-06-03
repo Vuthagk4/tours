@@ -16,8 +16,8 @@ $userId = $_SESSION['user_id'];
 $errors = [];
 $success = [];
 
-// Set time zone for +07 (as per your provided date/time)
-date_default_timezone_set('Asia/Bangkok');
+// Set time zone for +07 (Asia/Phnom_Penh)
+date_default_timezone_set('Asia/Phnom_Penh');
 $currentHour = (int) date('H');
 $greeting = $currentHour >= 5 && $currentHour < 12 ? "Good Morning" :
     ($currentHour >= 12 && $currentHour < 17 ? "Good Afternoon" :
@@ -128,7 +128,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_password'])) {
     }
 }
 
-
+// Fetch booking history
+$stmt = mysqli_prepare($conn, "
+    SELECT b.booking_id, b.travel_date, b.end_travel_date, b.people, b.price, b.status, b.special_request,
+           t.title AS tour_title, d.name AS destination, g.name AS guide_name
+    FROM bookings b
+    LEFT JOIN tours t ON b.tour_id = t.tour_id
+    LEFT JOIN destinations d ON t.destination_id = d.destination_id
+    LEFT JOIN guides g ON b.guide_id = g.guide_id
+    WHERE b.user_id = ?
+    ORDER BY b.booking_date DESC
+    LIMIT 5
+");
+mysqli_stmt_bind_param($stmt, "i", $userId);
+mysqli_stmt_execute($stmt);
+$bookings_result = mysqli_stmt_get_result($stmt);
+$bookings = [];
+while ($row = mysqli_fetch_assoc($bookings_result)) {
+    $bookings[] = $row;
+}
+mysqli_stmt_close($stmt);
 
 mysqli_close($conn);
 ?>
@@ -299,6 +318,21 @@ mysqli_close($conn);
             transform: translateY(-2px);
         }
 
+        .btn-print {
+            background: #ff6f61;
+            border: none;
+            padding: 10px 20px;
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .btn-print:hover {
+            background: #e55f53;
+            transform: translateY(-2px);
+        }
+
         .alert-dismissible {
             border-radius: 8px;
             padding: 15px;
@@ -405,6 +439,31 @@ mysqli_close($conn);
             color: white;
             transform: translateY(-2px);
             text-decoration: none;
+        }
+
+        /* Print-specific styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #booking-history,
+            #booking-history * {
+                visibility: visible;
+            }
+
+            #booking-history {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+
+            .btn-custom,
+            .btn-print,
+            .btn-details {
+                display: none;
+            }
         }
 
         /* Responsive Adjustments */
@@ -555,10 +614,42 @@ mysqli_close($conn);
                         <div class="card-body">
                             <div class="recent-activity">
                                 <h4>Recent Activity</h4>
-                                <div class="activity-item">
-                                    <i class="fas fa-history"></i>
-                                    <p><strong>:</strong>
-                                    </p>
+                                <button id="toggle-booking-history" class="btn btn-custom mb-3">Show Booking
+                                    History</button>
+                                <div id="booking-history" style="display: none;">
+                                    <?php if (empty($bookings)): ?>
+                                        <p class="text-muted">No booking history found.</p>
+                                    <?php else: ?>
+                                        <?php foreach ($bookings as $booking): ?>
+                                            <div class="booking-card">
+                                                <p><strong>Tour:</strong>
+                                                    <?php echo htmlspecialchars($booking['tour_title'] ?: 'Unknown Tour'); ?>
+                                                </p>
+                                                <p><strong>Destination:</strong>
+                                                    <?php echo htmlspecialchars($booking['destination'] ?: 'N/A'); ?></p>
+                                                <p><strong>Travel Dates:</strong>
+                                                    <?php echo htmlspecialchars($booking['travel_date']); ?> to
+                                                    <?php echo htmlspecialchars($booking['end_travel_date']); ?></p>
+                                                <p><strong>Guests:</strong> <?php echo htmlspecialchars($booking['people']); ?>
+                                                </p>
+                                                <p><strong>Price:</strong> $<?php echo number_format($booking['price'], 2); ?>
+                                                </p>
+                                                <p><strong>Status:</strong> <span
+                                                        class="status-<?php echo strtolower($booking['status']); ?>"><?php echo htmlspecialchars($booking['status']); ?></span>
+                                                </p>
+                                                <p><strong>Guide:</strong>
+                                                    <?php echo htmlspecialchars($booking['guide_name'] ?: 'Not Assigned'); ?>
+                                                </p>
+                                                <?php if (!empty($booking['special_request'])): ?>
+                                                    <p><strong>Special Request:</strong>
+                                                        <?php echo htmlspecialchars($booking['special_request']); ?></p>
+                                                <?php endif; ?>
+                                                <a href="booking_details.php?id=<?php echo $booking['booking_id']; ?>"
+                                                    class="btn-details">View Details</a>
+                                            </div>
+                                        <?php endforeach; ?>
+                                        <button id="print-booking-history" class="btn btn-print">Print History</button>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
@@ -589,6 +680,30 @@ mysqli_close($conn);
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
         crossorigin="anonymous"></script>
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleButton = document.getElementById('toggle-booking-history');
+            const bookingHistory = document.getElementById('booking-history');
+            const printButton = document.getElementById('print-booking-history');
+
+            toggleButton.addEventListener('click', () => {
+                if (bookingHistory.style.display === 'none') {
+                    bookingHistory.style.display = 'block';
+                    toggleButton.textContent = 'Hide Booking History';
+                } else {
+                    bookingHistory.style.display = 'none';
+                    toggleButton.textContent = 'Show Booking History';
+                }
+            });
+
+            if (printButton) {
+                printButton.addEventListener('click', () => {
+                    window.print();
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>
